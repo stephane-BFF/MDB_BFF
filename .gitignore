@@ -1,0 +1,87 @@
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Environnements virtuels ───────────────────────────────
+venv/
+env/
+.venv/
+.env_py/
+
+# ── Variables d'environnement et SECRETS ─────────────────
+.env
+.env.*
+*.env
+.env.local
+.env.*.local
+
+# ── Fichiers JSON (potentiellement sensibles) ─────────────
+*.json
+!.claude/settings.json
+
+# ── Certificats et clés ───────────────────────────────────
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# ── VS Code ───────────────────────────────────────────────
+.vscode/
+*.code-workspace
+
+# ── Claude Code (config locale uniquement) ───────────────
+.claude/settings.local.json
+CLAUDE.local.md
+
+# ── Flask / instance ──────────────────────────────────────
+instance/
+*.sqlite3
+*.db
+flask_session/
+
+# ── WeasyPrint cache ──────────────────────────────────────
+.weasyprint_cache/
+
+# ── PDFs générés (ne pas committer les dossiers réels) ───
+/pdf_output/
+/generated_pdfs/
+
+# ── Celery ────────────────────────────────────────────────
+celerybeat-schedule
+celerybeat.pid
+
+# ── pytest / coverage ─────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# ── Uploads temporaires ───────────────────────────────────
+/uploads/tmp/
+
+# ── Logs ──────────────────────────────────────────────────
+*.log
+logs/
+
+# ── macOS ─────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── Windows ───────────────────────────────────────────────
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ── Fichiers de déploiement sensibles ─────────────────────
+gunicorn.conf.py.local
+nginx_bff_mdb.conf.local
