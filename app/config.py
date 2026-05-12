@@ -72,8 +72,16 @@ class ProductionConfig(Config):
     WTF_CSRF_SSL_STRICT: bool = True
 
 
+class TestingConfig(Config):
+    TESTING: bool = True
+    WTF_CSRF_ENABLED: bool = False  # Désactivé pour simplifier les tests
+    SQLALCHEMY_DATABASE_URI: str = "sqlite:///:memory:"
+    CELERY_TASK_ALWAYS_EAGER: bool = True  # Tâches Celery exécutées en synchrone
+
+
 config_by_name: dict[str, type[Config]] = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
+    "testing": TestingConfig,
     "default": DevelopmentConfig,
 }

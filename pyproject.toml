@@ -1,0 +1,59 @@
+[project]
+name = "mdb-bff"
+version = "0.1.0"
+description = "MDB — Dossier Constructeur Qualité — Brown Fintube France Energy"
+requires-python = ">=3.14"
+
+# ── Ruff (linting + formatage, remplace flake8/isort) ────────
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "S",   # flake8-bandit (sécurité)
+    "ANN", # annotations de types manquantes
+]
+ignore = [
+    "S101",   # assert autorisé dans les tests
+    "ANN101", # self non annoté (standard Python)
+    "ANN102", # cls non annoté (standard Python)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "ANN"]
+"migrations/**" = ["ALL"]
+
+# ── Black (formatage) ─────────────────────────────────────────
+[tool.black]
+line-length = 100
+target-version = ["py314"]
+
+# ── Mypy (typage statique) ────────────────────────────────────
+[tool.mypy]
+python_version = "3.14"
+strict = true
+ignore_missing_imports = true
+exclude = ["migrations/", "tests/"]
+
+# ── Pytest ────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=app --cov-report=term-missing --cov-report=html"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+# ── Coverage ─────────────────────────────────────────────────
+[tool.coverage.run]
+source = ["app"]
+omit = ["*/migrations/*", "*/tests/*", "*/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
