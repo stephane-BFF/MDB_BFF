@@ -130,7 +130,7 @@ Ajouter une langue = un fichier `.po`, pas un nouveau template HTML.
 ## Les 5 Rôles
 
 | Rôle | Créer affaire | Saisir | Valider | Signer | Référentiels | Admin |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| --- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Lecteur** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **Rédacteur** | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | **Vérificateur** | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
@@ -140,7 +140,7 @@ Ajouter une langue = un fichier `.po`, pas un nouveau template HTML.
 ## Les 27 Formulaires
 
 | Chap. | Formulaires | Type |
-|---|---|---|
+| --- | --- | --- |
 | A | PdG, CCC, ConfCom, AttDecr, AttRep, EtatDesc | Simples |
 | B | BIM, BIMSoud, PMI | Tableaux dynamiques JS |
 | C | ListSoud, Rolling, DIM, TTH1, TTH2 | Tableaux + upload fichier |
@@ -255,7 +255,7 @@ waitress-serve --port=5000 run:app
 ## Roadmap — 5 Phases
 
 | # | Nom | Livrables clés | Complexité |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **1** | Infrastructure & MVP | App + wizard + HYDR + PDF HYDR + tests intégration | XL |
 | **2** | 27 formulaires complets | 27 formulaires + PDFs individuels + Flask-Babel + Celery PDF | XL |
 | **3** | PDF complet & imports | Dossier assemblé, signets, QR code, imports drag&drop | L |
