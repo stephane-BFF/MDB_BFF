@@ -1,0 +1,55 @@
+# ═══════════════════════════════════════════════════════════════
+# MDB BFF — Dépendances Python
+# Python 3.14+  |  pip install -r requirements.txt
+# ═══════════════════════════════════════════════════════════════
+
+# ── Web Framework ─────────────────────────────────────────────
+Flask>=3.1.0
+Flask-Login>=0.6.3
+Flask-WTF>=1.2.2
+Flask-Mail>=0.10.0
+
+# ── Base de données ───────────────────────────────────────────
+Flask-SQLAlchemy>=3.1.1
+Flask-Migrate>=4.1.0
+SQLAlchemy>=2.0.36
+# Driver PostgreSQL (binaire inclus, pas besoin de libpq séparé)
+psycopg2-binary>=2.9.10
+alembic>=1.14.0
+
+# ── PDF ───────────────────────────────────────────────────────
+WeasyPrint>=62.3
+pypdf>=5.1.0
+
+# ── Images & QR Code ──────────────────────────────────────────
+Pillow>=11.0.0
+qrcode>=8.0
+
+# ── Génération PDF asynchrone (gros dossiers Phase 2+) ────────
+# Celery avec backend Redis pour traitement asynchrone
+celery[redis]>=5.4.0
+redis>=5.2.0
+# Monitoring Celery (dashboard web : celery -A app.celery_app flower)
+flower>=2.0.0
+
+# ── Authentification Windows / LDAP Active Directory ──────────
+# Connexion automatique avec identifiant Windows (LDAP_SERVER dans .env)
+ldap3>=2.9.1
+
+# ── Sécurité & Utilitaires ────────────────────────────────────
+Werkzeug>=3.1.3
+python-dotenv>=1.0.1
+WTForms>=3.2.2
+# Validation MIME uploads (Windows — binaires incluses)
+python-magic-bin>=0.4.14
+
+# ── WSGI Production ───────────────────────────────────────────
+# Linux / NAS Synology (recommandé pour production)
+gunicorn>=23.0.0
+# Windows Server (alternative si déploiement Windows)
+waitress>=3.0.0
+
+# ── Tests ─────────────────────────────────────────────────────
+pytest>=8.3.4
+pytest-flask>=1.3.0
+pytest-cov>=6.0.0

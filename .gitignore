@@ -21,6 +21,8 @@ env/
 *.env
 .env.local
 .env.*.local
+# Garder le fichier d'exemple (pas de secrets dedans)
+!.env.example
 
 # ── Fichiers JSON (potentiellement sensibles) ─────────────
 *.json
