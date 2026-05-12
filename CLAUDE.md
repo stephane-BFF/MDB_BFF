@@ -1,7 +1,9 @@
 # MDB BFF — Dossier Constructeur Qualité (Application Web)
 
 ## Projet
+
 Application web Flask/PostgreSQL pour gérer les **dossiers constructeurs qualité** de Brown Fintube France Energy (BFF), fabricant de réchauffeurs de masse industriels.
+
 - ~100 affaires/an · **27 formulaires qualité** · chapitres **A–G** · jalons **JP0–JP6**
 - Norme : Directive Équipements sous Pression (PED 2014/68/UE)
 - Utilisateurs : 5 agents BFF — rôles : **Admin, Approbateur, Vérificateur, Rédacteur, Lecteur**
@@ -9,6 +11,7 @@ Application web Flask/PostgreSQL pour gérer les **dossiers constructeurs qualit
 - CDC v1–v6 disponibles dans `../Cahier des charges/` — **lire avant tout développement**
 
 ## Stack Technique
+
 - **Backend** : Python 3.14+, Flask 3.1+ (factory `create_app`), Flask-Login, Flask-WTF, SQLAlchemy 2.0+ typé
 - **Base de données** : PostgreSQL + migrations Alembic
 - **Config** : pydantic-settings (validation au démarrage)
@@ -24,7 +27,8 @@ Application web Flask/PostgreSQL pour gérer les **dossiers constructeurs qualit
 - **WSGI Linux/NAS Synology** : Gunicorn · **WSGI Windows Server** : Waitress · **Dev** : `flask run`
 
 ## Architecture des fichiers
-```
+
+```text
 app/
 ├── __init__.py          ← create_app factory
 ├── config.py            ← DevelopmentConfig, ProductionConfig, TestingConfig
@@ -88,9 +92,11 @@ scripts/                 ← maintenance ponctuelle
 ## Décisions architecturales clés (actées)
 
 ### Formulaires : table générique + JSONB (pas 27 tables)
+
 Une seule table `formulaires` avec colonne `data JSONB` pour les champs spécifiques.
 Colonnes indexées pour les champs réellement requêtés (statut, code, affaire_id).
 Pour HYDR : property Python qui expose `ps`, `pt`, `conformite` depuis `data`.
+
 ```python
 class Formulaire(db.Model):
     id, affaire_id, code, statut, chapitre   # colonnes communes + indexées
@@ -99,21 +105,25 @@ class Formulaire(db.Model):
 ```
 
 ### Wizard affaire : persisté en base dès Q1
+
 Statut `WIZARD_BROUILLON` créé dès la première étape, mis à jour à chaque étape.
 Basculement vers `BROUILLON` à la fin du wizard. Zéro perte de données.
 
 ### Signatures : hash SHA-256 + audit immutable
+
 - Hash SHA-256 du formulaire calculé au moment de la signature, stocké en base
 - Vérification du hash à chaque affichage post-signature
 - AuditTrail : **insert only**, jamais d'UPDATE sur les lignes existantes
 - Phase 5 : 2FA TOTP (Google Authenticator) pour les approbateurs
 
 ### Versioning des formulaires
+
 - Colonne `template_version` sur chaque formulaire
 - Table `formulaire_templates` versionne les schémas de champs
 - Affichage toujours fidèle au schéma de la version signée
 
 ### I18n PED : Flask-Babel + fichiers .po
+
 Un seul template PED par module, traductions externalisées en `.po`.
 Ajouter une langue = un fichier `.po`, pas un nouveau template HTML.
 
@@ -142,6 +152,7 @@ Ajouter une langue = un fichier `.po`, pas un nouveau template HTML.
 **HYDR est le formulaire pilote** — pattern répliqué sur tous les autres.
 
 ## Règles Métier Critiques
+
 - **Pression épreuve** : `PT = round(PS × 1.43, 1)` — JS temps réel + revalidation serveur
 - **Workflow statuts** : `BROUILLON → SOUMIS → VALIDE → SIGNE` (irréversible sauf Admin)
 - **Jalons** : un jalon ne peut être franchi que si tous ses prérequis sont VALIDE
@@ -167,12 +178,14 @@ Ajouter une langue = un fichier `.po`, pas un nouveau template HTML.
 ```
 
 Routes standards par formulaire :
+
 - `GET /affaires/<id>/formulaires/<code>` — affichage
 - `POST /affaires/<id>/formulaires/<code>` — sauvegarde brouillon (AJAX)
 - `POST /affaires/<id>/formulaires/<code>/valider`
 - `POST /affaires/<id>/formulaires/<code>/signer`
 
 ## Commandes
+
 ```bash
 # Activer le venv (Windows)
 .venv\Scripts\activate
@@ -224,6 +237,7 @@ waitress-serve --port=5000 run:app
 **Livrable** : wizard affaire + formulaire HYDR complet + PDF HYDR avec en-tête BFF.
 
 **Ordre d'implémentation :**
+
 1. ~~Structure Flask + blueprints + config + extensions~~ **FAIT**
 2. `app/enums.py` : Role, Statut, Chapitre, JalonCode
 3. Modèles SQLAlchemy : User, Affaire, Formulaire (JSONB), Signature, AuditTrail
@@ -249,7 +263,8 @@ waitress-serve --port=5000 run:app
 | **5** | Admin, sécurité & production | HTTPS NAS, module admin, 2FA TOTP, doc utilisateur | M |
 
 ## Référence Documentaire (CDC)
-```
+
+```text
 ../Cahier des charges/
 ├── CDC_MDB_BFF_v1.docx                              ← contexte, rôles, jalons
 ├── CDC_MDB_BFF_v2_Specifications_Formulaires.docx   ← chaque formulaire champ par champ
