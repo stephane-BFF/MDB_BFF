@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+{# Page de garde du dossier MDB assemblé — avec QR code et identification affaire #}
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+@page {
+    size: A4 portrait;
+    margin: 0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: Arial, sans-serif;
+    height: 297mm;
+    width: 210mm;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── Bandeau supérieur BFF ── */
+.top-band {
+    background-color: #003087;
+    height: 28mm;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 15mm;
+    justify-content: space-between;
+}
+.top-band-logo {
+    color: white;
+    font-size: 22pt;
+    font-weight: bold;
+    letter-spacing: 3pt;
+}
+.top-band-subtitle {
+    color: #a8c8ff;
+    font-size: 9pt;
+    text-align: right;
+    line-height: 1.5;
+}
+
+/* ── Zone titre centrale ── */
+.title-zone {
+    padding: 20mm 20mm 10mm;
+    text-align: center;
+}
+.doc-type {
+    font-size: 10pt;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 2pt;
+    margin-bottom: 4mm;
+}
+.main-title {
+    font-size: 24pt;
+    font-weight: bold;
+    color: #003087;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+    line-height: 1.2;
+    margin-bottom: 3mm;
+}
+.main-subtitle {
+    font-size: 13pt;
+    color: #444;
+    margin-bottom: 8mm;
+}
+.divider {
+    width: 60mm;
+    height: 2pt;
+    background-color: #003087;
+    margin: 0 auto 8mm;
+}
+
+/* ── Tableau d'identification ── */
+.id-table {
+    margin: 0 20mm;
+    width: calc(100% - 40mm);
+    border-collapse: collapse;
+    font-size: 10pt;
+}
+.id-table td {
+    padding: 3mm 4mm;
+    border: 0.5pt solid #ccc;
+    vertical-align: top;
+}
+.id-table .lbl {
+    background-color: #f0f4fc;
+    color: #003087;
+    font-weight: bold;
+    width: 42mm;
+    font-size: 9pt;
+}
+.id-table .val {
+    font-weight: bold;
+    color: #1a1a1a;
+}
+
+/* ── Bloc QR + infos bas ── */
+.bottom-zone {
+    position: absolute;
+    bottom: 25mm;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 20mm;
+}
+.qr-block {
+    text-align: center;
+}
+.qr-block img {
+    width: 30mm;
+    height: 30mm;
+    border: 1pt solid #ccc;
+    padding: 1mm;
+}
+.qr-caption {
+    font-size: 7pt;
+    color: #888;
+    margin-top: 1mm;
+}
+.meta-block {
+    text-align: right;
+    font-size: 8.5pt;
+    color: #555;
+    line-height: 1.7;
+}
+.meta-block strong { color: #003087; }
+
+/* ── Bandeau bas ── */
+.bottom-band {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #003087;
+    height: 12mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 8pt;
+    letter-spacing: 1pt;
+}
+
+/* ── Filigrane PED ── */
+.ped-badge {
+    position: absolute;
+    top: 60mm;
+    right: 18mm;
+    border: 2pt solid #003087;
+    padding: 2mm 4mm;
+    color: #003087;
+    font-size: 8pt;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.4;
+    opacity: 0.35;
+    transform: rotate(15deg);
+}
+</style>
+</head>
+<body>
+
+<div class="top-band">
+    <div class="top-band-logo">
+        {% if logo_uri %}
+        <img src="{{ logo_uri }}" style="height:18mm; filter:brightness(0) invert(1);" alt="BFF">
+        {% else %}
+        BFF
+        {% endif %}
+    </div>
+    <div class="top-band-subtitle">
+        Brown Fintube France Energy<br>
+        74200 Thonon-les-Bains, France
+    </div>
+</div>
+
+<div class="ped-badge">PED<br>2014/68/UE<br>CE</div>
+
+<div class="title-zone">
+    <div class="doc-type">Dossier Constructeur Qualité</div>
+    <div class="main-title">Manuel du Fabricant<br>MDB</div>
+    <div class="main-subtitle">Manufacturer's Data Book</div>
+    <div class="divider"></div>
+</div>
+
+<table class="id-table">
+    <tr>
+        <td class="lbl">N° Affaire</td>
+        <td class="val" style="font-size:14pt; color:#003087;">{{ affaire.numero_affaire }}</td>
+        <td class="lbl">Année</td>
+        <td class="val">{{ affaire.annee }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Client</td>
+        <td class="val" colspan="3">{{ affaire.client_nom or '—' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Référence client</td>
+        <td class="val">{{ affaire.references_client or '—' }}</td>
+        <td class="lbl">Réf. interne BFF</td>
+        <td class="val">{{ affaire.references_internes or '—' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Repère équipement</td>
+        <td class="val">{{ affaire.repere or '—' }}</td>
+        <td class="lbl">Type échangeur</td>
+        <td class="val">{{ affaire.type_echangeur or '—' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Nombre d'appareils</td>
+        <td class="val">{{ affaire.nombre or '—' }}</td>
+        <td class="lbl">Année construction</td>
+        <td class="val">{{ affaire.annee_construction or '—' }}</td>
+    </tr>
+</table>
+
+<div class="bottom-zone">
+    <div class="qr-block">
+        {% if qr_uri %}
+        <img src="{{ qr_uri }}" alt="QR Code affaire">
+        <div class="qr-caption">{{ affaire.numero_affaire }}</div>
+        {% endif %}
+    </div>
+    <div class="meta-block">
+        <strong>Directive :</strong> Équipements sous Pression 2014/68/UE<br>
+        <strong>Document :</strong> Dossier constructeur complet<br>
+        <strong>Généré le :</strong>
+        {% set now = affaire.updated_at %}
+        {{ now.strftime('%d/%m/%Y') if now else '—' }}
+    </div>
+</div>
+
+<div class="bottom-band">
+    CONFIDENTIEL · DOSSIER CONSTRUCTEUR QUALITÉ BFF · PED 2014/68/UE
+</div>
+
+</body>
+</html>

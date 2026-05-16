@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+/* ── Page A4 ── */
+@page {
+    size: A4 portrait;
+    margin: 18mm 18mm 22mm 18mm;
+    @bottom-left {
+        content: "BFF · Dossier Constructeur Qualité · PED 2014/68/UE";
+        font-family: Arial, sans-serif;
+        font-size: 7pt;
+        color: #666;
+    }
+    @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-family: Arial, sans-serif;
+        font-size: 7pt;
+        color: #666;
+    }
+}
+
+/* ── Typographie ── */
+body {
+    font-family: Arial, sans-serif;
+    font-size: 9pt;
+    color: #1a1a1a;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+}
+
+h1 { font-size: 13pt; margin: 0 0 2mm; text-transform: uppercase; letter-spacing: 0.5pt; }
+h2 { font-size: 10pt; margin: 5mm 0 2mm; border-bottom: 1pt solid #003087; padding-bottom: 1mm; color: #003087; }
+p  { margin: 1mm 0; }
+
+/* ── En-tête BFF ── */
+.page-header {
+    display: table;
+    width: 100%;
+    border-bottom: 2pt solid #003087;
+    margin-bottom: 6mm;
+    padding-bottom: 3mm;
+}
+.page-header-logo  { display: table-cell; width: 55mm; vertical-align: middle; }
+.page-header-title { display: table-cell; vertical-align: middle; text-align: center; }
+.page-header-meta  { display: table-cell; width: 52mm; vertical-align: middle; text-align: right; font-size: 8pt; color: #555; }
+
+.logo-img { height: 14mm; }
+.logo-placeholder {
+    display: inline-block;
+    background-color: #003087;
+    color: white;
+    font-size: 18pt;
+    font-weight: bold;
+    padding: 2mm 5mm;
+    letter-spacing: 2pt;
+}
+
+.doc-title { font-size: 12pt; font-weight: bold; color: #003087; text-transform: uppercase; }
+.doc-subtitle { font-size: 9pt; color: #555; margin-top: 1mm; }
+
+/* ── Tableaux de données ── */
+table.data {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4mm;
+    font-size: 9pt;
+}
+table.data th {
+    background-color: #003087;
+    color: white;
+    padding: 2mm 3mm;
+    text-align: left;
+    font-weight: bold;
+    font-size: 8.5pt;
+}
+table.data td {
+    padding: 2mm 3mm;
+    border: 0.5pt solid #ccc;
+    vertical-align: top;
+}
+table.data tr:nth-child(even) td { background-color: #f7f9fc; }
+.label { color: #555; font-size: 8.5pt; }
+.value { font-weight: bold; }
+
+/* ── Badge résultat ── */
+.badge-conforme {
+    display: inline-block;
+    background-color: #198754;
+    color: white;
+    padding: 1mm 3mm;
+    border-radius: 2mm;
+    font-size: 8pt;
+    font-weight: bold;
+}
+.badge-nonconforme {
+    display: inline-block;
+    background-color: #dc3545;
+    color: white;
+    padding: 1mm 3mm;
+    border-radius: 2mm;
+    font-size: 8pt;
+    font-weight: bold;
+}
+
+/* ── Calcul PT ── */
+.pt-formula {
+    font-size: 8pt;
+    color: #555;
+    font-style: italic;
+}
+
+/* ── Bloc signature ── */
+.signature-block {
+    margin-top: 8mm;
+    border: 1pt solid #003087;
+    padding: 4mm;
+    background-color: #f0f4fc;
+    page-break-inside: avoid;
+}
+.signature-title { font-weight: bold; font-size: 9.5pt; color: #003087; margin-bottom: 2mm; }
+.hash-value {
+    font-family: "Courier New", monospace;
+    font-size: 7.5pt;
+    word-break: break-all;
+    background-color: #fff;
+    border: 0.5pt solid #ccc;
+    padding: 1mm 2mm;
+    margin-top: 1mm;
+    display: block;
+}
+
+/* ── Zone observations ── */
+.observations-box {
+    border: 0.5pt solid #ccc;
+    padding: 3mm;
+    min-height: 15mm;
+    background-color: #fafafa;
+    font-size: 8.5pt;
+    white-space: pre-wrap;
+}
+
+/* ── Pied de page du document ── */
+.doc-footer {
+    margin-top: 10mm;
+    border-top: 1pt solid #ccc;
+    padding-top: 3mm;
+    font-size: 7.5pt;
+    color: #888;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ EN-TÊTE BFF ══════════════════════════════════════════════════════ -->
+<div class="page-header">
+    <div class="page-header-logo">
+        {% if logo_uri %}
+        <img src="{{ logo_uri }}" class="logo-img" alt="Logo BFF">
+        {% else %}
+        <span class="logo-placeholder">BFF</span>
+        {% endif %}
+    </div>
+    <div class="page-header-title">
+        <div class="doc-title">Procès-Verbal d'Épreuve Hydrostatique</div>
+        <div class="doc-subtitle">Cahier de Contrôle — Chapitre E</div>
+    </div>
+    <div class="page-header-meta">
+        <strong>N° Affaire :</strong> {{ affaire.numero_affaire }}<br>
+        <strong>Formulaire :</strong> HYDR v{{ formulaire.template_version }}<br>
+        <strong>Statut :</strong> {{ formulaire.statut.label }}<br>
+        {% if form_data.get('date_epreuve') %}
+        <strong>Date épreuve :</strong> {{ form_data['date_epreuve'] }}
+        {% endif %}
+    </div>
+</div>
+
+<!-- ══ IDENTIFICATION AFFAIRE ══════════════════════════════════════════ -->
+<h2>1. Identification de l'affaire</h2>
+<table class="data">
+    <tr>
+        <td class="label" style="width:30%">Client</td>
+        <td class="value">{{ affaire.client_nom or '—' }}</td>
+        <td class="label" style="width:25%">Référence client</td>
+        <td class="value">{{ affaire.references_client or '—' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Repère équipement</td>
+        <td class="value">{{ affaire.repere or '—' }}</td>
+        <td class="label">Type d'échangeur</td>
+        <td class="value">{{ affaire.type_echangeur or '—' }}</td>
+    </tr>
+    <tr>
+        <td class="label">N° affaire BFF</td>
+        <td class="value">{{ affaire.numero_affaire }}</td>
+        <td class="label">Réf. interne BFF</td>
+        <td class="value">{{ affaire.references_internes or '—' }}</td>
+    </tr>
+</table>
+
+<!-- ══ PRESSIONS ═══════════════════════════════════════════════════════ -->
+<h2>2. Pressions</h2>
+<table class="data">
+    <tr>
+        <th style="width:35%">Paramètre</th>
+        <th style="width:30%">Valeur</th>
+        <th>Remarque</th>
+    </tr>
+    <tr>
+        <td class="label">Pression de service PS</td>
+        <td class="value">
+            {% if form_data.get('ps') is not none %}
+                {{ "%.1f"|format(form_data['ps']) }} bar
+            {% else %}—{% endif %}
+        </td>
+        <td class="label">Pression de calcul</td>
+    </tr>
+    <tr>
+        <td class="label">Pression d'épreuve PT</td>
+        <td class="value">
+            {% if form_data.get('pt') is not none %}
+                {{ "%.1f"|format(form_data['pt']) }} bar
+            {% else %}—{% endif %}
+        </td>
+        <td class="pt-formula">PT = PS × 1,43 (PED 2014/68/UE art. 2.6.4)</td>
+    </tr>
+</table>
+
+<!-- ══ CONDITIONS D'ÉPREUVE ════════════════════════════════════════════ -->
+<h2>3. Conditions de réalisation</h2>
+<table class="data">
+    <tr>
+        <td class="label" style="width:30%">Date de l'épreuve</td>
+        <td class="value">
+            {% if form_data.get('date_epreuve') %}
+                {% set d = form_data['date_epreuve'] %}
+                {% if '-' in d %}{{ d[8:10] }}/{{ d[5:7] }}/{{ d[:4] }}{% else %}{{ d }}{% endif %}
+            {% else %}—{% endif %}
+        </td>
+        <td class="label" style="width:25%">Fluide d'épreuve</td>
+        <td class="value">{{ (form_data.get('fluide') or '—')|capitalize }}</td>
+    </tr>
+    <tr>
+        <td class="label">Durée de maintien</td>
+        <td class="value">
+            {% if form_data.get('duree_minutes') %}
+                {{ form_data['duree_minutes'] }} min.
+            {% else %}—{% endif %}
+        </td>
+        <td class="label">Température du fluide</td>
+        <td class="value">
+            {% if form_data.get('temperature_c') is not none %}
+                {{ form_data['temperature_c'] }} °C
+            {% else %}—{% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="label">N° manomètre</td>
+        <td class="value">{{ form_data.get('numero_manometre') or '—' }}</td>
+        <td class="label">Résultat</td>
+        <td>
+            {% if form_data.get('conforme') %}
+            <span class="badge-conforme">CONFORME</span>
+            {% else %}
+            <span class="badge-nonconforme">NON CONFORME</span>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+<!-- ══ OBSERVATIONS ════════════════════════════════════════════════════ -->
+<h2>4. Observations</h2>
+<div class="observations-box">{{ form_data.get('observations') or '(aucune)' }}</div>
+
+<!-- ══ SIGNATURES ══════════════════════════════════════════════════════ -->
+{% if signatures %}
+<div class="signature-block">
+    <div class="signature-title">&#9654; Signature électronique</div>
+    {% for sig in signatures %}
+    <p>
+        Signé le <strong>{{ sig.created_at.strftime('%d/%m/%Y à %H:%M UTC') }}</strong>
+        par
+        {% if sig.user %}
+        <strong>{{ sig.user.full_name }}</strong>
+        ({{ sig.user.role.label }})
+        {% else %}
+        <strong>—</strong>
+        {% endif %}
+    </p>
+    <p>Empreinte SHA-256 (intégrité du contenu) :</p>
+    <span class="hash-value">{{ sig.hash_sha256 }}</span>
+    {% endfor %}
+</div>
+{% else %}
+<div class="signature-block" style="border-color:#aaa; background-color:#fafafa;">
+    <div class="signature-title" style="color:#888;">&#9654; Signature électronique</div>
+    <p style="color:#888; font-style:italic;">Formulaire non encore signé.</p>
+    <table style="width:100%; margin-top:4mm;">
+        <tr>
+            <td style="width:45%; border-bottom:1pt solid #999; height:15mm; vertical-align:bottom; font-size:8pt; color:#888; padding-bottom:1mm;">Rédacteur / Date</td>
+            <td style="width:10%;"></td>
+            <td style="width:45%; border-bottom:1pt solid #999; height:15mm; vertical-align:bottom; font-size:8pt; color:#888; padding-bottom:1mm;">Approbateur / Date</td>
+        </tr>
+    </table>
+</div>
+{% endif %}
+
+<!-- ══ PIED DE PAGE DOCUMENT ════════════════════════════════════════════ -->
+<div class="doc-footer">
+    Brown Fintube France Energy · PED 2014/68/UE · MDB {{ affaire.numero_affaire }} · HYDR v{{ formulaire.template_version }}
+    {% if formulaire.created_at %} · Créé le {{ formulaire.created_at.strftime('%d/%m/%Y') }}{% endif %}
+</div>
+
+</body>
+</html>

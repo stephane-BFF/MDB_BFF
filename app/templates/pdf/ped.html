@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+{#
+  Template PDF — Déclaration UE de conformité (PED modules A/D1/H/H1)
+  4 langues : FR / EN / DE / IT
+  Textes légaux embarqués comme dict Jinja2 pour éviter Flask-Babel en Phase 2.
+#}
+{% set lang = form_data.get('langue', 'FR') | upper %}
+{% set module = form_data.get('module_ped', 'A') | upper %}
+
+{# ── Textes multilingues ────────────────────────────────────────────────── #}
+{% set T = {
+  'FR': {
+    'titre_doc':       'DÉCLARATION UE DE CONFORMITÉ',
+    'chapitre_label':  'Chapitre G — Déclaration de conformité PED',
+    'fabricant_label': 'Fabricant',
+    'fabricant_nom':   'Brown Fintube France Energy (BFF)',
+    'fabricant_adr':   '74200 Thonon-les-Bains, France',
+    'objet_label':     'Objet de la déclaration',
+    'caracteristiques': 'Caractéristiques techniques',
+    'ps_label':        'PS – Pression de service',
+    'ts_max_label':    'TS max',
+    'ts_min_label':    'TS min',
+    'volume_label':    'Volume',
+    'dn_label':        'DN',
+    'surface_label':   'Surface d\'échange',
+    'cat_label':       'Catégorie PED',
+    'groupe_label':    'Groupe de fluide',
+    'millesime_label': 'Millésime directive',
+    'on_label':        'Organisme notifié',
+    'on_num_label':    'N° identification',
+    'on_cert_label':   'Référence certificat',
+    'signature_label': 'Signataire',
+    'titre_label':     'Titre',
+    'lieu_label':      'Lieu',
+    'date_label':      'Date',
+    'non_signe':       'Document non signé',
+    'modules': {
+      'A': {
+        'label':       'Module A — Contrôle interne de la fabrication',
+        'declaration': 'La présente déclaration de conformité est établie sous la seule responsabilité du fabricant. L\'équipement sous pression identifié ci-dessous est conforme aux exigences essentielles de sécurité applicables de l\'annexe I de la Directive Équipements sous Pression 2014/68/UE (article 13, module A — contrôle interne de la fabrication).',
+        'on_clause':   '',
+      },
+      'D1': {
+        'label':       'Module D1 — Assurance de la qualité de la production',
+        'declaration': 'La présente déclaration de conformité est établie sous la seule responsabilité du fabricant. L\'équipement sous pression identifié ci-dessous est conforme aux exigences essentielles de sécurité applicables de l\'annexe I de la Directive Équipements sous Pression 2014/68/UE (article 13, module D1 — assurance de la qualité de la production). Le système qualité de production a été approuvé par l\'organisme notifié mentionné ci-dessous.',
+        'on_clause':   'L\'organisme notifié désigné ci-dessous a effectué la surveillance du système de management de la qualité de production conformément au module D1.',
+      },
+      'H': {
+        'label':       'Module H — Assurance complète de la qualité',
+        'declaration': 'La présente déclaration de conformité est établie sous la seule responsabilité du fabricant. L\'équipement sous pression identifié ci-dessous est conforme aux exigences essentielles de sécurité applicables de l\'annexe I de la Directive Équipements sous Pression 2014/68/UE (article 13, module H — assurance complète de la qualité). Le système qualité complet a été approuvé par l\'organisme notifié mentionné ci-dessous.',
+        'on_clause':   'L\'organisme notifié désigné ci-dessous a approuvé le système de management de la qualité complet du fabricant conformément au module H.',
+      },
+      'H1': {
+        'label':       'Module H1 — Assurance complète de la qualité avec examen de la conception',
+        'declaration': 'La présente déclaration de conformité est établie sous la seule responsabilité du fabricant. L\'équipement sous pression identifié ci-dessous est conforme aux exigences essentielles de sécurité applicables de l\'annexe I de la Directive Équipements sous Pression 2014/68/UE (article 13, module H1 — assurance complète de la qualité avec examen de la conception). Le système qualité complet et la conception ont été examinés par l\'organisme notifié mentionné ci-dessous.',
+        'on_clause':   'L\'organisme notifié désigné ci-dessous a approuvé le système de management de la qualité complet et délivré le certificat d\'examen UE de la conception conformément au module H1.',
+      },
+    },
+  },
+  'EN': {
+    'titre_doc':       'EU DECLARATION OF CONFORMITY',
+    'chapitre_label':  'Chapter G — PED Declaration of Conformity',
+    'fabricant_label': 'Manufacturer',
+    'fabricant_nom':   'Brown Fintube France Energy (BFF)',
+    'fabricant_adr':   '74200 Thonon-les-Bains, France',
+    'objet_label':     'Object of the declaration',
+    'caracteristiques': 'Technical characteristics',
+    'ps_label':        'PS – Design pressure',
+    'ts_max_label':    'TS max',
+    'ts_min_label':    'TS min',
+    'volume_label':    'Volume',
+    'dn_label':        'DN',
+    'surface_label':   'Heat transfer area',
+    'cat_label':       'PED category',
+    'groupe_label':    'Fluid group',
+    'millesime_label': 'Directive year',
+    'on_label':        'Notified Body',
+    'on_num_label':    'Identification No.',
+    'on_cert_label':   'Certificate reference',
+    'signature_label': 'Signatory',
+    'titre_label':     'Title',
+    'lieu_label':      'Place',
+    'date_label':      'Date',
+    'non_signe':       'Document not yet signed',
+    'modules': {
+      'A': {
+        'label':       'Module A — Internal production control',
+        'declaration': 'This declaration of conformity is issued under the sole responsibility of the manufacturer. The pressure equipment identified below complies with the applicable essential safety requirements set out in Annex I to Directive 2014/68/EU on pressure equipment (Article 13, Module A — internal production control).',
+        'on_clause':   '',
+      },
+      'D1': {
+        'label':       'Module D1 — Production quality assurance',
+        'declaration': 'This declaration of conformity is issued under the sole responsibility of the manufacturer. The pressure equipment identified below complies with the applicable essential safety requirements set out in Annex I to Directive 2014/68/EU on pressure equipment (Article 13, Module D1 — production quality assurance). The production quality system has been approved by the notified body indicated below.',
+        'on_clause':   'The notified body indicated below carried out surveillance of the production quality management system in accordance with Module D1.',
+      },
+      'H': {
+        'label':       'Module H — Full quality assurance',
+        'declaration': 'This declaration of conformity is issued under the sole responsibility of the manufacturer. The pressure equipment identified below complies with the applicable essential safety requirements set out in Annex I to Directive 2014/68/EU on pressure equipment (Article 13, Module H — full quality assurance). The full quality system has been approved by the notified body indicated below.',
+        'on_clause':   'The notified body indicated below approved the manufacturer\'s full quality management system in accordance with Module H.',
+      },
+      'H1': {
+        'label':       'Module H1 — Full quality assurance with design examination',
+        'declaration': 'This declaration of conformity is issued under the sole responsibility of the manufacturer. The pressure equipment identified below complies with the applicable essential safety requirements set out in Annex I to Directive 2014/68/EU on pressure equipment (Article 13, Module H1 — full quality assurance with design examination). The full quality system and the design have been examined by the notified body indicated below.',
+        'on_clause':   'The notified body indicated below approved the manufacturer\'s full quality management system and issued the EU design examination certificate in accordance with Module H1.',
+      },
+    },
+  },
+  'DE': {
+    'titre_doc':       'EU-KONFORMITÄTSERKLÄRUNG',
+    'chapitre_label':  'Kapitel G — PED-Konformitätserklärung',
+    'fabricant_label': 'Hersteller',
+    'fabricant_nom':   'Brown Fintube France Energy (BFF)',
+    'fabricant_adr':   '74200 Thonon-les-Bains, Frankreich',
+    'objet_label':     'Gegenstand der Erklärung',
+    'caracteristiques': 'Technische Merkmale',
+    'ps_label':        'PS – Auslegungsdruck',
+    'ts_max_label':    'TS max',
+    'ts_min_label':    'TS min',
+    'volume_label':    'Volumen',
+    'dn_label':        'DN',
+    'surface_label':   'Wärmeübertragungsfläche',
+    'cat_label':       'DGRL-Kategorie',
+    'groupe_label':    'Fluidgruppe',
+    'millesime_label': 'Richtlinienjahr',
+    'on_label':        'Benannte Stelle',
+    'on_num_label':    'Kennnummer',
+    'on_cert_label':   'Zertifikatsreferenz',
+    'signature_label': 'Unterzeichner',
+    'titre_label':     'Titel',
+    'lieu_label':      'Ort',
+    'date_label':      'Datum',
+    'non_signe':       'Dokument noch nicht unterzeichnet',
+    'modules': {
+      'A': {
+        'label':       'Modul A — Interne Fertigungskontrolle',
+        'declaration': 'Diese Konformitätserklärung wird unter der alleinigen Verantwortung des Herstellers ausgestellt. Das nachstehend beschriebene Druckgerät entspricht den anwendbaren grundlegenden Sicherheitsanforderungen des Anhangs I der Druckgeräterichtlinie 2014/68/EU (Artikel 13, Modul A — Interne Fertigungskontrolle).',
+        'on_clause':   '',
+      },
+      'D1': {
+        'label':       'Modul D1 — Qualitätssicherung Produktion',
+        'declaration': 'Diese Konformitätserklärung wird unter der alleinigen Verantwortung des Herstellers ausgestellt. Das nachstehend beschriebene Druckgerät entspricht den anwendbaren grundlegenden Sicherheitsanforderungen des Anhangs I der Druckgeräterichtlinie 2014/68/EU (Artikel 13, Modul D1 — Qualitätssicherung Produktion). Das Produktionsqualitätssystem wurde von der unten genannten benannten Stelle zugelassen.',
+        'on_clause':   'Die unten genannte benannte Stelle hat die Überwachung des Qualitätsmanagementsystems für die Produktion gemäß Modul D1 durchgeführt.',
+      },
+      'H': {
+        'label':       'Modul H — Umfassende Qualitätssicherung',
+        'declaration': 'Diese Konformitätserklärung wird unter der alleinigen Verantwortung des Herstellers ausgestellt. Das nachstehend beschriebene Druckgerät entspricht den anwendbaren grundlegenden Sicherheitsanforderungen des Anhangs I der Druckgeräterichtlinie 2014/68/EU (Artikel 13, Modul H — Umfassende Qualitätssicherung). Das umfassende Qualitätssystem wurde von der unten genannten benannten Stelle zugelassen.',
+        'on_clause':   'Die unten genannte benannte Stelle hat das umfassende Qualitätsmanagementsystem des Herstellers gemäß Modul H zugelassen.',
+      },
+      'H1': {
+        'label':       'Modul H1 — Umfassende Qualitätssicherung mit Baumusterprüfung',
+        'declaration': 'Diese Konformitätserklärung wird unter der alleinigen Verantwortung des Herstellers ausgestellt. Das nachstehend beschriebene Druckgerät entspricht den anwendbaren grundlegenden Sicherheitsanforderungen des Anhangs I der Druckgeräterichtlinie 2014/68/EU (Artikel 13, Modul H1 — Umfassende Qualitätssicherung mit Auslegungsprüfung). Das umfassende Qualitätssystem und die Auslegung wurden von der unten genannten benannten Stelle geprüft.',
+        'on_clause':   'Die unten genannte benannte Stelle hat das umfassende Qualitätsmanagementsystem des Herstellers zugelassen und das EU-Auslegungsprüfzertifikat gemäß Modul H1 ausgestellt.',
+      },
+    },
+  },
+  'IT': {
+    'titre_doc':       'DICHIARAZIONE UE DI CONFORMITÀ',
+    'chapitre_label':  'Capitolo G — Dichiarazione di conformità PED',
+    'fabricant_label': 'Fabbricante',
+    'fabricant_nom':   'Brown Fintube France Energy (BFF)',
+    'fabricant_adr':   '74200 Thonon-les-Bains, Francia',
+    'objet_label':     'Oggetto della dichiarazione',
+    'caracteristiques': 'Caratteristiche tecniche',
+    'ps_label':        'PS – Pressione di esercizio',
+    'ts_max_label':    'TS max',
+    'ts_min_label':    'TS min',
+    'volume_label':    'Volume',
+    'dn_label':        'DN',
+    'surface_label':   'Superficie di scambio',
+    'cat_label':       'Categoria PED',
+    'groupe_label':    'Gruppo fluido',
+    'millesime_label': 'Anno direttiva',
+    'on_label':        'Organismo notificato',
+    'on_num_label':    'N. identificazione',
+    'on_cert_label':   'Riferimento certificato',
+    'signature_label': 'Firmatario',
+    'titre_label':     'Titolo',
+    'lieu_label':      'Luogo',
+    'date_label':      'Data',
+    'non_signe':       'Documento non ancora firmato',
+    'modules': {
+      'A': {
+        'label':       'Modulo A — Controllo interno della produzione',
+        'declaration': 'La presente dichiarazione di conformità è rilasciata sotto la responsabilità esclusiva del fabbricante. L\'attrezzatura a pressione di cui sotto è conforme ai requisiti essenziali di sicurezza applicabili dell\'allegato I della Direttiva Attrezzature a Pressione 2014/68/UE (articolo 13, modulo A — controllo interno della produzione).',
+        'on_clause':   '',
+      },
+      'D1': {
+        'label':       'Modulo D1 — Garanzia della qualità della produzione',
+        'declaration': 'La presente dichiarazione di conformità è rilasciata sotto la responsabilità esclusiva del fabbricante. L\'attrezzatura a pressione di cui sotto è conforme ai requisiti essenziali di sicurezza applicabili dell\'allegato I della Direttiva Attrezzature a Pressione 2014/68/UE (articolo 13, modulo D1 — garanzia della qualità della produzione). Il sistema di qualità della produzione è stato approvato dall\'organismo notificato indicato in seguito.',
+        'on_clause':   'L\'organismo notificato indicato di seguito ha effettuato la sorveglianza del sistema di gestione della qualità della produzione conformemente al modulo D1.',
+      },
+      'H': {
+        'label':       'Modulo H — Garanzia completa della qualità',
+        'declaration': 'La presente dichiarazione di conformità è rilasciata sotto la responsabilità esclusiva del fabbricante. L\'attrezzatura a pressione di cui sotto è conforme ai requisiti essenziali di sicurezza applicabili dell\'allegato I della Direttiva Attrezzature a Pressione 2014/68/UE (articolo 13, modulo H — garanzia completa della qualità). Il sistema di qualità completo è stato approvato dall\'organismo notificato indicato in seguito.',
+        'on_clause':   'L\'organismo notificato indicato di seguito ha approvato il sistema di gestione della qualità completo del fabbricante conformemente al modulo H.',
+      },
+      'H1': {
+        'label':       'Modulo H1 — Garanzia completa della qualità con esame della progettazione',
+        'declaration': 'La presente dichiarazione di conformità è rilasciata sotto la responsabilità esclusiva del fabbricante. L\'attrezzatura a pressione di cui sotto è conforme ai requisiti essenziali di sicurezza applicabili dell\'allegato I della Direttiva Attrezzature a Pressione 2014/68/UE (articolo 13, modulo H1 — garanzia completa della qualità con esame della progettazione). Il sistema di qualità completo e la progettazione sono stati esaminati dall\'organismo notificato indicato in seguito.',
+        'on_clause':   'L\'organismo notificato indicato di seguito ha approvato il sistema di gestione della qualità completo del fabbricante e ha rilasciato il certificato UE di esame della progettazione conformemente al modulo H1.',
+      },
+    },
+  },
+} %}
+
+{# Résolution des textes pour la langue et le module courants #}
+{% set TL = T.get(lang, T['FR']) %}
+{% set TM = TL['modules'].get(module, TL['modules']['A']) %}
+
+{# Helpers date #}
+{% macro fmt_date(val) %}
+  {%- set s = val | string -%}
+  {%- if '-' in s -%}{{ s[8:10] }}/{{ s[5:7] }}/{{ s[:4] }}{%- else -%}{{ s }}{%- endif -%}
+{% endmacro %}
+
+<html lang="{{ lang | lower }}">
+<head>
+<meta charset="UTF-8">
+<style>
+@page {
+    size: A4 portrait;
+    margin: 18mm 18mm 25mm 18mm;
+    @bottom-left {
+        content: "BFF · PED {{ form_data.get('millesime', '2014/68/UE') }} · MDB {{ affaire.numero_affaire }}";
+        font-family: Arial, sans-serif;
+        font-size: 7pt;
+        color: #666;
+    }
+    @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-family: Arial, sans-serif;
+        font-size: 7pt;
+        color: #666;
+    }
+}
+body {
+    font-family: Arial, sans-serif;
+    font-size: 9.5pt;
+    color: #1a1a1a;
+    line-height: 1.45;
+    margin: 0;
+    padding: 0;
+}
+h2 {
+    font-size: 10pt;
+    margin: 6mm 0 2mm;
+    border-bottom: 1pt solid #003087;
+    padding-bottom: 1mm;
+    color: #003087;
+}
+p { margin: 1.5mm 0; }
+
+/* En-tête */
+.page-header {
+    display: table;
+    width: 100%;
+    border-bottom: 2.5pt solid #003087;
+    margin-bottom: 6mm;
+    padding-bottom: 4mm;
+}
+.page-header-logo  { display: table-cell; width: 50mm; vertical-align: middle; }
+.page-header-title { display: table-cell; vertical-align: middle; text-align: center; padding: 0 5mm; }
+.page-header-meta  { display: table-cell; width: 55mm; vertical-align: middle; text-align: right; font-size: 8pt; color: #555; }
+.logo-placeholder {
+    display: inline-block;
+    background-color: #003087;
+    color: white;
+    font-size: 18pt;
+    font-weight: bold;
+    padding: 2mm 5mm;
+    letter-spacing: 2pt;
+}
+.doc-title    { font-size: 13pt; font-weight: bold; color: #003087; text-transform: uppercase; letter-spacing: 0.5pt; }
+.doc-subtitle { font-size: 8.5pt; color: #555; margin-top: 1mm; }
+
+/* Tableaux */
+table.data {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4mm;
+    font-size: 9pt;
+}
+table.data th {
+    background-color: #003087;
+    color: white;
+    padding: 2mm 3mm;
+    text-align: left;
+    font-weight: bold;
+    font-size: 8.5pt;
+}
+table.data td {
+    padding: 2mm 3mm;
+    border: 0.5pt solid #ccc;
+    vertical-align: top;
+}
+table.data tr:nth-child(even) td { background-color: #f7f9fc; }
+.lbl { color: #555; font-size: 8.5pt; }
+.val { font-weight: bold; }
+
+/* Bloc déclaration */
+.declaration-box {
+    border: 1pt solid #003087;
+    padding: 4mm 5mm;
+    margin: 4mm 0;
+    background-color: #f0f4fc;
+    page-break-inside: avoid;
+}
+.declaration-box p { margin: 0; font-size: 9.5pt; line-height: 1.5; }
+.module-label {
+    font-weight: bold;
+    font-size: 10pt;
+    color: #003087;
+    margin-bottom: 2mm;
+    display: block;
+}
+
+/* Bloc ON */
+.on-box {
+    border: 1pt solid #888;
+    padding: 3mm 4mm;
+    margin: 3mm 0;
+    background-color: #fafafa;
+}
+.on-box p { margin: 0.5mm 0; font-size: 9pt; }
+
+/* Signature */
+.signature-block {
+    margin-top: 8mm;
+    border: 1pt solid #003087;
+    padding: 4mm;
+    background-color: #f0f4fc;
+    page-break-inside: avoid;
+}
+.signature-title { font-weight: bold; font-size: 9.5pt; color: #003087; margin-bottom: 2mm; }
+.hash-value {
+    font-family: "Courier New", monospace;
+    font-size: 7.5pt;
+    word-break: break-all;
+    background-color: #fff;
+    border: 0.5pt solid #ccc;
+    padding: 1mm 2mm;
+    margin-top: 1mm;
+    display: block;
+}
+.sig-line {
+    border-bottom: 1pt solid #999;
+    height: 16mm;
+    vertical-align: bottom;
+    font-size: 8pt;
+    color: #888;
+    padding-bottom: 1mm;
+    width: 45%;
+}
+
+.doc-footer {
+    margin-top: 10mm;
+    border-top: 1pt solid #ccc;
+    padding-top: 3mm;
+    font-size: 7.5pt;
+    color: #888;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+
+{# ── EN-TÊTE ─────────────────────────────────────────────────────────────── #}
+<div class="page-header">
+    <div class="page-header-logo">
+        {% if logo_uri %}
+        <img src="{{ logo_uri }}" style="height:14mm;" alt="Logo BFF">
+        {% else %}
+        <span class="logo-placeholder">BFF</span>
+        {% endif %}
+    </div>
+    <div class="page-header-title">
+        <div class="doc-title">{{ TL['titre_doc'] }}</div>
+        <div class="doc-subtitle">{{ TL['chapitre_label'] }}</div>
+    </div>
+    <div class="page-header-meta">
+        <strong>N° Affaire :</strong> {{ affaire.numero_affaire }}<br>
+        <strong>Module :</strong> {{ module }}<br>
+        <strong>Langue :</strong> {{ lang }}<br>
+        <strong>Statut :</strong> {{ formulaire.statut.label }}
+    </div>
+</div>
+
+{# ── 1. FABRICANT ────────────────────────────────────────────────────────── #}
+<h2>1. {{ TL['fabricant_label'] }}</h2>
+<table class="data">
+    <tr>
+        <td class="lbl" style="width:30%">{{ TL['fabricant_label'] }}</td>
+        <td class="val" colspan="3">{{ TL['fabricant_nom'] }} — {{ TL['fabricant_adr'] }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">N° Affaire</td>
+        <td class="val">{{ affaire.numero_affaire }}</td>
+        <td class="lbl" style="width:25%">{{ TL['objet_label'] }}</td>
+        <td class="val">
+            {{ affaire.repere or '—' }}{% if affaire.type_echangeur %} — {{ affaire.type_echangeur }}{% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="lbl">Client</td>
+        <td class="val">{{ affaire.client_nom or '—' }}</td>
+        <td class="lbl">Réf. client</td>
+        <td class="val">{{ affaire.references_client or '—' }}</td>
+    </tr>
+</table>
+
+{# ── 2. DÉCLARATION ──────────────────────────────────────────────────────── #}
+<h2>2. {{ TL['titre_doc'] }}</h2>
+<div class="declaration-box">
+    <span class="module-label">{{ TM['label'] }}</span>
+    <p>{{ TM['declaration'] }}</p>
+</div>
+
+{# ── 3. CARACTÉRISTIQUES TECHNIQUES ─────────────────────────────────────── #}
+<h2>3. {{ TL['caracteristiques'] }}</h2>
+<table class="data">
+    <tr>
+        <td class="lbl" style="width:25%">{{ TL['ps_label'] }}</td>
+        <td class="val" style="width:25%">
+            {% if form_data.get('ps') is not none and form_data.get('ps') != '' %}
+                {{ form_data['ps'] }} bar
+            {% else %}—{% endif %}
+        </td>
+        <td class="lbl" style="width:25%">{{ TL['ts_max_label'] }}</td>
+        <td class="val">
+            {% if form_data.get('ts_max') is not none and form_data.get('ts_max') != '' %}
+                {{ form_data['ts_max'] }} °C
+            {% else %}—{% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="lbl">{{ TL['ts_min_label'] }}</td>
+        <td class="val">
+            {% if form_data.get('ts_min') is not none and form_data.get('ts_min') != '' %}
+                {{ form_data['ts_min'] }} °C
+            {% else %}—{% endif %}
+        </td>
+        <td class="lbl">{{ TL['volume_label'] }}</td>
+        <td class="val">
+            {% if form_data.get('volume') is not none and form_data.get('volume') != '' %}
+                {{ form_data['volume'] }} L
+            {% else %}—{% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="lbl">{{ TL['dn_label'] }}</td>
+        <td class="val">{{ form_data.get('dn') or '—' }}</td>
+        <td class="lbl">{{ TL['surface_label'] }}</td>
+        <td class="val">
+            {% if form_data.get('surface') is not none and form_data.get('surface') != '' %}
+                {{ form_data['surface'] }} m²
+            {% else %}—{% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="lbl">{{ TL['cat_label'] }}</td>
+        <td class="val">{{ form_data.get('categorie_ped') or '—' }}</td>
+        <td class="lbl">{{ TL['groupe_label'] }}</td>
+        <td class="val">{{ form_data.get('groupe_fluide') or '—' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">{{ TL['millesime_label'] }}</td>
+        <td class="val" colspan="3">{{ form_data.get('millesime', '2014/68/UE') }}</td>
+    </tr>
+</table>
+
+{# ── 4. ORGANISME NOTIFIÉ (D1 / H / H1) ─────────────────────────────────── #}
+{% if module in ('D1', 'H', 'H1') %}
+<h2>4. {{ TL['on_label'] }}</h2>
+<div class="on-box">
+    {% if TM['on_clause'] %}
+    <p style="margin-bottom:2mm; font-style:italic;">{{ TM['on_clause'] }}</p>
+    {% endif %}
+    <table class="data" style="margin-bottom:0;">
+        <tr>
+            <td class="lbl" style="width:35%">{{ TL['on_label'] }}</td>
+            <td class="val">{{ form_data.get('on_nom') or '—' }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">{{ TL['on_num_label'] }}</td>
+            <td class="val">{{ form_data.get('on_numero') or '—' }}</td>
+        </tr>
+        {% if form_data.get('on_certificat') %}
+        <tr>
+            <td class="lbl">{{ TL['on_cert_label'] }}</td>
+            <td class="val">{{ form_data['on_certificat'] }}</td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+{% endif %}
+
+{# ── SIGNATURE ÉLECTRONIQUE ──────────────────────────────────────────────── #}
+{% set section_num = 5 if module in ('D1', 'H', 'H1') else 4 %}
+<h2>{{ section_num }}. {{ TL['signature_label'] }}</h2>
+
+{# Informations signataire saisies dans le formulaire #}
+{% if form_data.get('signataire_nom') or form_data.get('date_signature') %}
+<table class="data">
+    <tr>
+        <td class="lbl" style="width:30%">{{ TL['signature_label'] }}</td>
+        <td class="val">{{ form_data.get('signataire_nom') or '—' }}</td>
+        <td class="lbl" style="width:25%">{{ TL['titre_label'] }}</td>
+        <td class="val">{{ form_data.get('signataire_titre') or '—' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">{{ TL['lieu_label'] }}</td>
+        <td class="val">{{ form_data.get('lieu_signature') or '—' }}</td>
+        <td class="lbl">{{ TL['date_label'] }}</td>
+        <td class="val">
+            {% if form_data.get('date_signature') %}
+                {{ fmt_date(form_data['date_signature']) }}
+            {% else %}—{% endif %}
+        </td>
+    </tr>
+</table>
+{% endif %}
+
+{# Signature numérique BFF #}
+{% if signatures %}
+<div class="signature-block">
+    <div class="signature-title">&#9654; Signature électronique BFF</div>
+    {% for sig in signatures %}
+    <p>
+        Signé le <strong>{{ sig.created_at.strftime('%d/%m/%Y à %H:%M UTC') }}</strong>
+        par
+        {% if sig.user %}
+        <strong>{{ sig.user.full_name }}</strong> ({{ sig.user.role.label }})
+        {% else %}
+        <strong>—</strong>
+        {% endif %}
+    </p>
+    <p>Empreinte SHA-256 (intégrité du contenu) :</p>
+    <span class="hash-value">{{ sig.hash_sha256 }}</span>
+    {% endfor %}
+</div>
+{% else %}
+<div class="signature-block" style="border-color:#aaa; background-color:#fafafa;">
+    <div class="signature-title" style="color:#888;">&#9654; {{ TL['non_signe'] }}</div>
+    <table style="width:100%; margin-top:4mm;">
+        <tr>
+            <td class="sig-line">{{ TL['signature_label'] }} / {{ TL['date_label'] }}</td>
+            <td style="width:10%;"></td>
+            <td class="sig-line">{{ TL['on_label'] if module != 'A' else TL['signature_label'] }} / {{ TL['date_label'] }}</td>
+        </tr>
+    </table>
+</div>
+{% endif %}
+
+<div class="doc-footer">
+    Brown Fintube France Energy · PED {{ form_data.get('millesime', '2014/68/UE') }} · MDB {{ affaire.numero_affaire }} · Module {{ module }} · Langue {{ lang }} · PEDMOD v{{ formulaire.template_version }}
+    {% if formulaire.created_at %} · Créé le {{ formulaire.created_at.strftime('%d/%m/%Y') }}{% endif %}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}{{ svc.CODE }} — {{ affaire.numero_affaire }}{% endblock %}
+
+{% block head_extra %}
+<style>
+.field-readonly { background-color: #f8f9fa; }
+.save-indicator { transition: opacity 0.5s; opacity: 0; }
+.save-indicator.visible { opacity: 1; }
+.table-form th { white-space: nowrap; }
+.table-form td { vertical-align: middle; padding: 4px 6px; }
+.table-form input.form-control-sm, .table-form select.form-select-sm { min-width: 60px; }
+</style>
+{% endblock %}
+
+{% block content %}
+{# Breadcrumb #}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">{{ affaire.numero_affaire }}</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">{{ svc.CODE }}</li>
+    </ol>
+</nav>
+
+{# En-tête #}
+<div class="d-flex align-items-start justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">
+            {{ svc.TITLE }}
+            <span class="badge bg-light text-dark border fw-normal ms-2 small align-middle">
+                {{ svc.CODE }} v{{ tmpl.version if tmpl else 1 }}
+            </span>
+        </h1>
+        <p class="text-muted small mb-0">
+            Affaire {{ affaire.numero_affaire }} — {{ affaire.client_nom or '—' }}
+            {% if formulaire %}
+            · <span class="badge statut-badge bg-secondary">{{ formulaire.statut.label }}</span>
+            {% if hash_valid is not none %}
+                {% if hash_valid %}
+                <span class="badge bg-success ms-1" title="Intégrité SHA-256 vérifiée">&#10003; Hash OK</span>
+                {% else %}
+                <span class="badge bg-danger ms-1" title="Contenu altéré depuis la signature !">&#9888; Hash invalide</span>
+                {% endif %}
+            {% endif %}
+            {% else %}
+            · <span class="badge bg-light text-muted border">Nouveau</span>
+            {% endif %}
+        </p>
+    </div>
+    <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}"
+       class="btn btn-sm btn-outline-secondary">&#8592; Retour affaire</a>
+</div>
+
+<div id="saveError" class="alert alert-danger d-none" role="alert"></div>
+
+<form id="tableForm" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {# ── En-tête fixe (HEADER_SECTIONS) ───────────────────────────────── #}
+    {% if svc.HEADER_SECTIONS %}
+    {% set header_data = form_data.get('header', {}) %}
+    {% for section in svc.HEADER_SECTIONS %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-2">
+            <h2 class="h6 mb-0">{{ section.title }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                {% for fspec in section.fields %}
+                {% set is_readonly = (not can_edit) or fspec.server_computed %}
+                {% set val = header_data.get(fspec.name, '') %}
+                <div class="{{ fspec.col_class }}">
+                    {% if fspec.field_type == 'checkbox' %}
+                    <div class="form-check mt-2">
+                        <input type="checkbox" id="h_{{ fspec.name }}"
+                               class="form-check-input header-field" data-key="{{ fspec.name }}"
+                               value="true" {{ 'checked' if val }} {{ 'disabled' if is_readonly }}>
+                        <label class="form-check-label" for="h_{{ fspec.name }}">
+                            {{ fspec.label }}
+                            {% if fspec.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                    </div>
+                    {% elif fspec.field_type == 'textarea' %}
+                    <label for="h_{{ fspec.name }}" class="form-label">
+                        {{ fspec.label }}
+                        {% if fspec.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    <textarea id="h_{{ fspec.name }}" class="form-control header-field"
+                              data-key="{{ fspec.name }}" rows="{{ fspec.rows }}"
+                              {% if fspec.maxlength %}maxlength="{{ fspec.maxlength }}"{% endif %}
+                              {% if is_readonly %}readonly{% endif %}>{{ val }}</textarea>
+                    {% if fspec.help_text %}<div class="form-text text-muted">{{ fspec.help_text }}</div>{% endif %}
+                    {% elif fspec.field_type == 'select' %}
+                    <label for="h_{{ fspec.name }}" class="form-label">
+                        {{ fspec.label }}
+                        {% if fspec.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    {% if not is_readonly %}
+                    <select id="h_{{ fspec.name }}" class="form-select header-field" data-key="{{ fspec.name }}">
+                        {% for opt_val, opt_label in fspec.options %}
+                        <option value="{{ opt_val }}" {{ 'selected' if val == opt_val }}>{{ opt_label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                    <input type="text" class="form-control field-readonly" value="{{ val or '—' }}" readonly>
+                    {% endif %}
+                    {% if fspec.help_text %}<div class="form-text text-muted">{{ fspec.help_text }}</div>{% endif %}
+                    {% else %}
+                    <label for="h_{{ fspec.name }}" class="form-label">
+                        {{ fspec.label }}
+                        {% if fspec.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    <input type="{% if fspec.field_type in ('float', 'integer') %}number{% elif fspec.field_type == 'date' %}date{% else %}text{% endif %}"
+                           id="h_{{ fspec.name }}" class="form-control header-field" data-key="{{ fspec.name }}"
+                           {% if fspec.step %}step="{{ fspec.step }}"{% endif %}
+                           {% if fspec.min_val is not none and fspec.min_val != '' %}min="{{ fspec.min_val }}"{% endif %}
+                           {% if fspec.maxlength %}maxlength="{{ fspec.maxlength }}"{% endif %}
+                           value="{{ val }}"
+                           {% if is_readonly %}readonly{% endif %}>
+                    {% if fspec.help_text %}<div class="form-text text-muted">{{ fspec.help_text }}</div>{% endif %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {# ── Tableau dynamique (TABLE_SPEC) ────────────────────────────────── #}
+    {% if svc.TABLE_SPEC %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+            <h2 class="h6 mb-0">{{ svc.TABLE_SPEC.title }}</h2>
+            {% if can_edit %}
+            <button type="button" id="addRowBtn" class="btn btn-sm btn-outline-primary">
+                + Ajouter une ligne
+            </button>
+            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-sm mb-0 table-form" id="lignesTable">
+                    <thead class="table-dark">
+                        <tr>
+                            {% for col in svc.TABLE_SPEC.cols %}
+                            <th class="{{ col.width }}"
+                                {% if col.help_text %}title="{{ col.help_text }}"{% endif %}>
+                                {{ col.label }}
+                                {% if col.required %}<span class="text-warning">*</span>{% endif %}
+                            </th>
+                            {% endfor %}
+                            {% if can_edit %}<th style="width:45px"></th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody id="lignesTbody">
+                        {% set lignes = form_data.get('lignes', []) %}
+                        {% for row in lignes %}
+                        <tr class="ligne-row">
+                            {% for col in svc.TABLE_SPEC.cols %}
+                            {% set cell_val = row.get(col.name, '') %}
+                            <td>
+                                {% if col.col_type == 'select' %}
+                                <select class="form-select form-select-sm" data-col="{{ col.name }}"
+                                        {% if not can_edit or col.server_computed %}disabled{% endif %}>
+                                    {% for opt_val, opt_label in col.options %}
+                                    <option value="{{ opt_val }}" {{ 'selected' if cell_val == opt_val }}>{{ opt_label }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% elif col.col_type == 'checkbox' %}
+                                <input type="checkbox" class="form-check-input" data-col="{{ col.name }}"
+                                       value="true" {{ 'checked' if cell_val }}
+                                       {% if not can_edit or col.server_computed %}disabled{% endif %}>
+                                {% else %}
+                                <input type="{% if col.col_type in ('float', 'integer') %}number{% elif col.col_type == 'date' %}date{% else %}text{% endif %}"
+                                       class="form-control form-control-sm{% if col.server_computed %} bg-light{% endif %}" data-col="{{ col.name }}"
+                                       {% if col.step %}step="{{ col.step }}"{% endif %}
+                                       {% if col.min_val is not none and col.min_val != '' %}min="{{ col.min_val }}"{% endif %}
+                                       {% if col.maxlength %}maxlength="{{ col.maxlength }}"{% endif %}
+                                       value="{{ cell_val }}"
+                                       {% if not can_edit or col.server_computed %}readonly{% endif %}>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                            {% if can_edit %}
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-row"
+                                        title="Supprimer">&times;</button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p id="emptyMsg" class="text-muted text-center py-3 small"
+               style="{{ '' if not form_data.get('lignes') else 'display:none' }}">
+                Aucune ligne — cliquez « Ajouter une ligne » pour commencer.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Barre d'actions ───────────────────────────────────────────────── #}
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+        {% if can_edit %}
+        <button type="button" id="saveBtn" class="btn btn-primary">
+            Enregistrer le brouillon
+        </button>
+        <span id="saveIndicator" class="save-indicator text-success small">
+            &#10003; Enregistré
+        </span>
+        {% endif %}
+
+        {% if can_validate %}
+        <form method="post"
+              action="{{ url_for('formulaires.valider', affaire_id=affaire.id, code=code) }}"
+              class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-success"
+                    onclick="return confirm('Valider le formulaire {{ svc.CODE }} ? Cette action est irréversible.')">
+                Valider
+            </button>
+        </form>
+        {% endif %}
+
+        {% if can_sign %}
+        <form method="post"
+              action="{{ url_for('formulaires.signer', affaire_id=affaire.id, code=code) }}"
+              class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger"
+                    onclick="return confirm('Signer le formulaire {{ svc.CODE }} ? La signature est définitive.')">
+                Signer (SHA-256)
+            </button>
+        </form>
+        {% endif %}
+
+        {% if formulaire and formulaire.statut.value in ('valide', 'signe') %}
+        <a href="{{ url_for('formulaires.pdf', affaire_id=affaire.id, code=code) }}"
+           class="btn btn-outline-dark ms-auto" target="_blank">
+            &#128196; Télécharger PDF
+        </a>
+        {% endif %}
+    </div>
+
+    {% if formulaire and formulaire.signatures %}
+    <div class="text-muted small mt-1">
+        Signé le {{ formulaire.signatures[-1].created_at.strftime('%d/%m/%Y à %H:%M') }}
+        par {{ formulaire.signatures[-1].user.full_name if formulaire.signatures[-1].user else '—' }}
+    </div>
+    {% endif %}
+</form>
+
+{# Template invisible pour les nouvelles lignes (clonage JS) #}
+{% if svc.TABLE_SPEC %}
+<template id="rowTemplate">
+    <tr class="ligne-row">
+        {% for col in svc.TABLE_SPEC.cols %}
+        <td>
+            {% if col.col_type == 'select' %}
+            <select class="form-select form-select-sm" data-col="{{ col.name }}">
+                {% for opt_val, opt_label in col.options %}
+                <option value="{{ opt_val }}">{{ opt_label }}</option>
+                {% endfor %}
+            </select>
+            {% elif col.col_type == 'checkbox' %}
+            <input type="checkbox" class="form-check-input" data-col="{{ col.name }}" value="true">
+            {% else %}
+            <input type="{% if col.col_type in ('float', 'integer') %}number{% elif col.col_type == 'date' %}date{% else %}text{% endif %}"
+                   class="form-control form-control-sm" data-col="{{ col.name }}"
+                   {% if col.step %}step="{{ col.step }}"{% endif %}
+                   {% if col.min_val is not none and col.min_val != '' %}min="{{ col.min_val }}"{% endif %}
+                   {% if col.maxlength %}maxlength="{{ col.maxlength }}"{% endif %}
+                   value="">
+            {% endif %}
+        </td>
+        {% endfor %}
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-row"
+                    title="Supprimer">&times;</button>
+        </td>
+    </tr>
+</template>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    'use strict';
+
+    const csrfToken     = document.querySelector('meta[name="csrf-token"]').content;
+    const saveBtn       = document.getElementById('saveBtn');
+    const saveIndicator = document.getElementById('saveIndicator');
+    const saveError     = document.getElementById('saveError');
+    const addRowBtn     = document.getElementById('addRowBtn');
+    const tbody         = document.getElementById('lignesTbody');
+    const rowTemplate   = document.getElementById('rowTemplate');
+    const emptyMsg      = document.getElementById('emptyMsg');
+
+    function toggleEmptyMsg() {
+        if (!emptyMsg || !tbody) return;
+        emptyMsg.style.display = tbody.querySelectorAll('tr.ligne-row').length ? 'none' : 'block';
+    }
+
+    if (addRowBtn && rowTemplate) {
+        addRowBtn.addEventListener('click', () => {
+            tbody.appendChild(rowTemplate.content.cloneNode(true));
+            toggleEmptyMsg();
+        });
+    }
+
+    if (tbody) {
+        tbody.addEventListener('click', (e) => {
+            const btn = e.target.closest('.remove-row');
+            if (btn) { btn.closest('tr').remove(); toggleEmptyMsg(); }
+        });
+    }
+
+    function collectData() {
+        const payload = {};
+
+        const headerFields = document.querySelectorAll('.header-field');
+        if (headerFields.length) {
+            const header = {};
+            headerFields.forEach(el => {
+                const key = el.dataset.key;
+                if (!key) return;
+                header[key] = el.type === 'checkbox' ? el.checked : el.value;
+            });
+            payload.header = header;
+        }
+
+        if (tbody) {
+            const lignes = [];
+            tbody.querySelectorAll('tr.ligne-row').forEach(row => {
+                const ligne = {};
+                row.querySelectorAll('[data-col]').forEach(cell => {
+                    ligne[cell.dataset.col] = cell.type === 'checkbox' ? cell.checked : cell.value;
+                });
+                lignes.push(ligne);
+            });
+            payload.lignes = lignes;
+        }
+
+        return payload;
+    }
+
+    async function saveBrouillon() {
+        if (!saveBtn) return;
+        saveBtn.disabled = true;
+        if (saveError) saveError.classList.add('d-none');
+        try {
+            const resp = await fetch(window.location.pathname, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify(collectData()),
+            });
+            const json = await resp.json();
+            if (json.ok) {
+                if (saveIndicator) {
+                    saveIndicator.classList.add('visible');
+                    setTimeout(() => saveIndicator.classList.remove('visible'), 2500);
+                }
+            } else if (saveError) {
+                saveError.textContent = json.error || 'Erreur lors de la sauvegarde.';
+                saveError.classList.remove('d-none');
+            }
+        } catch (_) {
+            if (saveError) {
+                saveError.textContent = 'Erreur réseau — réessayez.';
+                saveError.classList.remove('d-none');
+            }
+        } finally {
+            saveBtn.disabled = false;
+        }
+    }
+
+    if (saveBtn) saveBtn.addEventListener('click', saveBrouillon);
+
+    toggleEmptyMsg();
+})();
+</script>
+{% endblock %}

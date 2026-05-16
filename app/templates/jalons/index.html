@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}Jalons — {{ affaire.numero_affaire }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">{{ affaire.numero_affaire }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Jalons</li>
+            </ol>
+        </nav>
+        <h1 class="h4 mb-0">Jalons JP0–JP6 <small class="text-muted fw-normal">{{ affaire.numero_affaire }}</small></h1>
+    </div>
+    <div class="col-auto d-flex align-items-end">
+        <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}" class="btn btn-sm btn-outline-secondary">
+            ← Retour à l'affaire
+        </a>
+    </div>
+</div>
+
+<!-- Timeline horizontale ---------------------------------------------------->
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-3 overflow-auto">
+        <div class="d-flex gap-0 align-items-stretch" style="min-width:700px;">
+            {% for ctx in jalons_ctx %}
+            {% set j = ctx.jalon %}
+            {% set is_last = loop.last %}
+            <div class="flex-fill position-relative text-center px-1" style="min-width:90px;">
+                <!-- Ligne de connexion (sauf dernier) -->
+                {% if not is_last %}
+                <div class="position-absolute top-50 start-100 translate-middle-y"
+                     style="width:100%;height:2px;background:{% if j.est_franchi %}#198754{% else %}#dee2e6{% endif %};z-index:0;left:50%;"></div>
+                {% endif %}
+
+                <!-- Pastille -->
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle border border-2 mb-2 position-relative"
+                     style="width:42px;height:42px;z-index:1;
+                     background:{% if j.statut.value == 'franchi' %}#198754{% elif j.statut.value == 'bloque' %}#dc3545{% elif j.statut.value == 'en_retard' %}#ffc107{% elif j.statut.value == 'en_cours' %}#0d6efd{% else %}#e9ecef{% endif %};
+                     border-color:{% if j.statut.value == 'franchi' %}#198754{% elif j.statut.value == 'bloque' %}#dc3545{% elif j.statut.value == 'en_retard' %}#ffc107{% elif j.statut.value == 'en_cours' %}#0d6efd{% else %}#dee2e6{% endif %} !important;">
+                    {% if j.est_franchi %}
+                    <span style="color:white;font-size:1.1rem;">✓</span>
+                    {% elif j.statut.value == 'bloque' %}
+                    <span style="color:white;font-size:1rem;">✕</span>
+                    {% else %}
+                    <span class="small fw-bold" style="color:{% if j.statut.value in ('en_cours','en_retard') %}white{% else %}#6c757d{% endif %};">{{ j.code.value }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="small fw-semibold">{{ j.code.value }}</div>
+                <div class="text-muted" style="font-size:0.7rem;line-height:1.2;">{{ j.label }}</div>
+                <span class="badge {{ j.statut.badge_class }} mt-1" style="font-size:0.65rem;">{{ j.statut.label }}</span>
+                {% if j.date_prevue %}
+                <div class="text-muted mt-1" style="font-size:0.65rem;">Prévu : {{ j.date_prevue.strftime('%d/%m/%y') }}</div>
+                {% endif %}
+                {% if j.date_reelle %}
+                <div class="text-success" style="font-size:0.65rem;">Franchi : {{ j.date_reelle.strftime('%d/%m/%y') }}</div>
+                {% endif %}
+                {% if j.hold_points %}
+                <div class="mt-1" title="{{ j.hold_points|length }} hold point(s)">
+                    {% for hp in j.hold_points %}
+                    <span class="badge {% if hp.signe %}bg-success{% else %}bg-warning text-dark{% endif %}" style="font-size:0.6rem;">
+                        HP{% if hp.signe %} ✓{% endif %}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Détail de chaque jalon -------------------------------------------------->
+{% for ctx in jalons_ctx %}
+{% set j = ctx.jalon %}
+<div class="card shadow-sm mb-3" id="jalon-{{ j.code.value }}">
+    <div class="card-header d-flex align-items-center py-2
+                {% if j.statut.value == 'franchi' %}bg-success bg-opacity-10{% elif j.statut.value == 'bloque' %}bg-danger bg-opacity-10{% elif j.statut.value == 'en_retard' %}bg-warning bg-opacity-25{% else %}bg-white{% endif %}">
+        <span class="fw-bold me-2 text-primary">{{ j.code.value }}</span>
+        <span class="fw-semibold me-auto">{{ j.label }}</span>
+        <span class="badge {{ j.statut.badge_class }}">{{ j.statut.label }}</span>
+    </div>
+    <div class="card-body py-3">
+        <div class="row g-3">
+
+            <!-- Prérequis -->
+            <div class="col-md-6">
+                <h6 class="small fw-semibold text-muted text-uppercase mb-2">Prérequis documentaires</h6>
+                {% if j.effective_prerequis %}
+                <ul class="list-unstyled small mb-0">
+                    {% for code in j.effective_prerequis %}
+                    {% set ok = code not in ctx.manquants %}
+                    <li class="mb-1">
+                        <span class="me-1">{% if ok %}✅{% else %}❌{% endif %}</span>
+                        <code>{{ code }}</code>
+                        {% if not ok %}<span class="text-danger small">— non validé</span>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="small text-muted mb-0">Aucun prérequis documentaire.</p>
+                {% endif %}
+            </div>
+
+            <!-- Actions + date prévue -->
+            <div class="col-md-6">
+                <h6 class="small fw-semibold text-muted text-uppercase mb-2">Actions</h6>
+
+                <!-- Date prévue -->
+                <div class="mb-2 d-flex align-items-center gap-2">
+                    <label class="small text-muted mb-0" style="white-space:nowrap;">Date prévue :</label>
+                    <input type="date" class="form-control form-control-sm input-date-prevue"
+                           style="max-width:160px;"
+                           value="{{ j.date_prevue.isoformat() if j.date_prevue else '' }}"
+                           data-code="{{ j.code.value }}"
+                           {% if j.est_franchi %}disabled{% endif %}>
+                </div>
+
+                <!-- Franchir -->
+                {% if not j.est_franchi %}
+                <form method="post"
+                      action="{{ url_for('jalons.franchir', affaire_id=affaire.id, code=j.code.value) }}"
+                      class="mb-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="commentaire" class="form-control"
+                               placeholder="Commentaire (optionnel)" maxlength="500">
+                        <button type="submit"
+                                class="btn {% if ctx.prerequis_ok %}btn-success{% else %}btn-outline-secondary{% endif %}"
+                                {% if not ctx.prerequis_ok %}title="Prérequis non satisfaits"{% endif %}>
+                            Franchir ✓
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-success small mb-2">
+                    ✓ Franchi le {{ j.date_reelle.strftime('%d/%m/%Y') if j.date_reelle else '—' }}
+                    {% if j.commentaire %}<br><em class="text-muted">{{ j.commentaire }}</em>{% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Hold Points -->
+                {% if j.hold_points %}
+                <div class="mt-2">
+                    <h6 class="small fw-semibold text-muted text-uppercase mb-1">Hold Points</h6>
+                    {% for hp in j.hold_points %}
+                    <div class="border rounded p-2 mb-1 small {% if hp.signe %}border-success{% else %}border-warning{% endif %}">
+                        <span class="fw-semibold">{{ hp.organisme }}</span>
+                        {% if hp.nom_inspecteur %} — {{ hp.nom_inspecteur }}{% endif %}
+                        {% if hp.date_inspection %} · {{ hp.date_inspection.strftime('%d/%m/%Y') }}{% endif %}
+                        {% if hp.signe %}
+                        <span class="badge bg-success ms-2">Signé ✓</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark ms-2">En attente</span>
+                        <button type="button"
+                                class="btn btn-xs btn-outline-success btn-sm py-0 px-2 ms-2 btn-signer-hp"
+                                data-code="{{ j.code.value }}"
+                                data-hp-id="{{ hp.id }}">
+                            Signer
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Ajouter Hold Point -->
+                {% if not j.est_franchi %}
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm mt-1"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#hp-form-{{ j.code.value }}">
+                    + Hold Point
+                </button>
+                <div class="collapse mt-2" id="hp-form-{{ j.code.value }}">
+                    <div class="card card-body py-2 px-3">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-sm-5">
+                                <label class="form-label small mb-1">Organisme *</label>
+                                <input type="text" class="form-control form-control-sm hp-organisme"
+                                       data-code="{{ j.code.value }}" maxlength="100" placeholder="ex: LRQA">
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label small mb-1">Inspecteur</label>
+                                <input type="text" class="form-control form-control-sm hp-inspecteur"
+                                       data-code="{{ j.code.value }}" maxlength="200">
+                            </div>
+                            <div class="col-sm-3">
+                                <label class="form-label small mb-1">Date prévue</label>
+                                <input type="date" class="form-control form-control-sm hp-date"
+                                       data-code="{{ j.code.value }}">
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-primary btn-sm btn-add-hp"
+                                        data-code="{{ j.code.value }}">
+                                    Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    "use strict";
+    const AFFAIRE_ID = {{ affaire.id }};
+    const BASE = `/affaires/${AFFAIRE_ID}/jalons`;
+    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+    // ── Dates prévues ────────────────────────────────────────────────────
+    document.querySelectorAll(".input-date-prevue").forEach((inp) => {
+        inp.addEventListener("change", () => {
+            const code = inp.dataset.code;
+            fetch(`${BASE}/${code}/date`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF },
+                body: JSON.stringify({ date_prevue: inp.value }),
+            }).then((r) => r.json()).then((d) => {
+                if (!d.ok) console.error(d.error);
+            });
+        });
+    });
+
+    // ── Hold Points ──────────────────────────────────────────────────────
+    document.querySelectorAll(".btn-add-hp").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const code = btn.dataset.code;
+            const organisme = document.querySelector(`.hp-organisme[data-code="${code}"]`).value.trim();
+            const inspecteur = document.querySelector(`.hp-inspecteur[data-code="${code}"]`).value.trim();
+            const dateVal = document.querySelector(`.hp-date[data-code="${code}"]`).value;
+            if (!organisme) { alert("Organisme requis."); return; }
+
+            fetch(`${BASE}/${code}/hold-point`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF },
+                body: JSON.stringify({ organisme, nom_inspecteur: inspecteur || null, date_inspection: dateVal || null }),
+            }).then((r) => r.json()).then((d) => {
+                if (d.ok) location.reload();
+                else alert(d.error || "Erreur.");
+            });
+        });
+    });
+
+    // ── Signature Hold Points ────────────────────────────────────────────
+    document.querySelectorAll(".btn-signer-hp").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            if (!confirm("Confirmer la signature de ce Hold Point ?")) return;
+            const code = btn.dataset.code;
+            const hpId = btn.dataset.hpId;
+            fetch(`${BASE}/${code}/hold-point/${hpId}/signer`, {
+                method: "POST",
+                headers: { "X-CSRFToken": CSRF },
+            }).then((r) => r.json()).then((d) => {
+                if (d.ok) location.reload();
+                else alert(d.error || "Erreur.");
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

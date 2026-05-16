@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{{ affaire.numero_affaire }}{% endblock %}
+
+{% block content %}
+<!-- En-tête affaire -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ affaire.numero_affaire }}</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-0">
+            <code>{{ affaire.numero_affaire }}</code>
+            <span class="badge statut-badge bg-secondary ms-2">{{ affaire.statut.label }}</span>
+        </h1>
+        <p class="text-muted small mt-1 mb-0">
+            {{ affaire.client_nom or '—' }}
+            {% if affaire.references_client %} · Réf. client : {{ affaire.references_client }}{% endif %}
+        </p>
+    </div>
+    <div class="col-auto d-flex gap-2 align-items-start mt-2 mt-md-0">
+        <a href="{{ url_for('jalons.index', affaire_id=affaire.id) }}"
+           class="btn btn-sm btn-outline-primary">Jalons JP0-JP6</a>
+        <a href="{{ url_for('fichiers.manage', affaire_id=affaire.id) }}"
+           class="btn btn-sm btn-outline-secondary">Fichiers</a>
+        <a href="{{ url_for('affaires.historique', affaire_id=affaire.id) }}"
+           class="btn btn-sm btn-outline-secondary">Historique</a>
+    </div>
+</div>
+
+<!-- Identité technique -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-2">
+        <h2 class="h6 mb-0">Identité de l'équipement</h2>
+    </div>
+    <div class="card-body py-3">
+        <div class="row g-3 small">
+            <div class="col-sm-6 col-md-3">
+                <div class="text-muted">Repère</div>
+                <div class="fw-semibold">{{ affaire.repere or '—' }}</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="text-muted">Type d'échangeur</div>
+                <div class="fw-semibold">{{ affaire.type_echangeur or '—' }}</div>
+            </div>
+            <div class="col-sm-6 col-md-2">
+                <div class="text-muted">Nombre</div>
+                <div class="fw-semibold">{{ affaire.nombre or '—' }}</div>
+            </div>
+            <div class="col-sm-6 col-md-2">
+                <div class="text-muted">Année construction</div>
+                <div class="fw-semibold">{{ affaire.annee_construction or '—' }}</div>
+            </div>
+            <div class="col-sm-6 col-md-2">
+                <div class="text-muted">Réf. BFF</div>
+                <div class="fw-semibold">{{ affaire.references_internes or '—' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accordéon des chapitres A-G -->
+<div class="accordion" id="chapitresAccordion">
+    {% for chapitre in chapitres %}
+    {% set templates = templates_by_chap.get(chapitre, []) %}
+    {% set chap_id = 'chap-' ~ chapitre.value %}
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button {% if not loop.first %}collapsed{% endif %}"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#{{ chap_id }}"
+                    aria-expanded="{{ 'true' if loop.first else 'false' }}"
+                    aria-controls="{{ chap_id }}">
+                <span class="me-3 fw-bold text-primary">{{ chapitre.value }}</span>
+                <span>{{ chapitre.label }}</span>
+                <span class="ms-auto me-3 text-muted small">
+                    {{ templates|length }} formulaire{{ 's' if templates|length > 1 else '' }}
+                </span>
+            </button>
+        </h2>
+        <div id="{{ chap_id }}"
+             class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
+             data-bs-parent="#chapitresAccordion">
+            <div class="accordion-body p-0">
+                {% if templates %}
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Code</th>
+                            <th>Libellé</th>
+                            <th>Statut</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tmpl in templates %}
+                        {% set form = formulaires_by_code.get(tmpl.code) %}
+                        <tr>
+                            <td><code>{{ tmpl.code }}</code></td>
+                            <td>
+                                {{ tmpl.libelle }}
+                                <span class="text-muted small">v{{ tmpl.version }}</span>
+                            </td>
+                            <td>
+                                {% if form %}
+                                    <span class="badge statut-badge bg-secondary">{{ form.statut.label }}</span>
+                                {% else %}
+                                    <span class="badge statut-badge bg-light text-muted">Non créé</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% set implemented = tmpl.code in ('HYDR',) %}
+                                {% if form %}
+                                    {% if implemented %}
+                                    <a href="{{ url_for('formulaires.show', affaire_id=affaire.id, code=tmpl.code) }}"
+                                       class="btn btn-sm btn-outline-secondary">Ouvrir</a>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary" disabled
+                                            title="Disponible bientôt">Ouvrir</button>
+                                    {% endif %}
+                                {% else %}
+                                    {% if implemented %}
+                                    <a href="{{ url_for('formulaires.show', affaire_id=affaire.id, code=tmpl.code) }}"
+                                       class="btn btn-sm btn-outline-primary">+ Créer</a>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-outline-primary" disabled
+                                            title="Disponible bientôt">+ Créer</button>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-3 text-center text-muted small">
+                    Aucun formulaire défini pour ce chapitre dans la phase actuelle.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

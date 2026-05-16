@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% block title %}Fichiers importés — {{ affaire.numero_affaire }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">{{ affaire.numero_affaire }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Fichiers importés</li>
+            </ol>
+        </nav>
+        <h1 class="h4 mb-0">Fichiers importés <small class="text-muted fw-normal">{{ affaire.numero_affaire }}</small></h1>
+    </div>
+    <div class="col-auto d-flex align-items-end">
+        <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}" class="btn btn-sm btn-outline-secondary">
+            ← Retour à l'affaire
+        </a>
+    </div>
+</div>
+
+<!-- Zone de dépôt --------------------------------------------------------->
+<div class="card shadow-sm mb-4" id="upload-card">
+    <div class="card-header bg-white d-flex align-items-center justify-content-between py-2">
+        <h2 class="h6 mb-0">Importer un fichier</h2>
+        <span class="text-muted small">PDF, JPEG, PNG, TIFF · max 20 Mo</span>
+    </div>
+    <div class="card-body">
+        <div id="drop-zone"
+             class="border border-2 border-dashed rounded-3 text-center py-5 px-3 mb-3"
+             style="border-color:#003087 !important; cursor:pointer; transition:background .15s;">
+            <div class="text-primary mb-2" style="font-size:2.5rem;">&#8659;</div>
+            <p class="mb-1 fw-semibold">Glissez un fichier ici ou <span class="text-primary text-decoration-underline" id="browse-trigger" style="cursor:pointer;">parcourez</span></p>
+            <p class="text-muted small mb-0">Formats acceptés : PDF, JPEG, PNG, TIFF</p>
+            <input type="file" id="file-input" class="d-none" accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff">
+        </div>
+
+        <!-- Formulaire de métadonnées (affiché après sélection du fichier) -->
+        <div id="meta-form" class="d-none">
+            <hr class="my-3">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-5">
+                    <label class="form-label small fw-semibold mb-1">Titre dans le dossier <span class="text-danger">*</span></label>
+                    <input type="text" id="meta-titre" class="form-control form-control-sm" maxlength="200" placeholder="Ex : Plan de masse">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small fw-semibold mb-1">Chapitre <span class="text-danger">*</span></label>
+                    <select id="meta-chapitre" class="form-select form-select-sm">
+                        <option value="A">A — Certificat de conformité</option>
+                        <option value="B">B — Notes de calcul</option>
+                        <option value="C">C — Soudage &amp; qualification</option>
+                        <option value="D">D — Matériaux &amp; certificats</option>
+                        <option value="E">E — Cahier de contrôle</option>
+                        <option value="F" selected>F — Plan de l'appareil</option>
+                        <option value="G">G — Manuel exploitation</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold mb-1">Ordre</label>
+                    <input type="number" id="meta-ordre" class="form-control form-control-sm" value="99" min="1" max="999">
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button type="button" id="btn-upload" class="btn btn-primary btn-sm w-100">Importer</button>
+                    <button type="button" id="btn-cancel" class="btn btn-outline-secondary btn-sm">✕</button>
+                </div>
+            </div>
+            <div id="selected-file" class="mt-2 text-muted small"></div>
+        </div>
+
+        <!-- Barre de progression -->
+        <div id="upload-progress" class="d-none mt-3">
+            <div class="progress" style="height:6px;">
+                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                     role="progressbar" style="width:100%"></div>
+            </div>
+            <p class="text-muted small text-center mt-1 mb-0">Import en cours…</p>
+        </div>
+
+        <!-- Alertes -->
+        <div id="upload-alert" class="d-none mt-3"></div>
+    </div>
+</div>
+
+<!-- Liste des fichiers importés ------------------------------------------>
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex align-items-center py-2">
+        <h2 class="h6 mb-0 me-auto">Fichiers du dossier</h2>
+        <span id="fichiers-count" class="badge bg-light text-dark border">—</span>
+    </div>
+    <div id="fichiers-list">
+        <!-- Rendu par JS -->
+        <div class="text-center py-4 text-muted small">
+            <div class="spinner-border spinner-border-sm me-1" role="status"></div>
+            Chargement…
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'édition des métadonnées ------------------------------------->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title h6" id="editModalLabel">Modifier les métadonnées</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-fid">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Titre</label>
+                    <input type="text" id="edit-titre" class="form-control form-control-sm" maxlength="200">
+                </div>
+                <div class="row g-2">
+                    <div class="col-7">
+                        <label class="form-label small fw-semibold">Chapitre</label>
+                        <select id="edit-chapitre" class="form-select form-select-sm">
+                            <option value="A">A — Certificat de conformité</option>
+                            <option value="B">B — Notes de calcul</option>
+                            <option value="C">C — Soudage &amp; qualification</option>
+                            <option value="D">D — Matériaux &amp; certificats</option>
+                            <option value="E">E — Cahier de contrôle</option>
+                            <option value="F">F — Plan de l'appareil</option>
+                            <option value="G">G — Manuel exploitation</option>
+                        </select>
+                    </div>
+                    <div class="col-5">
+                        <label class="form-label small fw-semibold">Ordre</label>
+                        <input type="number" id="edit-ordre" class="form-control form-control-sm" min="1" max="999">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-edit-save">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    "use strict";
+
+    const AFFAIRE_ID = {{ affaire.id }};
+    const BASE_URL   = `/affaires/${AFFAIRE_ID}/fichiers`;
+    const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+    const CAN_EDIT   = {{ can_edit | tojson }};
+
+    // ── DOM refs ────────────────────────────────────────────────────────────
+    const dropZone     = document.getElementById("drop-zone");
+    const fileInput    = document.getElementById("file-input");
+    const browseTrig   = document.getElementById("browse-trigger");
+    const metaForm     = document.getElementById("meta-form");
+    const metaTitre    = document.getElementById("meta-titre");
+    const metaChap     = document.getElementById("meta-chapitre");
+    const metaOrdre    = document.getElementById("meta-ordre");
+    const btnUpload    = document.getElementById("btn-upload");
+    const btnCancel    = document.getElementById("btn-cancel");
+    const selFile      = document.getElementById("selected-file");
+    const uploadProg   = document.getElementById("upload-progress");
+    const uploadAlert  = document.getElementById("upload-alert");
+    const fichiersDiv  = document.getElementById("fichiers-list");
+    const fichiersCount= document.getElementById("fichiers-count");
+
+    // ── Drag & drop ─────────────────────────────────────────────────────────
+    if (CAN_EDIT) {
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.style.backgroundColor = "#eef2fa";
+        });
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.style.backgroundColor = "";
+        });
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.style.backgroundColor = "";
+            const f = e.dataTransfer.files[0];
+            if (f) onFileSelected(f);
+        });
+        browseTrig.addEventListener("click", () => fileInput.click());
+        dropZone.addEventListener("click", (e) => {
+            if (e.target !== browseTrig) fileInput.click();
+        });
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files[0]) onFileSelected(fileInput.files[0]);
+        });
+        btnCancel.addEventListener("click", resetUpload);
+        btnUpload.addEventListener("click", doUpload);
+    } else {
+        dropZone.style.opacity = "0.5";
+        dropZone.style.pointerEvents = "none";
+        document.getElementById("upload-card").querySelector(".card-header").insertAdjacentHTML(
+            "beforeend",
+            '<span class="badge bg-warning text-dark ms-2 small">Lecture seule</span>'
+        );
+    }
+
+    function onFileSelected(file) {
+        selFile.textContent = `Fichier sélectionné : ${file.name} (${_fmtSize(file.size)})`;
+        if (!metaTitre.value) metaTitre.value = file.name.replace(/\.[^.]+$/, "");
+        metaForm.classList.remove("d-none");
+        fileInput._selectedFile = file;
+    }
+
+    function resetUpload() {
+        metaForm.classList.add("d-none");
+        uploadAlert.classList.add("d-none");
+        uploadProg.classList.add("d-none");
+        fileInput.value = "";
+        fileInput._selectedFile = null;
+        metaTitre.value = "";
+        metaOrdre.value = "99";
+        selFile.textContent = "";
+    }
+
+    function doUpload() {
+        const file = fileInput._selectedFile;
+        if (!file) return;
+        const titre = metaTitre.value.trim();
+        if (!titre) { showAlert("Veuillez saisir un titre.", "warning"); return; }
+
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("titre", titre);
+        fd.append("chapitre", metaChap.value);
+        fd.append("ordre", metaOrdre.value);
+
+        metaForm.classList.add("d-none");
+        uploadProg.classList.remove("d-none");
+        uploadAlert.classList.add("d-none");
+
+        fetch(`${BASE_URL}/upload`, {
+            method: "POST",
+            headers: { "X-CSRFToken": CSRF_TOKEN },
+            body: fd,
+        })
+        .then((r) => r.json())
+        .then((data) => {
+            uploadProg.classList.add("d-none");
+            if (data.ok) {
+                resetUpload();
+                showAlert(`Fichier « ${data.fichier.titre} » importé avec succès.`, "success");
+                loadFichiers();
+            } else {
+                showAlert(data.error || "Erreur lors de l'import.", "danger");
+                metaForm.classList.remove("d-none");
+            }
+        })
+        .catch(() => {
+            uploadProg.classList.add("d-none");
+            showAlert("Erreur réseau lors de l'import.", "danger");
+            metaForm.classList.remove("d-none");
+        });
+    }
+
+    // ── Liste des fichiers ──────────────────────────────────────────────────
+    function loadFichiers() {
+        fetch(BASE_URL + "/")
+        .then((r) => r.json())
+        .then(renderList)
+        .catch(() => {
+            fichiersDiv.innerHTML = '<div class="p-3 text-danger small">Erreur de chargement.</div>';
+        });
+    }
+
+    const CHAP_LABELS = {
+        A: "A — Certificat de conformité",
+        B: "B — Notes de calcul",
+        C: "C — Soudage &amp; qualification",
+        D: "D — Matériaux &amp; certificats",
+        E: "E — Cahier de contrôle",
+        F: "F — Plan de l'appareil",
+        G: "G — Manuel exploitation",
+    };
+
+    function renderList(fichiers) {
+        fichiersCount.textContent = fichiers.length;
+        if (!fichiers.length) {
+            fichiersDiv.innerHTML = '<div class="p-4 text-center text-muted small">Aucun fichier importé pour cette affaire.</div>';
+            return;
+        }
+
+        // Group by chapitre
+        const byChap = {};
+        fichiers.forEach((f) => {
+            if (!byChap[f.chapitre]) byChap[f.chapitre] = [];
+            byChap[f.chapitre].push(f);
+        });
+
+        let html = "";
+        Object.keys(byChap).sort().forEach((chap) => {
+            html += `<div class="px-3 pt-3 pb-1">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary me-2">${_esc(chap)}</span>
+                    <span class="small fw-semibold text-muted">${CHAP_LABELS[chap] || chap}</span>
+                </div>
+                <table class="table table-sm table-hover align-middle mb-2">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="small">#</th>
+                            <th class="small">Titre</th>
+                            <th class="small d-none d-md-table-cell">Fichier original</th>
+                            <th class="small d-none d-md-table-cell">Type</th>
+                            <th class="small d-none d-md-table-cell">Taille</th>
+                            <th class="small text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            byChap[chap].forEach((f) => {
+                const icon = _mimeIcon(f.mime_type);
+                html += `<tr data-fid="${f.id}">
+                    <td class="text-muted small">${f.ordre}</td>
+                    <td>
+                        <span class="me-1">${icon}</span>
+                        <strong class="small">${_esc(f.titre)}</strong>
+                    </td>
+                    <td class="small text-muted d-none d-md-table-cell">${_esc(f.original_filename)}</td>
+                    <td class="small text-muted d-none d-md-table-cell">${_esc(f.mime_type)}</td>
+                    <td class="small text-muted d-none d-md-table-cell">${_fmtSize(f.taille)}</td>
+                    <td class="text-end">
+                        <a href="${BASE_URL}/${f.id}"
+                           class="btn btn-xs btn-outline-secondary btn-sm py-0 px-2 me-1"
+                           title="Télécharger">&#8595;</a>
+                        ${CAN_EDIT ? `
+                        <button type="button"
+                                class="btn btn-xs btn-outline-primary btn-sm py-0 px-2 me-1 btn-edit"
+                                data-fid="${f.id}"
+                                data-titre="${_esc(f.titre)}"
+                                data-chap="${_esc(f.chapitre)}"
+                                data-ordre="${f.ordre}"
+                                title="Modifier">&#9998;</button>
+                        <button type="button"
+                                class="btn btn-xs btn-outline-danger btn-sm py-0 px-2 btn-delete"
+                                data-fid="${f.id}"
+                                data-titre="${_esc(f.titre)}"
+                                title="Supprimer">&#215;</button>
+                        ` : ""}
+                    </td>
+                </tr>`;
+            });
+            html += `</tbody></table></div>`;
+        });
+        fichiersDiv.innerHTML = html;
+
+        // Attach edit/delete handlers
+        fichiersDiv.querySelectorAll(".btn-edit").forEach((btn) => {
+            btn.addEventListener("click", () => openEditModal(
+                btn.dataset.fid,
+                btn.dataset.titre,
+                btn.dataset.chap,
+                btn.dataset.ordre
+            ));
+        });
+        fichiersDiv.querySelectorAll(".btn-delete").forEach((btn) => {
+            btn.addEventListener("click", () => doDelete(btn.dataset.fid, btn.dataset.titre));
+        });
+    }
+
+    // ── Edition ─────────────────────────────────────────────────────────────
+    const editModal = new bootstrap.Modal(document.getElementById("editModal"));
+
+    function openEditModal(fid, titre, chap, ordre) {
+        document.getElementById("edit-fid").value    = fid;
+        document.getElementById("edit-titre").value  = titre;
+        document.getElementById("edit-chapitre").value = chap;
+        document.getElementById("edit-ordre").value  = ordre;
+        editModal.show();
+    }
+
+    document.getElementById("btn-edit-save").addEventListener("click", () => {
+        const fid = document.getElementById("edit-fid").value;
+        const payload = {
+            titre:    document.getElementById("edit-titre").value.trim(),
+            chapitre: document.getElementById("edit-chapitre").value,
+            ordre:    parseInt(document.getElementById("edit-ordre").value, 10),
+        };
+        fetch(`${BASE_URL}/${fid}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRF_TOKEN,
+            },
+            body: JSON.stringify(payload),
+        })
+        .then((r) => r.json())
+        .then((data) => {
+            editModal.hide();
+            if (data.ok) {
+                loadFichiers();
+            } else {
+                showAlert(data.error || "Erreur lors de la mise à jour.", "danger");
+            }
+        })
+        .catch(() => showAlert("Erreur réseau.", "danger"));
+    });
+
+    // ── Suppression ─────────────────────────────────────────────────────────
+    function doDelete(fid, titre) {
+        if (!confirm(`Supprimer définitivement « ${titre} » ?\nCette action est irréversible.`)) return;
+        fetch(`${BASE_URL}/${fid}`, {
+            method: "DELETE",
+            headers: { "X-CSRFToken": CSRF_TOKEN },
+        })
+        .then((r) => r.json())
+        .then((data) => {
+            if (data.ok) {
+                loadFichiers();
+            } else {
+                showAlert(data.error || "Erreur lors de la suppression.", "danger");
+            }
+        })
+        .catch(() => showAlert("Erreur réseau.", "danger"));
+    }
+
+    // ── Utilitaires ─────────────────────────────────────────────────────────
+    function showAlert(msg, type) {
+        uploadAlert.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show py-2 small" role="alert">
+            ${_esc(msg)}
+            <button type="button" class="btn-close btn-close-sm py-2" data-bs-dismiss="alert"></button>
+        </div>`;
+        uploadAlert.classList.remove("d-none");
+    }
+
+    function _esc(s) {
+        return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function _fmtSize(bytes) {
+        if (bytes < 1024) return bytes + " o";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " Ko";
+        return (bytes / (1024 * 1024)).toFixed(1) + " Mo";
+    }
+
+    function _mimeIcon(mime) {
+        if (mime === "application/pdf") return "📄";
+        if (mime && mime.startsWith("image/")) return "🖼";
+        return "📎";
+    }
+
+    // Initial load
+    loadFichiers();
+})();
+</script>
+{% endblock %}

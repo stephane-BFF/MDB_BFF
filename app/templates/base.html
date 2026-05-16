@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MDB — Dossier Constructeur Qualité BFF">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}MDB BFF{% endblock %} — Dossier Constructeur Qualité</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/app.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-semibold" href="{{ url_for('dashboard.index') }}">
+            <span class="me-2">MDB</span>
+            <small class="text-white-50">BFF · Dossier Constructeur Qualité</small>
+        </a>
+
+        {% if current_user.is_authenticated %}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}"
+                       href="{{ url_for('dashboard.index') }}">Tableau de bord</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.blueprint == 'affaires' %}active{% endif %}"
+                       href="{{ url_for('affaires.index') }}">Affaires</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.blueprint == 'referentiels' %}active{% endif %}"
+                       href="{{ url_for('referentiels.index') }}">
+                        Référentiels
+                        {% if nb_alertes is defined and nb_alertes > 0 %}
+                        <span class="badge bg-danger ms-1">{{ nb_alertes }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ current_user.full_name }}
+                        <span class="badge bg-light text-primary ms-1">{{ current_user.role.label }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted">{{ current_user.email }}</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="dropdown-item">Se déconnecter</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</nav>
+
+{% block breadcrumb %}{% endblock %}
+
+<main class="container-fluid py-4 flex-grow-1">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="row">
+            <div class="col-12">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="bg-light border-top py-3 mt-auto">
+    <div class="container-fluid text-muted small d-flex justify-content-between">
+        <span>MDB BFF · Brown Fintube France Energy · PED 2014/68/UE</span>
+        <span>v0.1.0 · Phase 1</span>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

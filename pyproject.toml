@@ -23,8 +23,7 @@ select = [
 ]
 ignore = [
     "S101",   # assert autorisé dans les tests
-    "ANN101", # self non annoté (standard Python)
-    "ANN102", # cls non annoté (standard Python)
+    "ANN204", # __init__ n'a pas besoin de retourner None explicitement
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -41,6 +40,7 @@ target-version = ["py314"]
 python_version = "3.14"
 strict = true
 ignore_missing_imports = true
+local_partial_types = true
 exclude = ["migrations/", "tests/"]
 
 # ── Pytest ────────────────────────────────────────────────────

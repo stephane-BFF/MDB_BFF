@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+{# Sommaire automatique du dossier MDB assemblé — numéros de pages réels #}
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+@page {
+    size: A4 portrait;
+    margin: 18mm 18mm 22mm 18mm;
+    @bottom-left {
+        content: "BFF · Dossier Constructeur Qualité · PED 2014/68/UE";
+        font-family: Arial, sans-serif; font-size: 7pt; color: #666;
+    }
+    @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-family: Arial, sans-serif; font-size: 7pt; color: #666;
+    }
+}
+body {
+    font-family: Arial, sans-serif;
+    font-size: 10pt;
+    color: #1a1a1a;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.page-header {
+    display: table;
+    width: 100%;
+    border-bottom: 2pt solid #003087;
+    margin-bottom: 8mm;
+    padding-bottom: 3mm;
+}
+.page-header-logo { display: table-cell; width: 50mm; vertical-align: middle; }
+.page-header-title { display: table-cell; vertical-align: middle; text-align: center; }
+.page-header-meta { display: table-cell; width: 55mm; vertical-align: middle; text-align: right; font-size: 8pt; color: #555; }
+.logo-placeholder {
+    display: inline-block;
+    background-color: #003087;
+    color: white;
+    font-size: 18pt;
+    font-weight: bold;
+    padding: 2mm 5mm;
+    letter-spacing: 2pt;
+}
+.doc-title { font-size: 14pt; font-weight: bold; color: #003087; text-transform: uppercase; }
+
+h1 { font-size: 13pt; color: #003087; text-transform: uppercase; margin-bottom: 6mm; }
+
+/* ── Entrées du sommaire ── */
+.toc-chapitre {
+    margin-bottom: 5mm;
+    page-break-inside: avoid;
+}
+.toc-chap-header {
+    display: table;
+    width: 100%;
+    background-color: #003087;
+    color: white;
+    padding: 2mm 3mm;
+    font-weight: bold;
+    font-size: 10pt;
+    margin-bottom: 1mm;
+}
+.toc-row {
+    display: table;
+    width: 100%;
+    padding: 1.5mm 3mm 1.5mm 6mm;
+    border-bottom: 0.3pt solid #e8edf5;
+}
+.toc-row:nth-child(even) { background-color: #f7f9fc; }
+.toc-titre { display: table-cell; font-size: 9.5pt; }
+.toc-dots {
+    display: table-cell;
+    width: 60%;
+    border-bottom: 0.5pt dotted #aaa;
+    vertical-align: bottom;
+    padding-bottom: 1mm;
+    margin: 0 2mm;
+}
+.toc-page {
+    display: table-cell;
+    width: 12mm;
+    text-align: right;
+    font-weight: bold;
+    color: #003087;
+    font-size: 9.5pt;
+    white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="page-header-logo">
+        {% if logo_uri %}
+        <img src="{{ logo_uri }}" style="height:12mm;" alt="Logo BFF">
+        {% else %}
+        <span class="logo-placeholder">BFF</span>
+        {% endif %}
+    </div>
+    <div class="page-header-title">
+        <div class="doc-title">Sommaire</div>
+    </div>
+    <div class="page-header-meta">
+        <strong>N° Affaire :</strong> {{ affaire.numero_affaire }}<br>
+        <strong>Client :</strong> {{ affaire.client_nom or '—' }}
+    </div>
+</div>
+
+{% if toc_entries %}
+{% for chap in toc_entries %}
+<div class="toc-chapitre">
+    <div class="toc-chap-header">{{ chap.label }}</div>
+    {% for doc in chap.documents %}
+    <div class="toc-row">
+        <span class="toc-titre">{{ doc.titre }}</span>
+        <span class="toc-dots"></span>
+        <span class="toc-page">{{ doc.page }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+{% else %}
+<p style="color:#888; font-style:italic;">Aucun document dans le dossier.</p>
+{% endif %}
+
+</body>
+</html>

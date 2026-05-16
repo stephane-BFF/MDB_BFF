@@ -38,9 +38,10 @@ class Config:
         int(os.environ.get("MAX_UPLOAD_SIZE_MB", "20")) * 1024 * 1024
     )
     ALLOWED_EXTENSIONS: frozenset = frozenset({"pdf", "jpg", "jpeg", "png", "tiff"})
+    UPLOAD_FOLDER: str = os.environ.get("UPLOAD_FOLDER", "uploads")
 
     # PDF
-    LOGO_PATH: str = os.environ.get("LOGO_PATH", "static/img/logo_bff.png")
+    LOGO_PATH: str = os.environ.get("LOGO_PATH", "static/img/logo_bff.svg")
 
     # Celery / Redis — génération PDF asynchrone
     # Les clés sont préfixées CELERY_ pour celery_app.config_from_object(namespace="CELERY")
@@ -77,6 +78,9 @@ class TestingConfig(Config):
     WTF_CSRF_ENABLED: bool = False  # Désactivé pour simplifier les tests
     SQLALCHEMY_DATABASE_URI: str = "sqlite:///:memory:"
     CELERY_TASK_ALWAYS_EAGER: bool = True  # Tâches Celery exécutées en synchrone
+    UPLOAD_FOLDER: str = os.path.join(
+        os.environ.get("TEMP", os.environ.get("TMP", "/tmp")), "mdb_bff_test_uploads"
+    )
 
 
 config_by_name: dict[str, type[Config]] = {

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Wizard {{ step.value }} — {{ affaire.numero_affaire }}{% endblock %}
+
+{% macro render_field(field, classes="form-control") %}
+<div class="mb-3">
+    {{ field.label(class="form-label") }}
+    {% if field.type == 'BooleanField' %}
+        <div class="form-check">
+            {{ field(class="form-check-input") }}
+            <label class="form-check-label">{{ field.description or '' }}</label>
+        </div>
+    {% elif field.type == 'SelectMultipleField' %}
+        {{ field(class=classes, size=5) }}
+        {% if field.description %}<div class="form-text">{{ field.description }}</div>{% endif %}
+    {% elif field.type == 'TextAreaField' %}
+        {{ field(class=classes + (" is-invalid" if field.errors else "")) }}
+        {% if field.description %}<div class="form-text">{{ field.description }}</div>{% endif %}
+    {% else %}
+        {{ field(class=classes + (" is-invalid" if field.errors else "")) }}
+        {% if field.description %}<div class="form-text">{{ field.description }}</div>{% endif %}
+    {% endif %}
+    {% for error in field.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h1 class="h4 mb-1">Création d'affaire — Wizard</h1>
+        <p class="text-muted mb-0">
+            <code>{{ affaire.numero_affaire }}</code> · Étape {{ step.numero }} / 8
+        </p>
+    </div>
+</div>
+
+<!-- Stepper visuel -->
+<div class="d-flex justify-content-between mb-4 small">
+    {% for s in steps %}
+    <div class="text-center flex-fill {% if not loop.last %}border-end{% endif %} pb-2
+                {% if s.numero < step.numero %}text-success
+                {% elif s == step %}text-primary fw-bold
+                {% else %}text-muted{% endif %}">
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-1
+                    {% if s.numero < step.numero %}bg-success text-white
+                    {% elif s == step %}bg-primary text-white
+                    {% else %}bg-light border{% endif %}"
+             style="width: 2rem; height: 2rem;">
+            {% if s.numero < step.numero %}✓{% else %}{{ s.numero }}{% endif %}
+        </div>
+        <div>{{ s.value }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h2 class="h5 mb-0">
+            {% if step.value == 'Q1' %}Q1 · Identification du dossier
+            {% elif step.value == 'Q2' %}Q2 · Identification du client
+            {% elif step.value == 'Q3' %}Q3 · Identification de l'équipement
+            {% elif step.value == 'Q4' %}Q4 · Caractéristiques PED
+            {% elif step.value == 'Q5' %}Q5 · Conditions de service
+            {% elif step.value == 'Q6' %}Q6 · Procédés de fabrication
+            {% elif step.value == 'Q7' %}Q7 · Contrôles et tests
+            {% elif step.value == 'Q8' %}Q8 · Récapitulatif et validation
+            {% endif %}
+        </h2>
+    </div>
+    <div class="card-body">
+
+        {% if step.value == 'Q8' %}
+        <h3 class="h6 text-muted mb-3">Vérifiez vos saisies avant finalisation :</h3>
+        <dl class="row mb-4">
+            <dt class="col-sm-4">Numéro d'affaire</dt><dd class="col-sm-8"><code>{{ affaire.numero_affaire }}</code></dd>
+            <dt class="col-sm-4">Année</dt><dd class="col-sm-8">{{ affaire.annee }}</dd>
+            <dt class="col-sm-4">Client</dt><dd class="col-sm-8">{{ affaire.client_nom or '—' }}</dd>
+            <dt class="col-sm-4">Référence client</dt><dd class="col-sm-8">{{ affaire.references_client or '—' }}</dd>
+            <dt class="col-sm-4">Référence BFF</dt><dd class="col-sm-8">{{ affaire.references_internes or '—' }}</dd>
+            <dt class="col-sm-4">Repère</dt><dd class="col-sm-8">{{ affaire.repere or '—' }}</dd>
+            <dt class="col-sm-4">Type d'échangeur</dt><dd class="col-sm-8">{{ affaire.type_echangeur or '—' }}</dd>
+            <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">{{ affaire.nombre or '—' }}</dd>
+            <dt class="col-sm-4">Année de construction</dt><dd class="col-sm-8">{{ affaire.annee_construction or '—' }}</dd>
+        </dl>
+
+        {% if affaire.parametrage and affaire.parametrage.reponses %}
+        <h3 class="h6 text-muted mb-2">Paramétrage technique (Q4-Q7) :</h3>
+        <dl class="row mb-4 small">
+            {% for key, value in affaire.parametrage.reponses.items() %}
+            <dt class="col-sm-4"><code>{{ key }}</code></dt>
+            <dd class="col-sm-8">{{ value if value is not none and value != '' else '—' }}</dd>
+            {% endfor %}
+        </dl>
+        {% endif %}
+        {% endif %}
+
+        <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            {% for field in form if field.name not in ('csrf_token', 'submit') %}
+                {{ render_field(field) }}
+            {% endfor %}
+
+            <div class="d-flex justify-content-between mt-4">
+                {% if step.numero > 1 %}
+                <button type="button" class="btn btn-outline-secondary"
+                        onclick="document.getElementById('backForm').submit();">
+                    ← Précédent
+                </button>
+                {% else %}
+                <span></span>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary">
+                    {% if step.value == 'Q8' %}
+                        Finaliser et créer l'affaire ✓
+                    {% else %}
+                        Étape suivante →
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+
+        {% if step.numero > 1 %}
+        <form id="backForm" method="post"
+              action="{{ url_for('affaires.wizard_back', affaire_id=affaire.id) }}"
+              class="d-none">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

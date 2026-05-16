@@ -4,52 +4,55 @@
 # ═══════════════════════════════════════════════════════════════
 
 # ── Web Framework ─────────────────────────────────────────────
-Flask>=3.1.0
+Flask>=3.1.3
 Flask-Login>=0.6.3
-Flask-WTF>=1.2.2
+Flask-WTF>=1.3.0
 Flask-Mail>=0.10.0
 Flask-Babel>=4.0.0
 
 # ── Base de données ───────────────────────────────────────────
 Flask-SQLAlchemy>=3.1.1
 Flask-Migrate>=4.1.0
-SQLAlchemy>=2.0.36
-psycopg2-binary>=2.9.10
-alembic>=1.14.0
+SQLAlchemy>=2.0.49
+psycopg2-binary>=2.9.12
+alembic>=1.18.4
 
 # ── Configuration (validation au démarrage) ───────────────────
-pydantic-settings>=2.6.0
+pydantic-settings>=2.14.1
 
 # ── Logging structuré JSON ────────────────────────────────────
-structlog>=24.4.0
+structlog>=25.5.0
 
 # ── PDF ───────────────────────────────────────────────────────
-WeasyPrint>=62.3
-pypdf>=5.1.0
+WeasyPrint>=68.1
+pypdf>=6.11.0
 
 # ── Images & QR Code ──────────────────────────────────────────
-Pillow>=11.0.0
+Pillow>=12.2.0
 qrcode>=8.0
 
 # ── Génération PDF asynchrone (Phase 2+) ──────────────────────
-celery[redis]>=5.4.0
-redis>=5.2.0
-flower>=2.0.0
+celery[redis]>=5.6.3
+# redis-py 7.x contient des breaking changes ; capé <8 jusqu'à validation
+# de la compatibilité Celery 5.x avec unified_responses=True.
+redis>=6.4.0,<8
+flower>=2.0.1
 
 # ── Authentification Windows / LDAP Active Directory ──────────
 ldap3>=2.9.1
 
 # ── Sécurité & Utilitaires ────────────────────────────────────
-Werkzeug>=3.1.3
-python-dotenv>=1.0.1
+Werkzeug>=3.1.8
+python-dotenv>=1.2.2
 WTForms>=3.2.2
 python-magic-bin>=0.4.14
 
 # ── WSGI Production ───────────────────────────────────────────
-gunicorn>=23.0.0
-waitress>=3.0.0
+gunicorn>=26.0.0
+waitress>=3.0.2
 
 # ── Tests ─────────────────────────────────────────────────────
-pytest>=8.3.4
+pytest>=9.0.3
 pytest-flask>=1.3.0
-pytest-cov>=6.0.0
+pytest-cov>=7.1.0
+email-validator>=2.3.0

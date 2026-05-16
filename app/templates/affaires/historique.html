@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Historique — {{ affaire.numero_affaire }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">{{ affaire.numero_affaire }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Historique</li>
+            </ol>
+        </nav>
+        <h1 class="h4 mb-0">
+            Journal d'audit — <code>{{ affaire.numero_affaire }}</code>
+            <span class="text-muted fw-normal fs-6 ms-2">{{ pagination.total }} entrée{{ 's' if pagination.total != 1 else '' }}</span>
+        </h1>
+    </div>
+</div>
+
+{% if entries %}
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover table-sm align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:160px">Date</th>
+                    <th style="width:140px">Utilisateur</th>
+                    <th style="width:200px">Action</th>
+                    <th style="width:90px">Entité</th>
+                    <th>Ancienne valeur</th>
+                    <th>Nouvelle valeur</th>
+                    <th>Contexte</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in entries %}
+                <tr>
+                    <td class="text-muted">
+                        {{ e.created_at.strftime('%d/%m/%Y %H:%M') if e.created_at else '—' }}
+                    </td>
+                    <td>
+                        {% if e.user %}
+                            <span title="{{ e.user.email }}">{{ e.user.full_name }}</span>
+                        {% else %}
+                            <span class="text-muted fst-italic">Système</span>
+                        {% endif %}
+                    </td>
+                    <td><code class="text-primary">{{ e.action }}</code></td>
+                    <td class="text-muted">
+                        {% if e.entity_type %}{{ e.entity_type }}
+                        {% if e.entity_id %}<span class="text-muted">#{{ e.entity_id }}</span>{% endif %}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>
+                        {% if e.old_value %}
+                            <span class="text-danger">{{ e.old_value }}</span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>
+                        {% if e.new_value %}
+                            <span class="text-success">{{ e.new_value }}</span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>
+                        {% if e.contexte %}
+                            <span class="font-monospace text-muted" style="font-size:.75rem">
+                                {{ e.contexte | tojson(ensure_ascii=False) | truncate(80) }}
+                            </span>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if pagination.pages > 1 %}
+<nav class="mt-3" aria-label="Navigation journal d'audit">
+    <ul class="pagination pagination-sm justify-content-center">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link"
+               href="{{ url_for('affaires.historique', affaire_id=affaire.id, page=pagination.prev_num) }}">
+                &laquo;
+            </a>
+        </li>
+        {% for p in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+            {% if p %}
+            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                <a class="page-link"
+                   href="{{ url_for('affaires.historique', affaire_id=affaire.id, page=p) }}">{{ p }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link"
+               href="{{ url_for('affaires.historique', affaire_id=affaire.id, page=pagination.next_num) }}">
+                &raquo;
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">Aucune entrée d'audit pour cette affaire.</div>
+{% endif %}
+{% endblock %}

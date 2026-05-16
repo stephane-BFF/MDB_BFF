@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h3">Tableau de bord</h1>
+        <p class="text-muted">Vue d'ensemble des dossiers MDB.</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    {% for statut in statuts %}
+    <div class="col-6 col-md-3 col-xl-auto">
+        <div class="card card-statut statut-{{ statut.value }} h-100">
+            <div class="card-body py-3">
+                <div class="d-flex justify-content-between align-items-baseline">
+                    <span class="text-muted small">{{ statut.label }}</span>
+                    <span class="h4 mb-0">{{ statut_counts.get(statut, 0) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Dernières affaires</h2>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_affaires %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>N° Affaire</th>
+                                <th>Client</th>
+                                <th>Repère</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Créée le</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in recent_affaires %}
+                            <tr>
+                                <td><code>{{ a.numero_affaire or '—' }}</code></td>
+                                <td>{{ a.client_nom or '—' }}</td>
+                                <td>{{ a.repere or '—' }}</td>
+                                <td>{{ a.type_echangeur or '—' }}</td>
+                                <td>
+                                    <span class="badge statut-badge bg-secondary">{{ a.statut.label }}</span>
+                                </td>
+                                <td class="text-muted small">{{ a.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-4 text-center text-muted">
+                    Aucune affaire pour le moment. Le wizard de création arrive bientôt.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

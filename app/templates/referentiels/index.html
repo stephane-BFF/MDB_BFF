@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% block title %}Référentiels qualité{% endblock %}
+
+{% macro badge_exp(obj) %}
+{% if obj.statut_expiration == 'expire' %}
+<span class="badge bg-danger">Expiré</span>
+{% elif obj.statut_expiration == 'bientot' %}
+<span class="badge bg-warning text-dark">≤ 30 j</span>
+{% else %}
+<span class="badge bg-success">OK</span>
+{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h1 class="h4 mb-0">Référentiels qualité</h1>
+        <p class="text-muted small mb-0">Soudeurs · Opérateurs CND · Matériaux · Instruments de métrologie</p>
+    </div>
+</div>
+
+<!-- Onglets ---------------------------------------------------------------->
+<ul class="nav nav-tabs mb-3" id="refTabs" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-soudeurs" type="button">
+            Soudeurs
+            {% set nb_alerte_s = soudeurs | selectattr('statut_expiration', 'ne', 'ok') | list | length %}
+            {% if nb_alerte_s %}<span class="badge bg-danger ms-1">{{ nb_alerte_s }}</span>{% endif %}
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cnd" type="button">
+            Opérateurs CND
+            {% set nb_alerte_c = operateurs | selectattr('statut_expiration', 'ne', 'ok') | list | length %}
+            {% if nb_alerte_c %}<span class="badge bg-danger ms-1">{{ nb_alerte_c }}</span>{% endif %}
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-mat" type="button">Matériaux</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-inst" type="button">
+            Instruments
+            {% set nb_alerte_i = instruments | selectattr('statut_expiration', 'ne', 'ok') | list | length %}
+            {% if nb_alerte_i %}<span class="badge bg-danger ms-1">{{ nb_alerte_i }}</span>{% endif %}
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+
+    <!-- Soudeurs ---------------------------------------------------------->
+    <div class="tab-pane fade show active" id="tab-soudeurs">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex align-items-center py-2">
+                <h2 class="h6 mb-0 me-auto">Soudeurs qualifiés ({{ soudeurs | length }})</h2>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalSoudeur">+ Ajouter</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light small"><tr>
+                        <th>Nom</th><th>Qualification</th><th>Indice</th>
+                        <th>Expiration</th><th>Statut</th><th>Actif</th><th></th>
+                    </tr></thead>
+                    <tbody>
+                    {% for s in soudeurs %}
+                    <tr class="{% if not s.actif %}text-muted{% endif %}">
+                        <td class="small fw-semibold">{{ s.nom }}</td>
+                        <td class="small">{{ s.qualification }}</td>
+                        <td class="small text-muted">{{ s.indice or '—' }}</td>
+                        <td class="small">{{ s.date_expiration.strftime('%d/%m/%Y') if s.date_expiration else '—' }}</td>
+                        <td>{% if s.date_expiration %}{{ badge_exp(s) }}{% endif %}</td>
+                        <td><span class="badge {% if s.actif %}bg-success{% else %}bg-secondary{% endif %}">{{ 'Actif' if s.actif else 'Inactif' }}</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-xs btn-outline-danger btn-sm py-0 px-2 btn-del"
+                                    data-url="{{ url_for('referentiels.soudeur_delete', sid=s.id) }}"
+                                    title="Désactiver">✕</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-center text-muted small py-3">Aucun soudeur enregistré.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opérateurs CND --------------------------------------------------->
+    <div class="tab-pane fade" id="tab-cnd">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex align-items-center py-2">
+                <h2 class="h6 mb-0 me-auto">Opérateurs CND ({{ operateurs | length }})</h2>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCND">+ Ajouter</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light small"><tr>
+                        <th>Nom</th><th>Qualification</th><th>Niveau</th>
+                        <th>Expiration</th><th>Statut</th><th>Actif</th><th></th>
+                    </tr></thead>
+                    <tbody>
+                    {% for o in operateurs %}
+                    <tr class="{% if not o.actif %}text-muted{% endif %}">
+                        <td class="small fw-semibold">{{ o.nom }}</td>
+                        <td class="small">{{ o.qualification }}</td>
+                        <td class="small text-muted">{{ o.niveau }}</td>
+                        <td class="small">{{ o.date_expiration.strftime('%d/%m/%Y') if o.date_expiration else '—' }}</td>
+                        <td>{% if o.date_expiration %}{{ badge_exp(o) }}{% endif %}</td>
+                        <td><span class="badge {% if o.actif %}bg-success{% else %}bg-secondary{% endif %}">{{ 'Actif' if o.actif else 'Inactif' }}</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-xs btn-outline-danger btn-sm py-0 px-2 btn-del"
+                                    data-url="{{ url_for('referentiels.operateur_delete', oid=o.id) }}"
+                                    title="Désactiver">✕</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-center text-muted small py-3">Aucun opérateur CND enregistré.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matériaux --------------------------------------------------------->
+    <div class="tab-pane fade" id="tab-mat">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex align-items-center py-2">
+                <h2 class="h6 mb-0 me-auto">Matériaux ({{ materiaux | length }})</h2>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalMat">+ Ajouter</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light small"><tr>
+                        <th>Désignation</th><th>Norme</th><th>Certificat</th><th>Actif</th><th></th>
+                    </tr></thead>
+                    <tbody>
+                    {% for m in materiaux %}
+                    <tr class="{% if not m.actif %}text-muted{% endif %}">
+                        <td class="small fw-semibold">{{ m.designation }}</td>
+                        <td class="small">{{ m.norme }}</td>
+                        <td class="small text-muted">{{ m.certificat or '—' }}</td>
+                        <td><span class="badge {% if m.actif %}bg-success{% else %}bg-secondary{% endif %}">{{ 'Actif' if m.actif else 'Inactif' }}</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-xs btn-outline-danger btn-sm py-0 px-2 btn-del"
+                                    data-url="{{ url_for('referentiels.materiau_delete', mid=m.id) }}"
+                                    title="Désactiver">✕</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-muted small py-3">Aucun matériau enregistré.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instruments de métrologie ----------------------------------------->
+    <div class="tab-pane fade" id="tab-inst">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex align-items-center py-2">
+                <h2 class="h6 mb-0 me-auto">Instruments de métrologie ({{ instruments | length }})</h2>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalInst">+ Ajouter</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light small"><tr>
+                        <th>Référence</th><th>Type</th><th>Dernier étalonnage</th>
+                        <th>Prochain étalonnage</th><th>Statut</th><th>Actif</th><th></th>
+                    </tr></thead>
+                    <tbody>
+                    {% for i in instruments %}
+                    <tr class="{% if not i.actif %}text-muted{% endif %}">
+                        <td class="small fw-semibold">{{ i.reference }}</td>
+                        <td class="small">{{ i.type_instrument }}</td>
+                        <td class="small">{{ i.date_etalonnage.strftime('%d/%m/%Y') if i.date_etalonnage else '—' }}</td>
+                        <td class="small">{{ i.date_prochain_etalonnage.strftime('%d/%m/%Y') if i.date_prochain_etalonnage else '—' }}</td>
+                        <td>{% if i.date_prochain_etalonnage %}{{ badge_exp(i) }}{% endif %}</td>
+                        <td><span class="badge {% if i.actif %}bg-success{% else %}bg-secondary{% endif %}">{{ 'Actif' if i.actif else 'Inactif' }}</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-xs btn-outline-danger btn-sm py-0 px-2 btn-del"
+                                    data-url="{{ url_for('referentiels.instrument_delete', iid=i.id) }}"
+                                    title="Désactiver">✕</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-center text-muted small py-3">Aucun instrument enregistré.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>{# /tab-content #}
+
+<!-- Modales création -------------------------------------------------------->
+{% macro modal_form(id, title, fields) %}
+<div class="modal fade" id="{{ id }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title h6">{{ title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% for f in fields %}
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">{{ f.label }}{% if f.required %} <span class="text-danger">*</span>{% endif %}</label>
+          {% if f.type == 'date' %}
+          <input type="date" class="form-control form-control-sm" id="{{ id }}-{{ f.name }}" name="{{ f.name }}">
+          {% else %}
+          <input type="text" class="form-control form-control-sm" id="{{ id }}-{{ f.name }}" name="{{ f.name }}"
+                 placeholder="{{ f.placeholder or '' }}" maxlength="{{ f.maxlength or 200 }}">
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary btn-sm modal-save" data-modal="{{ id }}">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{{ modal_form("modalSoudeur", "Ajouter un soudeur", [
+    {"name": "nom", "label": "Nom complet", "required": True, "placeholder": "ex: Jean DUPONT"},
+    {"name": "qualification", "label": "Qualification", "required": True, "placeholder": "ex: DMOS 001-FW-BW"},
+    {"name": "indice", "label": "Indice", "required": False, "placeholder": "ex: A"},
+    {"name": "date_expiration", "label": "Date d'expiration", "type": "date", "required": False},
+]) }}
+
+{{ modal_form("modalCND", "Ajouter un opérateur CND", [
+    {"name": "nom", "label": "Nom complet", "required": True},
+    {"name": "qualification", "label": "Type CND", "required": True, "placeholder": "ex: RT, UT, PT, MT"},
+    {"name": "niveau", "label": "Niveau", "required": True, "placeholder": "ex: II"},
+    {"name": "date_expiration", "label": "Date d'expiration", "type": "date", "required": False},
+]) }}
+
+{{ modal_form("modalMat", "Ajouter un matériau", [
+    {"name": "designation", "label": "Désignation", "required": True, "placeholder": "ex: 304L", "maxlength": 255},
+    {"name": "norme", "label": "Norme", "required": True, "placeholder": "ex: EN 10028-7"},
+    {"name": "certificat", "label": "Type certificat", "required": False, "placeholder": "ex: 3.1 EN 10204"},
+]) }}
+
+{{ modal_form("modalInst", "Ajouter un instrument", [
+    {"name": "reference", "label": "Référence", "required": True, "placeholder": "ex: MAN-042"},
+    {"name": "type_instrument", "label": "Type", "required": True, "placeholder": "ex: Manomètre"},
+    {"name": "date_etalonnage", "label": "Dernier étalonnage", "type": "date", "required": False},
+    {"name": "date_prochain_etalonnage", "label": "Prochain étalonnage", "type": "date", "required": False},
+]) }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    "use strict";
+    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+    const ENDPOINTS = {
+        modalSoudeur: "{{ url_for('referentiels.soudeur_create') }}",
+        modalCND:     "{{ url_for('referentiels.operateur_create') }}",
+        modalMat:     "{{ url_for('referentiels.materiau_create') }}",
+        modalInst:    "{{ url_for('referentiels.instrument_create') }}",
+    };
+
+    document.querySelectorAll(".modal-save").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const mid = btn.dataset.modal;
+            const url = ENDPOINTS[mid];
+            const payload = {};
+            document.querySelectorAll(`#${mid} input`).forEach((inp) => {
+                payload[inp.name] = inp.value;
+            });
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF },
+                body: JSON.stringify(payload),
+            }).then((r) => r.json()).then((d) => {
+                if (d.ok) location.reload();
+                else alert(d.error || "Erreur lors de l'enregistrement.");
+            });
+        });
+    });
+
+    document.querySelectorAll(".btn-del").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            if (!confirm("Désactiver cet enregistrement ?")) return;
+            fetch(btn.dataset.url, {
+                method: "DELETE",
+                headers: { "X-CSRFToken": CSRF },
+            }).then((r) => r.json()).then((d) => {
+                if (d.ok) location.reload();
+                else alert(d.error || "Erreur.");
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

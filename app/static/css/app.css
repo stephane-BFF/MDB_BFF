@@ -1,0 +1,45 @@
+/* MDB BFF — feuille de style applicative (surcouches Bootstrap 5). */
+
+:root {
+    --bff-primary: #0d6efd;
+    --bff-bg-soft: #f8f9fa;
+}
+
+body {
+    background-color: var(--bff-bg-soft);
+}
+
+.navbar-brand small {
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+/* Cartes statut sur le dashboard */
+.card-statut {
+    border-left: 4px solid var(--bs-primary);
+    transition: transform 0.15s ease-in-out;
+}
+
+.card-statut:hover {
+    transform: translateY(-2px);
+}
+
+.card-statut.statut-wizard_brouillon { border-left-color: var(--bs-secondary); }
+.card-statut.statut-brouillon        { border-left-color: var(--bs-info); }
+.card-statut.statut-soumis           { border-left-color: var(--bs-primary); }
+.card-statut.statut-rejete           { border-left-color: var(--bs-warning); }
+.card-statut.statut-valide           { border-left-color: var(--bs-info); }
+.card-statut.statut-signe            { border-left-color: var(--bs-success); }
+.card-statut.statut-cloturee         { border-left-color: var(--bs-dark); }
+.card-statut.statut-archivee         { border-left-color: var(--bs-secondary); }
+
+.statut-badge {
+    font-size: 0.75rem;
+    padding: 0.25em 0.5em;
+}
+
+/* Page de login centrée */
+.login-card {
+    max-width: 420px;
+    margin: 4rem auto;
+}

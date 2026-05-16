@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+@page {
+    size: A4 landscape;
+    margin: 15mm 15mm 20mm 15mm;
+    @bottom-left {
+        content: "BFF · Dossier Constructeur Qualité · PED 2014/68/UE";
+        font-family: Arial, sans-serif;
+        font-size: 7pt;
+        color: #666;
+    }
+    @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-family: Arial, sans-serif;
+        font-size: 7pt;
+        color: #666;
+    }
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 8.5pt;
+    color: #1a1a1a;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+}
+
+h1 { font-size: 13pt; margin: 0 0 2mm; text-transform: uppercase; letter-spacing: 0.5pt; }
+h2 { font-size: 9.5pt; margin: 4mm 0 2mm; border-bottom: 1pt solid #003087; padding-bottom: 1mm; color: #003087; }
+p  { margin: 1mm 0; }
+
+.page-header {
+    display: table;
+    width: 100%;
+    border-bottom: 2pt solid #003087;
+    margin-bottom: 5mm;
+    padding-bottom: 3mm;
+}
+.page-header-logo  { display: table-cell; width: 55mm; vertical-align: middle; }
+.page-header-title { display: table-cell; vertical-align: middle; text-align: center; }
+.page-header-meta  { display: table-cell; width: 52mm; vertical-align: middle; text-align: right; font-size: 8pt; color: #555; }
+
+.logo-img { height: 14mm; }
+.logo-placeholder {
+    display: inline-block;
+    background-color: #003087;
+    color: white;
+    font-size: 18pt;
+    font-weight: bold;
+    padding: 2mm 5mm;
+    letter-spacing: 2pt;
+}
+
+.doc-title { font-size: 11pt; font-weight: bold; color: #003087; text-transform: uppercase; }
+.doc-subtitle { font-size: 8.5pt; color: #555; margin-top: 1mm; }
+
+/* En-tête (fields fixes) */
+table.header-data {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4mm;
+    font-size: 8.5pt;
+}
+table.header-data td {
+    padding: 2mm 3mm;
+    border: 0.5pt solid #ccc;
+    vertical-align: top;
+}
+table.header-data tr:nth-child(even) td { background-color: #f7f9fc; }
+.label { color: #555; font-size: 8pt; }
+.value { font-weight: bold; }
+
+/* Tableau dynamique */
+table.lignes {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4mm;
+    font-size: 8pt;
+}
+table.lignes th {
+    background-color: #003087;
+    color: white;
+    padding: 2mm 2.5mm;
+    text-align: left;
+    font-weight: bold;
+    font-size: 7.5pt;
+    border: 0.5pt solid #003087;
+}
+table.lignes td {
+    padding: 1.5mm 2.5mm;
+    border: 0.5pt solid #ccc;
+    vertical-align: middle;
+}
+table.lignes tr:nth-child(even) td { background-color: #f7f9fc; }
+
+.badge-oui {
+    display: inline-block; background-color: #198754; color: white;
+    padding: 0.3mm 2mm; border-radius: 1mm; font-size: 7.5pt;
+}
+.badge-non {
+    display: inline-block; background-color: #dc3545; color: white;
+    padding: 0.3mm 2mm; border-radius: 1mm; font-size: 7.5pt;
+}
+
+.signature-block {
+    margin-top: 6mm;
+    border: 1pt solid #003087;
+    padding: 4mm;
+    background-color: #f0f4fc;
+    page-break-inside: avoid;
+}
+.signature-title { font-weight: bold; font-size: 9.5pt; color: #003087; margin-bottom: 2mm; }
+.hash-value {
+    font-family: "Courier New", monospace;
+    font-size: 7pt;
+    word-break: break-all;
+    background-color: #fff;
+    border: 0.5pt solid #ccc;
+    padding: 1mm 2mm;
+    margin-top: 1mm;
+    display: block;
+}
+
+.doc-footer {
+    margin-top: 8mm;
+    border-top: 1pt solid #ccc;
+    padding-top: 3mm;
+    font-size: 7.5pt;
+    color: #888;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+
+{# ── EN-TÊTE BFF ─────────────────────────────────────────────────────────── #}
+<div class="page-header">
+    <div class="page-header-logo">
+        {% if logo_uri %}
+        <img src="{{ logo_uri }}" class="logo-img" alt="Logo BFF">
+        {% else %}
+        <span class="logo-placeholder">BFF</span>
+        {% endif %}
+    </div>
+    <div class="page-header-title">
+        <div class="doc-title">{{ svc.TITLE }}</div>
+        <div class="doc-subtitle">Cahier de Contrôle — Chapitre {{ svc.CHAPITRE.value }}</div>
+    </div>
+    <div class="page-header-meta">
+        <strong>N° Affaire :</strong> {{ affaire.numero_affaire }}<br>
+        <strong>Formulaire :</strong> {{ svc.CODE }} v{{ formulaire.template_version }}<br>
+        <strong>Statut :</strong> {{ formulaire.statut.label }}
+    </div>
+</div>
+
+{# ── IDENTIFICATION AFFAIRE ──────────────────────────────────────────────── #}
+<h2>1. Identification de l'affaire</h2>
+<table class="header-data">
+    <tr>
+        <td class="label" style="width:20%">Client</td>
+        <td class="value" style="width:30%">{{ affaire.client_nom or '—' }}</td>
+        <td class="label" style="width:20%">Référence client</td>
+        <td class="value" style="width:30%">{{ affaire.references_client or '—' }}</td>
+    </tr>
+    <tr>
+        <td class="label">N° affaire BFF</td>
+        <td class="value">{{ affaire.numero_affaire }}</td>
+        <td class="label">Réf. interne</td>
+        <td class="value">{{ affaire.references_internes or '—' }}</td>
+    </tr>
+</table>
+
+{# ── EN-TÊTE FIXE DU FORMULAIRE (si HEADER_SECTIONS) ───────────────────── #}
+{% if svc.HEADER_SECTIONS %}
+{% set header_data = form_data.get('header', {}) %}
+{% for section in svc.HEADER_SECTIONS %}
+<h2>{{ loop.index + 1 }}. {{ section.title }}</h2>
+{% set short_fields = [] %}
+{% set long_fields = [] %}
+{% for fspec in section.fields %}
+    {% if fspec.field_type == 'textarea' %}{% if long_fields.append(fspec) %}{% endif %}
+    {% else %}{% if short_fields.append(fspec) %}{% endif %}{% endif %}
+{% endfor %}
+{% if short_fields %}
+<table class="header-data">
+    {% for fspec in short_fields %}
+    {% set val = header_data.get(fspec.name) %}
+    {% if loop.index0 % 2 == 0 %}
+    <tr>
+        <td class="label" style="width:20%">{{ fspec.label }}</td>
+        <td class="value" style="width:30%">
+            {%- if val is none or val == '' -%}—
+            {%- elif fspec.field_type == 'checkbox' -%}
+                {% if val %}<span class="badge-oui">Oui</span>{% else %}<span class="badge-non">Non</span>{% endif %}
+            {%- elif fspec.field_type == 'date' -%}
+                {%- set s = val|string -%}{{ s[8:10] }}/{{ s[5:7] }}/{{ s[:4] }}
+            {%- else -%}{{ val }}{%- endif -%}
+        </td>
+        {% set ni = loop.index0 + 1 %}
+        {% if ni < short_fields|length %}
+        {% set nspec = short_fields[ni] %}
+        {% set nval = header_data.get(nspec.name) %}
+        <td class="label" style="width:20%">{{ nspec.label }}</td>
+        <td class="value" style="width:30%">
+            {%- if nval is none or nval == '' -%}—
+            {%- elif nspec.field_type == 'checkbox' -%}
+                {% if nval %}<span class="badge-oui">Oui</span>{% else %}<span class="badge-non">Non</span>{% endif %}
+            {%- elif nspec.field_type == 'date' -%}
+                {%- set s = nval|string -%}{{ s[8:10] }}/{{ s[5:7] }}/{{ s[:4] }}
+            {%- else -%}{{ nval }}{%- endif -%}
+        </td>
+        {% else %}
+        <td colspan="2"></td>
+        {% endif %}
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table>
+{% endif %}
+{% for fspec in long_fields %}
+{% set val = header_data.get(fspec.name) %}
+<p class="label" style="margin-top:2mm;"><strong>{{ fspec.label }}</strong></p>
+<table class="header-data"><tr><td style="white-space:pre-wrap;">{{ val or '(aucune)' }}</td></tr></table>
+{% endfor %}
+{% endfor %}
+{% set section_offset = svc.HEADER_SECTIONS|length + 1 %}
+{% else %}
+{% set section_offset = 1 %}
+{% endif %}
+
+{# ── TABLEAU DES LIGNES ──────────────────────────────────────────────────── #}
+{% if svc.TABLE_SPEC %}
+{% set lignes = form_data.get('lignes', []) %}
+<h2>{{ section_offset + 1 }}. {{ svc.TABLE_SPEC.title }}</h2>
+{% if lignes %}
+<table class="lignes">
+    <thead>
+        <tr>
+            <th style="width:30px; text-align:center">#</th>
+            {% for col in svc.TABLE_SPEC.cols %}
+            <th>{{ col.label }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in lignes %}
+        <tr>
+            <td style="text-align:center; color:#888; font-size:7.5pt;">{{ loop.index }}</td>
+            {% for col in svc.TABLE_SPEC.cols %}
+            {% set cell_val = row.get(col.name) %}
+            <td>
+                {%- if cell_val is none or cell_val == '' -%}
+                —
+                {%- elif col.col_type == 'checkbox' -%}
+                    {% if cell_val %}<span class="badge-oui">Oui</span>{% else %}<span class="badge-non">Non</span>{% endif %}
+                {%- elif col.col_type == 'date' -%}
+                    {%- set s = cell_val|string -%}{{ s[8:10] }}/{{ s[5:7] }}/{{ s[:4] }}
+                {%- else -%}
+                {{ cell_val }}
+                {%- endif -%}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888; font-style:italic;">(Aucune ligne enregistrée)</p>
+{% endif %}
+{% endif %}
+
+{# ── SIGNATURES ──────────────────────────────────────────────────────────── #}
+{% if signatures %}
+<div class="signature-block">
+    <div class="signature-title">&#9654; Signature électronique</div>
+    {% for sig in signatures %}
+    <p>
+        Signé le <strong>{{ sig.created_at.strftime('%d/%m/%Y à %H:%M UTC') }}</strong>
+        par
+        {% if sig.user %}<strong>{{ sig.user.full_name }}</strong> ({{ sig.user.role.label }})
+        {% else %}<strong>—</strong>{% endif %}
+    </p>
+    <p>Empreinte SHA-256 :</p>
+    <span class="hash-value">{{ sig.hash_sha256 }}</span>
+    {% endfor %}
+</div>
+{% else %}
+<div class="signature-block" style="border-color:#aaa; background-color:#fafafa;">
+    <div class="signature-title" style="color:#888;">&#9654; Signature électronique</div>
+    <p style="color:#888; font-style:italic;">Formulaire non encore signé.</p>
+    <table style="width:100%; margin-top:4mm;">
+        <tr>
+            <td style="width:45%; border-bottom:1pt solid #999; height:15mm; vertical-align:bottom; font-size:8pt; color:#888; padding-bottom:1mm;">Rédacteur / Date</td>
+            <td style="width:10%;"></td>
+            <td style="width:45%; border-bottom:1pt solid #999; height:15mm; vertical-align:bottom; font-size:8pt; color:#888; padding-bottom:1mm;">Approbateur / Date</td>
+        </tr>
+    </table>
+</div>
+{% endif %}
+
+{# ── PIED DE PAGE DOCUMENT ───────────────────────────────────────────────── #}
+<div class="doc-footer">
+    Brown Fintube France Energy · PED 2014/68/UE · MDB {{ affaire.numero_affaire }} · {{ svc.CODE }} v{{ formulaire.template_version }}
+    {% if formulaire.created_at %} · Créé le {{ formulaire.created_at.strftime('%d/%m/%Y') }}{% endif %}
+</div>
+
+</body>
+</html>
