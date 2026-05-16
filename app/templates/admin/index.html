@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Administration — Utilisateurs{% endblock %}
+
+{% block content %}
+<div class="row mb-3 align-items-center">
+    <div class="col">
+        <h1 class="h4 mb-0">Gestion des utilisateurs
+            <span class="text-muted fw-normal fs-6 ms-2">{{ users|length }} compte{{ 's' if users|length != 1 else '' }}</span>
+        </h1>
+    </div>
+    <div class="col-auto d-flex gap-2">
+        <a href="{{ url_for('admin.audit_log') }}" class="btn btn-sm btn-outline-secondary">Journal d'audit</a>
+        <a href="{{ url_for('admin.user_create') }}" class="btn btn-sm btn-primary">+ Nouvel utilisateur</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom</th>
+                    <th>E-mail</th>
+                    <th>Rôle</th>
+                    <th>Statut</th>
+                    <th>Créé le</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr class="{% if not u.actif %}table-secondary text-muted{% endif %}">
+                    <td class="fw-semibold">{{ u.full_name }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                        <span class="badge
+                            {% if u.role.value == 'admin' %}bg-danger
+                            {% elif u.role.value == 'approbateur' %}bg-warning text-dark
+                            {% elif u.role.value == 'verificateur' %}bg-info text-dark
+                            {% elif u.role.value == 'redacteur' %}bg-primary
+                            {% else %}bg-secondary{% endif %}">
+                            {{ u.role.label }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if u.actif %}
+                            <span class="badge bg-success">Actif</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactif</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted">{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '—' }}</td>
+                    <td class="text-end">
+                        <div class="d-flex gap-1 justify-content-end flex-wrap">
+                            <a href="{{ url_for('admin.user_edit', uid=u.id) }}"
+                               class="btn btn-xs btn-outline-secondary">Modifier</a>
+                            <a href="{{ url_for('admin.user_reset_password', uid=u.id) }}"
+                               class="btn btn-xs btn-outline-warning">Mot de passe</a>
+                            {% if u.id != current_user.id %}
+                            <button class="btn btn-xs {% if u.actif %}btn-outline-danger{% else %}btn-outline-success{% endif %} btn-toggle"
+                                    data-uid="{{ u.id }}"
+                                    data-actif="{{ u.actif | lower }}">
+                                {{ 'Désactiver' if u.actif else 'Activer' }}
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Aucun utilisateur.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.btn-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const uid = btn.dataset.uid;
+        const resp = await fetch(`/admin/users/${uid}/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
+            },
+        });
+        if (resp.ok) location.reload();
+    });
+});
+</script>
+{% endblock %}

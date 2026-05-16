@@ -68,7 +68,7 @@
                     <td>
                         {% if e.contexte %}
                             <span class="font-monospace text-muted" style="font-size:.75rem">
-                                {{ e.contexte | tojson(ensure_ascii=False) | truncate(80) }}
+                                {{ e.contexte | tojson | truncate(80) }}
                             </span>
                         {% else %}—{% endif %}
                     </td>

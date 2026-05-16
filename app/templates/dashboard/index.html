@@ -3,44 +3,134 @@
 {% block title %}Tableau de bord{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h1 class="h3">Tableau de bord</h1>
-        <p class="text-muted">Vue d'ensemble des dossiers MDB.</p>
+<div class="row mb-3 align-items-center">
+    <div class="col">
+        <h1 class="h3 mb-0">Tableau de bord</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('affaires.export_csv') }}" class="btn btn-sm btn-outline-secondary">
+            Export CSV
+        </a>
     </div>
 </div>
 
+<!-- Compteurs par statut -->
 <div class="row g-3 mb-4">
     {% for statut in statuts %}
-    <div class="col-6 col-md-3 col-xl-auto">
-        <div class="card card-statut statut-{{ statut.value }} h-100">
+    {% if statut.value != 'wizard_brouillon' %}
+    <div class="col-6 col-md-3 col-xl-2">
+        <div class="card card-statut statut-{{ statut.value }} h-100 shadow-sm">
             <div class="card-body py-3">
                 <div class="d-flex justify-content-between align-items-baseline">
                     <span class="text-muted small">{{ statut.label }}</span>
-                    <span class="h4 mb-0">{{ statut_counts.get(statut, 0) }}</span>
+                    <span class="h4 mb-0 fw-bold">{{ statut_counts.get(statut, 0) }}</span>
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
     {% endfor %}
 </div>
 
-<div class="row">
-    <div class="col-12">
+<div class="row g-3 mb-4">
+    <!-- Jalons en retard -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
+                <h2 class="h6 mb-0">
+                    Jalons en retard
+                    {% if jalons_retard %}
+                    <span class="badge bg-danger ms-1">{{ jalons_retard|length }}</span>
+                    {% endif %}
+                </h2>
+            </div>
+            <div class="card-body p-0">
+                {% if jalons_retard %}
+                <table class="table table-hover table-sm mb-0 small align-middle">
+                    <thead class="table-light"><tr><th>Affaire</th><th>Jalon</th><th>Prévu le</th></tr></thead>
+                    <tbody>
+                        {% for j in jalons_retard %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('jalons.index', affaire_id=j.affaire_id) }}" class="text-decoration-none">
+                                    <code>{{ j.affaire.numero_affaire if j.affaire else '?' }}</code>
+                                </a>
+                            </td>
+                            <td>{{ j.code.value }} — {{ j.label }}</td>
+                            <td class="text-danger">
+                                {{ j.date_prevue.strftime('%d/%m/%Y') if j.date_prevue else '—' }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-3 text-center text-muted small">Aucun jalon en retard.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertes certifications -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
+                <h2 class="h6 mb-0">
+                    Alertes référentiels
+                    {% if alertes %}
+                    <span class="badge bg-warning text-dark ms-1">{{ alertes|length }}</span>
+                    {% endif %}
+                </h2>
+                {% if alertes %}
+                <a href="{{ url_for('referentiels.index') }}" class="btn btn-xs btn-outline-secondary">Référentiels</a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% if alertes %}
+                <table class="table table-hover table-sm mb-0 small align-middle">
+                    <thead class="table-light"><tr><th>Ressource</th><th>Détail</th><th>Niveau</th></tr></thead>
+                    <tbody>
+                        {% for a in alertes %}
+                        <tr>
+                            <td>{{ a.label }}</td>
+                            <td class="text-muted">{{ a.detail }}</td>
+                            <td>
+                                {% if a.niveau == 'expire' %}
+                                <span class="badge bg-danger">Expiré</span>
+                                {% elif a.niveau == 'bientot' %}
+                                <span class="badge bg-warning text-dark">Bientôt</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ a.niveau }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-3 text-center text-muted small">Aucune alerte active.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Dernières affaires -->
+    <div class="col-lg-7">
         <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h2 class="h5 mb-0">Dernières affaires</h2>
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
+                <h2 class="h6 mb-0">Dernières affaires</h2>
+                <a href="{{ url_for('affaires.index') }}" class="btn btn-xs btn-outline-secondary">Toutes</a>
             </div>
             <div class="card-body p-0">
                 {% if recent_affaires %}
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover table-sm mb-0 small align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th>N° Affaire</th>
                                 <th>Client</th>
-                                <th>Repère</th>
-                                <th>Type</th>
                                 <th>Statut</th>
                                 <th>Créée le</th>
                             </tr>
@@ -48,23 +138,54 @@
                         <tbody>
                             {% for a in recent_affaires %}
                             <tr>
-                                <td><code>{{ a.numero_affaire or '—' }}</code></td>
-                                <td>{{ a.client_nom or '—' }}</td>
-                                <td>{{ a.repere or '—' }}</td>
-                                <td>{{ a.type_echangeur or '—' }}</td>
                                 <td>
-                                    <span class="badge statut-badge bg-secondary">{{ a.statut.label }}</span>
+                                    <a href="{{ url_for('affaires.show', affaire_id=a.id) }}" class="text-decoration-none">
+                                        <code>{{ a.numero_affaire or '—' }}</code>
+                                    </a>
                                 </td>
-                                <td class="text-muted small">{{ a.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>{{ a.client_nom or '—' }}</td>
+                                <td><span class="badge statut-badge bg-secondary">{{ a.statut.label }}</span></td>
+                                <td class="text-muted">{{ a.created_at.strftime('%d/%m/%Y') }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 {% else %}
-                <div class="p-4 text-center text-muted">
-                    Aucune affaire pour le moment. Le wizard de création arrive bientôt.
-                </div>
+                <div class="p-4 text-center text-muted small">Aucune affaire pour le moment.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Activité récente -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
+                <h2 class="h6 mb-0">Activité récente</h2>
+                {% if current_user.role.value == 'admin' %}
+                <a href="{{ url_for('admin.audit_log') }}" class="btn btn-xs btn-outline-secondary">Journal</a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% if recent_audit %}
+                <ul class="list-group list-group-flush small">
+                    {% for e in recent_audit %}
+                    <li class="list-group-item px-3 py-2">
+                        <div class="d-flex justify-content-between">
+                            <code class="text-primary" style="font-size:.78rem">{{ e.action }}</code>
+                            <span class="text-muted" style="font-size:.75rem">
+                                {{ e.created_at.strftime('%d/%m %H:%M') if e.created_at else '' }}
+                            </span>
+                        </div>
+                        {% if e.user %}
+                        <div class="text-muted" style="font-size:.75rem">{{ e.user.full_name }}</div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="p-3 text-center text-muted small">Aucune activité récente.</div>
                 {% endif %}
             </div>
         </div>
