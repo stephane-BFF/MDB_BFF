@@ -1,13 +1,22 @@
 """Commande ``flask seed`` — initialise les données de référence MDB BFF.
 
 Crée :
-    - 5 utilisateurs BFF (un par rôle), mot de passe initial ``BFF-init-2026!``.
-    - 1 ``FormulaireTemplate`` pilote ``HYDR v1`` (chapitre E).
+    - 7 utilisateurs BFF (équipe qualité réelle), mot de passe initial ``BFF-init-2026!``.
+    - Les templates ``FormulaireTemplate`` pour les 27 formulaires (chapitre A–G).
     - Trace les créations dans ``audit_trail`` (action ``"seed.created"``).
 
 La commande est **idempotente** : un second appel ne duplique pas les lignes.
 Pour la prod, utiliser ``flask seed --force`` n'est pas requis — les `INSERT`
 sont gardés par un `SELECT` préalable sur les clés uniques.
+
+Équipe BFF :
+    - Stéphane PAUMELLE  <Stephane.Paumelle@ait-stein.com>  — Admin (Directeur pôle décarbonation)
+    - Brice GIRARD       <Brice.Girard@bffrance.com>         — Approbateur (Responsable QC)
+    - Vincent VAUTHIER   <Vincent.Vauthier@bffrance.com>     — Approbateur (Inspecteur QC, CND niv II Cofrend + niv III ASNT)
+    - Loïc CUVELIER      <Loic.Cuvelier@bffrance.com>        — Vérificateur (Contrôleur CND niv II Cofrend + ASNT)
+    - Paul BRITO         <Paul.BRITO@bffrance.com>           — Vérificateur (Inspecteur QC)
+    - Florence MARQUE    <florence.marque@bffrance.com>      — Vérificateur (Inspecteur QC)
+    - Corentin DUVAL-ARNOULD <Corentin.DUVAL-ARNOULD@bffrance.com> — Rédacteur (Responsable production et soudage)
 """
 from __future__ import annotations
 
@@ -39,11 +48,13 @@ class _TemplateSpec:
 _SEED_PASSWORD = "BFF-init-2026!"  # noqa: S105 — placeholder de seed, à changer au 1er login
 
 _SEED_USERS: tuple[tuple[str, str, str, Role], ...] = (
-    ("lecteur@bff.fr", "Lecteur", "BFF", Role.LECTEUR),
-    ("redacteur@bff.fr", "Rédacteur", "BFF", Role.REDACTEUR),
-    ("verificateur@bff.fr", "Vérificateur", "BFF", Role.VERIFICATEUR),
-    ("approbateur@bff.fr", "Approbateur", "BFF", Role.APPROBATEUR),
-    ("admin@bff.fr", "Admin", "BFF", Role.ADMIN),
+    ("Stephane.Paumelle@ait-stein.com", "Stéphane", "PAUMELLE", Role.ADMIN),
+    ("Brice.Girard@bffrance.com", "Brice", "GIRARD", Role.APPROBATEUR),
+    ("Vincent.Vauthier@bffrance.com", "Vincent", "VAUTHIER", Role.APPROBATEUR),
+    ("Loic.Cuvelier@bffrance.com", "Loïc", "CUVELIER", Role.VERIFICATEUR),
+    ("Paul.BRITO@bffrance.com", "Paul", "BRITO", Role.VERIFICATEUR),
+    ("florence.marque@bffrance.com", "Florence", "MARQUE", Role.VERIFICATEUR),
+    ("Corentin.DUVAL-ARNOULD@bffrance.com", "Corentin", "DUVAL-ARNOULD", Role.REDACTEUR),
 )
 
 _SEED_TEMPLATES: tuple[_TemplateSpec, ...] = (
@@ -301,7 +312,7 @@ def seed_command() -> None:
     created_templates = _seed_templates()
     db.session.commit()
 
-    click.echo(f"[OK] {created_users} utilisateurs crees (deja presents ignores).")
+    click.echo(f"[OK] {created_users} utilisateur(s) cree(s) (deja presents ignores).")
     click.echo(f"[OK] {created_templates} templates de formulaire crees.")
     click.echo(f"     Mot de passe initial : {_SEED_PASSWORD!r} (a changer au 1er login).")
     current_app.logger.info(
@@ -311,7 +322,7 @@ def seed_command() -> None:
 
 
 def _seed_users() -> int:
-    """Crée les 5 utilisateurs BFF. Retourne le nombre de créations effectives."""
+    """Crée les 7 utilisateurs de l'équipe BFF. Retourne le nombre de créations effectives."""
     created = 0
     for email, prenom, nom, role in _SEED_USERS:
         if db.session.query(User).filter_by(email=email).first() is not None:
