@@ -344,7 +344,9 @@ def _add_fichiers_importes(affaire: Affaire, plan: _PlanAssemblage) -> None:
         if not os.path.exists(filepath):
             current_app.logger.warning(
                 "assemblage.fichier_manquant",
-                extra={"filename": fichier.filename, "titre": fichier.titre},
+                # NB : ne pas utiliser la clé réservée ``filename`` dans ``extra``
+                # (collision avec LogRecord.filename → KeyError).
+                extra={"fichier": fichier.filename, "titre": fichier.titre},
             )
             continue
         try:

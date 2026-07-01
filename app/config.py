@@ -60,6 +60,22 @@ class Config:
     LDAP_BASE_DN: str = os.environ.get("LDAP_BASE_DN", "")
     LDAP_BIND_DN: str = os.environ.get("LDAP_BIND_DN", "")
     LDAP_BIND_PASSWORD: str = os.environ.get("LDAP_BIND_PASSWORD", "")
+    # Gabarit du DN de bind utilisateur. ``{username}`` = partie locale de l'e-mail,
+    # ``{email}`` = e-mail complet. Ex UPN AD : "{username}@bff.local".
+    LDAP_USER_DN_TEMPLATE: str = os.environ.get(
+        "LDAP_USER_DN_TEMPLATE", "{username}@bff.local"
+    )
+
+    # 2FA TOTP — nom d'émetteur affiché dans l'app d'authentification
+    TOTP_ISSUER: str = os.environ.get("TOTP_ISSUER", "MDB BFF")
+    # Si True, un Approbateur/Admin sans 2FA active est redirigé vers l'enrôlement
+    # après login (durcissement prod). False en dev/test pour ne pas bloquer.
+    ENFORCE_2FA: bool = os.environ.get("ENFORCE_2FA", "false").lower() == "true"
+
+    # Internationalisation (Flask-Babel)
+    BABEL_DEFAULT_LOCALE: str = os.environ.get("BABEL_DEFAULT_LOCALE", "fr")
+    BABEL_DEFAULT_TIMEZONE: str = os.environ.get("BABEL_DEFAULT_TIMEZONE", "Europe/Paris")
+    LANGUAGES: tuple[str, ...] = ("fr", "en", "de", "it")
 
 
 class DevelopmentConfig(Config):

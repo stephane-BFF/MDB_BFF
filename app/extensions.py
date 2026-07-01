@@ -1,4 +1,5 @@
 """Instances des extensions Flask — initialisées sans app (pattern factory)."""
+from flask_babel import Babel
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
@@ -12,6 +13,7 @@ migrate = Migrate()
 login_manager = LoginManager()
 csrf = CSRFProtect()
 mail = Mail()
+babel = Babel()
 
 login_manager.login_view = "auth.login"
 login_manager.login_message = "Veuillez vous connecter pour accéder à cette page."

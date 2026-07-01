@@ -1,0 +1,32 @@
+# MDB BFF — Catalogo di traduzione italiano.
+msgid ""
+msgstr ""
+"Project-Id-Version: MDB BFF 1.0\n"
+"Report-Msgid-Bugs-To: stephane.paumelle@ait-stein.com\n"
+"POT-Creation-Date: 2026-07-01 00:00+0200\n"
+"PO-Revision-Date: 2026-07-01 00:00+0200\n"
+"Last-Translator: MDB BFF\n"
+"Language: it\n"
+"Language-Team: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Dossier Constructeur Qualité"
+msgstr "Fascicolo qualità del costruttore"
+
+msgid "Langue"
+msgstr "Lingua"
+
+msgid "Tableau de bord"
+msgstr "Cruscotto"
+
+msgid "Affaires"
+msgstr "Commesse"
+
+msgid "Référentiels"
+msgstr "Anagrafiche"
+
+msgid "Se déconnecter"
+msgstr "Esci"

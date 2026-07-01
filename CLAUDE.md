@@ -156,8 +156,8 @@ Ajouter une langue = un fichier `.po`, pas un nouveau template HTML.
 - **Pression épreuve** : `PT = round(PS × 1.43, 1)` — JS temps réel + revalidation serveur
 - **Workflow statuts** : `BROUILLON → SOUMIS → VALIDE → SIGNE` (irréversible sauf Admin)
 - **Jalons** : un jalon ne peut être franchi que si tous ses prérequis sont VALIDE
-- **Numéro d'affaire** : format `BN{AAAA}-{NNN}` (ex: BN2026-042)
-- **Chemin réseau PDF** : `\\BFF-FICHIERS\Affaires\{annee}\{num_affaire}\MDB\`
+- **Numéro d'affaire** : format `BN{XXXX}` (ex: BN0876) pour affaire tpe neuf et format `BP{XXXX}` (ex: BP0622)
+- **Chemin réseau PDF** : `\\BFF-FICHIERS\Affaires\6 - AFFAIRES EN COURS\{num_affaire}\MDB\`
 
 ## Conventions — NON NÉGOCIABLES
 
@@ -232,7 +232,19 @@ gunicorn run:app -w 4 -b 0.0.0.0:5000
 waitress-serve --port=5000 run:app
 ```
 
-## Phase Actuelle : PHASE 1 — Infrastructure & MVP
+## État : V1.0.0-rc (2026-07-01) — 5 phases livrées
+
+Les 5 phases de la roadmap sont livrées. Les 4 chantiers de finition V1 sont clos :
+authentification **LDAP/AD** (`services/ldap_auth.py`, mockable) + repli local,
+**2FA TOTP** (Approbateur/Admin, enrôlement QR + codes de secours), **API REST**
+`/api/v1/` en lecture (jeton porteur, OpenAPI), **i18n Flask-Babel** (FR/EN/DE/IT,
+catalogues `.po`/`.mo` dans `app/translations/`), et **durcissement** des zones
+critiques PDF/alertes. Détail : `docs/V1_FINALISATION_2026-07-01.md`.
+
+Reporté V1.1 (hors périmètre de cette itération) : déploiement HTTPS NAS,
+enforcement 2FA par défaut (`ENFORCE_2FA`), recette terrain équipe BFF.
+
+## Historique — PHASE 1 : Infrastructure & MVP
 
 **Livrable** : wizard affaire + formulaire HYDR complet + PDF HYDR avec en-tête BFF.
 

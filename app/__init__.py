@@ -1,10 +1,10 @@
 """Application factory MDB BFF."""
 import os
 
-from flask import Flask
+from flask import Flask, request, session
 
 from app.config import config_by_name
-from app.extensions import csrf, db, login_manager, mail, migrate
+from app.extensions import babel, csrf, db, login_manager, mail, migrate
 
 
 def create_app(config_name: str | None = None) -> Flask:
@@ -38,6 +38,29 @@ def _init_extensions(app: Flask) -> None:
     csrf.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
+    babel.init_app(app, locale_selector=_select_locale)
+
+
+def _select_locale() -> str:
+    """Sélectionne la langue de la requête (Flask-Babel).
+
+    Priorité : paramètre ``?lang=`` (persisté en session) → langue en session →
+    meilleure correspondance ``Accept-Language`` → langue par défaut.
+    Seules les langues déclarées dans ``LANGUAGES`` sont acceptées.
+    """
+    from flask import current_app  # noqa: PLC0415
+
+    languages = current_app.config.get("LANGUAGES", ("fr",))
+    requested = request.args.get("lang")
+    if requested in languages:
+        session["lang"] = requested
+        return requested
+    if session.get("lang") in languages:
+        return session["lang"]
+    return (
+        request.accept_languages.best_match(languages)
+        or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+    )
 
 
 def _register_models() -> None:
@@ -52,6 +75,8 @@ def _register_context_processors(app: Flask) -> None:
 
     @app.context_processor
     def inject_globals() -> dict:
+        from flask_babel import get_locale  # noqa: PLC0415
+
         nb_alertes = 0
         if current_user.is_authenticated:
             try:
@@ -59,14 +84,20 @@ def _register_context_processors(app: Flask) -> None:
                 nb_alertes = count_alertes()
             except Exception:  # noqa: BLE001
                 pass
-        return {"nb_alertes": nb_alertes}
+        return {
+            "nb_alertes": nb_alertes,
+            "current_locale": str(get_locale() or app.config.get("BABEL_DEFAULT_LOCALE", "fr")),
+            "languages": app.config.get("LANGUAGES", ("fr",)),
+        }
 
 
 def _register_cli(app: Flask) -> None:
     """Enregistre les commandes ``flask <…>`` personnalisées."""
+    from app.cli.api_token import api_token_group
     from app.cli.seed import seed_command
 
     app.cli.add_command(seed_command)
+    app.cli.add_command(api_token_group)
 
 
 def _register_blueprints(app: Flask) -> None:

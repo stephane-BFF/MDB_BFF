@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Double authentification{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 640px;">
+    <h1 class="h4 mb-3">Double authentification (2FA)</h1>
+
+    {% if activated %}
+        <div class="alert alert-success">
+            <strong>2FA activée.</strong> Conservez précieusement vos codes de secours :
+            chacun n'est utilisable qu'une seule fois si vous perdez votre téléphone.
+        </div>
+        <div class="card">
+            <div class="card-header">Codes de secours (affichés une seule fois)</div>
+            <div class="card-body">
+                <div class="row row-cols-2 row-cols-md-4 g-2 font-monospace fs-5">
+                    {% for code in backup_codes %}
+                        <div class="col text-center border rounded py-2">{{ code }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary mt-3">Terminer</a>
+    {% else %}
+        <p class="text-muted">
+            Scannez ce QR&nbsp;code avec Google&nbsp;Authenticator, FreeOTP ou Microsoft
+            Authenticator, puis saisissez le code à 6&nbsp;chiffres pour activer la 2FA.
+        </p>
+
+        <div class="card mb-3">
+            <div class="card-body text-center">
+                {% if qr_uri %}
+                    <img src="{{ qr_uri }}" alt="QR code d'enrôlement TOTP" class="img-fluid mb-2" style="max-width: 220px;">
+                {% endif %}
+                {% if secret %}
+                    <div class="small text-muted">Clé manuelle&nbsp;:</div>
+                    <code class="user-select-all">{{ secret }}</code>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.code.label(class="form-label") }}
+                {{ form.code(class="form-control form-control-lg text-center" + (" is-invalid" if form.code.errors else "")) }}
+                {% for error in form.code.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="d-grid">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}
