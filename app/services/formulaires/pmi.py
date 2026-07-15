@@ -6,6 +6,8 @@ En-tête fixe (date, procédure, appareil) + tableau dynamique JS
 """
 from __future__ import annotations
 
+from flask_babel import lazy_gettext as _l
+
 from app.enums import Chapitre
 from app.services.formulaires.base import (
     ColSpec,
@@ -24,35 +26,35 @@ class PmiService(TableFormulaireService):
     REQUIRED_LIGNES = 1
     REQUIRED_HEADER = frozenset({"date_pmi", "procedure"})
     HEADER_SECTIONS = [
-        SectionSpec("En-tête", [
-            FieldSpec("date_pmi", "Date du contrôle PMI", "date",
+        SectionSpec(_l("En-tête"), [
+            FieldSpec("date_pmi", _l("Date du contrôle PMI"), "date",
                       required=True, col_class="col-sm-6 col-md-3"),
-            FieldSpec("procedure", "Référence procédure PMI", "text",
+            FieldSpec("procedure", _l("Référence procédure PMI"), "text",
                       required=True, maxlength=100, col_class="col-sm-6 col-md-4"),
-            FieldSpec("appareil_pmi", "Appareil PMI utilisé", "text",
+            FieldSpec("appareil_pmi", _l("Appareil PMI utilisé"), "text",
                       maxlength=100, col_class="col-sm-6 col-md-3"),
-            FieldSpec("operateur", "Opérateur", "text",
+            FieldSpec("operateur", _l("Opérateur"), "text",
                       maxlength=100, col_class="col-sm-6 col-md-3",
-                      help_text="Phase 4 : sélection depuis le référentiel QC."),
+                      help_text=_l("Phase 4 : sélection depuis le référentiel QC.")),
         ]),
     ]
     TABLE_SPEC = TableSpec(
-        title="Résultats PMI par composant",
+        title=_l("Résultats PMI par composant"),
         cols=[
-            ColSpec("composant", "Composant / repère", "text",
+            ColSpec("composant", _l("Composant / repère"), "text",
                     required=True, maxlength=100, width="w-20"),
-            ColSpec("grade_attendu", "Grade attendu", "text",
+            ColSpec("grade_attendu", _l("Grade attendu"), "text",
                     required=True, maxlength=100, width="w-15"),
-            ColSpec("resultats", "Résultats mesurés", "text",
+            ColSpec("resultats", _l("Résultats mesurés"), "text",
                     maxlength=200, width="w-20"),
-            ColSpec("conformite", "Conformité", "select",
+            ColSpec("conformite", _l("Conformité"), "select",
                     options=[
-                        ("", "—"),
-                        ("conforme", "Conforme"),
-                        ("non_conforme", "Non conforme"),
+                        ("", _l("—")),
+                        ("conforme", _l("Conforme")),
+                        ("non_conforme", _l("Non conforme")),
                     ],
                     width="w-15"),
-            ColSpec("remarques", "Remarques", "text",
+            ColSpec("remarques", _l("Remarques"), "text",
                     maxlength=200, width="w-auto"),
         ],
     )

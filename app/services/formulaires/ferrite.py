@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from flask_babel import lazy_gettext as _l
+
 from app.enums import Chapitre
 from app.services.formulaires.base import (
     ColSpec,
@@ -28,43 +30,43 @@ class FeriteService(TableFormulaireService):
     REQUIRED_LIGNES = 1
     REQUIRED_HEADER = frozenset({"procedure", "critere_min", "critere_max", "date_ferrite"})
     HEADER_SECTIONS = [
-        SectionSpec("Paramètres du contrôle", [
-            FieldSpec("procedure", "Référence procédure", "text",
+        SectionSpec(_l("Paramètres du contrôle"), [
+            FieldSpec("procedure", _l("Référence procédure"), "text",
                       required=True, maxlength=100, col_class="col-sm-6 col-md-4"),
-            FieldSpec("ferritoscope", "Ferritoscope utilisé", "text",
+            FieldSpec("ferritoscope", _l("Ferritoscope utilisé"), "text",
                       maxlength=100, col_class="col-sm-6 col-md-4",
-                      help_text="Phase 4 : sélection depuis le référentiel métrologie."),
-            FieldSpec("critere_min", "Teneur min. en ferrite (FN)", "float",
+                      help_text=_l("Phase 4 : sélection depuis le référentiel métrologie.")),
+            FieldSpec("critere_min", _l("Teneur min. en ferrite (FN)"), "float",
                       required=True, step="0.1", min_val="0",
                       col_class="col-sm-6 col-md-2"),
-            FieldSpec("critere_max", "Teneur max. en ferrite (FN)", "float",
+            FieldSpec("critere_max", _l("Teneur max. en ferrite (FN)"), "float",
                       required=True, step="0.1", min_val="0",
                       col_class="col-sm-6 col-md-2"),
-            FieldSpec("operateur", "Opérateur", "text",
+            FieldSpec("operateur", _l("Opérateur"), "text",
                       maxlength=100, col_class="col-sm-6 col-md-3",
-                      help_text="Phase 4 : sélection depuis le référentiel QC."),
-            FieldSpec("date_ferrite", "Date du contrôle", "date",
+                      help_text=_l("Phase 4 : sélection depuis le référentiel QC.")),
+            FieldSpec("date_ferrite", _l("Date du contrôle"), "date",
                       required=True, col_class="col-sm-6 col-md-3"),
         ]),
     ]
     TABLE_SPEC = TableSpec(
-        title="Mesures de teneur en ferrite",
+        title=_l("Mesures de teneur en ferrite"),
         cols=[
-            ColSpec("num_joint", "Référence joint", "text",
+            ColSpec("num_joint", _l("Référence joint"), "text",
                     required=True, maxlength=50, width="w-12"),
-            ColSpec("localisation", "Localisation", "text",
+            ColSpec("localisation", _l("Localisation"), "text",
                     required=True, maxlength=150, width="w-25"),
-            ColSpec("zone", "Zone", "select",
+            ColSpec("zone", _l("Zone"), "select",
                     options=[
-                        ("", "—"),
-                        ("metal_base", "Métal de base"),
-                        ("zat", "ZAT"),
-                        ("bain_soudure", "Bain de soudure"),
+                        ("", _l("—")),
+                        ("metal_base", _l("Métal de base")),
+                        ("zat", _l("ZAT")),
+                        ("bain_soudure", _l("Bain de soudure")),
                     ],
                     required=True, width="w-12"),
-            ColSpec("mesure", "Valeur mesurée (FN)", "float",
+            ColSpec("mesure", _l("Valeur mesurée (FN)"), "float",
                     required=True, step="0.1", min_val="0", width="w-10"),
-            ColSpec("conformite", "Conforme", "checkbox",
+            ColSpec("conformite", _l("Conforme"), "checkbox",
                     server_computed=True, width="w-8"),
         ],
     )

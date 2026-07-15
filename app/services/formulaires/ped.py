@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from flask_babel import lazy_gettext as _l
+
 from app.enums import Chapitre
 from app.services.formulaires.base import FieldSpec, SectionSpec, SimpleFormulaireService
 
@@ -34,101 +36,100 @@ class PedModService(SimpleFormulaireService):
 
     SECTIONS = [
         SectionSpec(
-            "Module et langue",
+            _l("Module et langue"),
             [
                 FieldSpec(
                     "module_ped",
-                    "Module PED",
+                    _l("Module PED"),
                     "select",
                     required=True,
                     col_class="col-sm-12 col-md-6",
                     options=[
-                        ("", "— Sélectionner —"),
-                        ("A", "Module A — Contrôle interne de la fabrication"),
-                        ("D1", "Module D1 — Assurance de la qualité de la production"),
-                        ("H", "Module H — Assurance complète de la qualité"),
-                        (
-                            "H1",
-                            "Module H1 — Assurance complète + examen de conception",
-                        ),
+                        ("", _l("— Sélectionner —")),
+                        ("A", _l("Module A — Contrôle interne de la fabrication")),
+                        ("D1", _l("Module D1 — Assurance de la qualité de la production")),
+                        ("H", _l("Module H — Assurance complète de la qualité")),
+                        ("H1", _l("Module H1 — Assurance complète + examen de conception")),
                     ],
                 ),
                 FieldSpec(
                     "langue",
-                    "Langue du document",
+                    _l("Langue du document"),
                     "select",
                     required=True,
                     col_class="col-sm-6 col-md-3",
                     options=[
-                        ("", "— Sélectionner —"),
-                        ("FR", "Français"),
-                        ("EN", "English"),
-                        ("DE", "Deutsch"),
-                        ("IT", "Italiano"),
+                        ("", _l("— Sélectionner —")),
+                        ("FR", _l("Français")),
+                        ("EN", _l("English")),
+                        ("DE", _l("Deutsch")),
+                        ("IT", _l("Italiano")),
                     ],
                 ),
                 FieldSpec(
                     "categorie_ped",
-                    "Catégorie PED",
+                    _l("Catégorie PED"),
                     "select",
                     required=True,
                     col_class="col-sm-6 col-md-2",
                     options=[
-                        ("", "— Sélectionner —"),
-                        ("I", "I"),
-                        ("II", "II"),
-                        ("III", "III"),
-                        ("IV", "IV"),
+                        ("", _l("— Sélectionner —")),
+                        ("I", _l("I")),
+                        ("II", _l("II")),
+                        ("III", _l("III")),
+                        ("IV", _l("IV")),
                     ],
                 ),
                 FieldSpec(
                     "groupe_fluide",
-                    "Groupe de fluide",
+                    _l("Groupe de fluide"),
                     "select",
                     col_class="col-sm-6 col-md-1",
                     options=[
-                        ("", "—"),
-                        ("1", "1"),
-                        ("2", "2"),
+                        ("", _l("—")),
+                        ("1", _l("1")),
+                        ("2", _l("2")),
                     ],
                 ),
             ],
         ),
         SectionSpec(
-            "Organisme notifié (modules D1 / H / H1)",
+            _l("Organisme notifié (modules D1 / H / H1)"),
             [
                 FieldSpec(
                     "on_nom",
-                    "Nom de l'organisme notifié",
+                    _l("Nom de l'organisme notifié"),
                     "text",
                     maxlength=200,
                     col_class="col-sm-12 col-md-5",
-                    help_text="Laisser vide pour le module A.",
+                    help_text=_l("Laisser vide pour le module A."),
                 ),
                 FieldSpec(
                     "on_numero",
-                    "N° d'identification ON",
+                    _l("N° d'identification ON"),
                     "text",
                     maxlength=10,
                     col_class="col-sm-6 col-md-2",
-                    help_text="Ex : 0082",
+                    help_text=_l("Ex : 0082"),
                 ),
                 FieldSpec(
                     "on_certificat",
-                    "Référence certificat ON",
+                    _l("Référence certificat ON"),
                     "text",
                     maxlength=100,
                     col_class="col-sm-12 col-md-5",
-                    help_text="Requis pour modules H et H1 (certificat d'examen de la conception).",
+                    help_text=_l(
+                        "Requis pour modules H et H1 (certificat d'examen de la conception)."
+                    ),
                 ),
             ],
         ),
         SectionSpec(
-            "Caractéristiques de l'équipement",
+            _l("Caractéristiques de l'équipement"),
             [
                 FieldSpec(
                     "ps",
-                    "PS — Pression de service (bar)",
+                    _l("PS — Pression de service (bar)"),
                     "float",
                     step="0.1",
                     min_val="0",
@@ -136,21 +137,21 @@ class PedModService(SimpleFormulaireService):
                 ),
                 FieldSpec(
                     "ts_max",
-                    "TS max (°C)",
+                    _l("TS max (°C)"),
                     "float",
                     step="1",
                     col_class="col-sm-6 col-md-2",
                 ),
                 FieldSpec(
                     "ts_min",
-                    "TS min (°C)",
+                    _l("TS min (°C)"),
                     "float",
                     step="1",
                     col_class="col-sm-6 col-md-2",
                 ),
                 FieldSpec(
                     "volume",
-                    "Volume (litres)",
+                    _l("Volume (litres)"),
                     "float",
                     step="0.01",
                     min_val="0",
@@ -158,14 +159,14 @@ class PedModService(SimpleFormulaireService):
                 ),
                 FieldSpec(
                     "dn",
-                    "DN",
+                    _l("DN"),
                     "text",
                     maxlength=20,
                     col_class="col-sm-6 col-md-2",
                 ),
                 FieldSpec(
                     "surface",
-                    "Surface d'échange (m²)",
+                    _l("Surface d'échange (m²)"),
                     "float",
                     step="0.01",
                     min_val="0",
@@ -174,39 +175,39 @@ class PedModService(SimpleFormulaireService):
             ],
         ),
         SectionSpec(
-            "Signature",
+            _l("Signature"),
             [
                 FieldSpec(
                     "millesime",
-                    "Millésime directive",
+                    _l("Millésime directive"),
                     "text",
                     maxlength=20,
                     col_class="col-sm-6 col-md-3",
                 ),
                 FieldSpec(
                     "lieu_signature",
-                    "Lieu de signature",
+                    _l("Lieu de signature"),
                     "text",
                     maxlength=100,
                     col_class="col-sm-6 col-md-3",
                 ),
                 FieldSpec(
                     "date_signature",
-                    "Date de signature",
+                    _l("Date de signature"),
                     "date",
                     required=True,
                     col_class="col-sm-6 col-md-3",
                 ),
                 FieldSpec(
                     "signataire_nom",
-                    "Nom du signataire",
+                    _l("Nom du signataire"),
                     "text",
                     maxlength=100,
                     col_class="col-sm-6 col-md-4",
                 ),
                 FieldSpec(
                     "signataire_titre",
-                    "Titre du signataire",
+                    _l("Titre du signataire"),
                     "text",
                     maxlength=100,
                     col_class="col-sm-6 col-md-4",

@@ -20,6 +20,7 @@ Mapping Q → modèle :
 """
 from __future__ import annotations
 
+from flask_babel import lazy_gettext as _l
 from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
@@ -63,30 +64,30 @@ class WizardQ1Form(FlaskForm):  # type: ignore[misc]
     """
 
     annee = IntegerField(
-        "Année de l'affaire",
+        _l("Année de l'affaire"),
         validators=[
-            InputRequired(message="L'année est requise."),
-            NumberRange(min=2020, max=2099, message="Année entre 2020 et 2099."),
+            InputRequired(message=_l("L'année est requise.")),
+            NumberRange(min=2020, max=2099, message=_l("Année entre 2020 et 2099.")),
         ],
         render_kw={"placeholder": "2026"},
     )
     numero_affaire = SelectField(
-        "N° d'affaire",
-        validators=[DataRequired(message="Le n° d'affaire est requis.")],
-        description="Issu du registre général de commande BE.",
+        _l("N° d'affaire"),
+        validators=[DataRequired(message=_l("Le n° d'affaire est requis."))],
+        description=_l("Issu du registre général de commande BE."),
     )
     numero_affaire_manuel = StringField(
-        "N° d'affaire (saisie manuelle)",
+        _l("N° d'affaire (saisie manuelle)"),
         validators=[Optional(), Length(max=10)],
         filters=[lambda v: v.strip().upper() if v else v],
         render_kw={"placeholder": "BN0811"},
-        description="Uniquement si l'affaire n'est pas encore dans le registre BE.",
+        description=_l("Uniquement si l'affaire n'est pas encore dans le registre BE."),
     )
     item = SelectField(
-        "N° d'item",
-        validators=[DataRequired(message="Le n° d'item est requis.")],
+        _l("N° d'item"),
+        validators=[DataRequired(message=_l("Le n° d'item est requis."))],
         validate_choice=False,
-        description="4 chiffres — un même n° d'affaire peut porter plusieurs items.",
+        description=_l("4 chiffres — un même n° d'affaire peut porter plusieurs items."),
     )
 
     def validate_numero_affaire_manuel(
@@ -108,17 +109,17 @@ class WizardQ2Form(FlaskForm):  # type: ignore[misc]
     """Q2 — Identification du client et de sa commande."""
 
     client_nom = StringField(
-        "Nom du client",
+        _l("Nom du client"),
         validators=[
-            DataRequired(message="Le nom du client est requis."),
+            DataRequired(message=_l("Le nom du client est requis.")),
             Length(max=255),
         ],
         render_kw={"placeholder": "TotalEnergies Raffinerie Mitteldeutschland GmbH"},
     )
     references_client = StringField(
-        "Référence client",
+        _l("Référence client"),
         validators=[Optional(), Length(max=100)],
-        description="« VOS REFERENCES » — n° de commande client (ex: 4551559245).",
+        description=_l("« VOS REFERENCES » — n° de commande client (ex: 4551559245)."),
     )
 
 
@@ -126,35 +127,35 @@ class WizardQ3Form(FlaskForm):  # type: ignore[misc]
     """Q3 — Identification de l'équipement."""
 
     repere = StringField(
-        "Repère équipement",
+        _l("Repère équipement"),
         validators=[
-            DataRequired(message="Le repère équipement est requis."),
+            DataRequired(message=_l("Le repère équipement est requis.")),
             Length(max=100),
         ],
         render_kw={"placeholder": "322TK4131"},
-        description="Repère utilisé par le client pour identifier l'appareil.",
+        description=_l("Repère utilisé par le client pour identifier l'appareil."),
     )
     type_echangeur = StringField(
-        "Type d'échangeur",
+        _l("Type d'échangeur"),
         validators=[
-            DataRequired(message="Le type d'échangeur est requis."),
+            DataRequired(message=_l("Le type d'échangeur est requis.")),
             Length(max=100),
         ],
         render_kw={"placeholder": "H1 06-01-72"},
-        description="Référence type BFF (ex: H1 06-01-72).",
+        description=_l("Référence type BFF (ex: H1 06-01-72)."),
     )
     nombre = IntegerField(
-        "Nombre d'appareils",
+        _l("Nombre d'appareils"),
         validators=[
-            InputRequired(message="Le nombre est requis."),
+            InputRequired(message=_l("Le nombre est requis.")),
             NumberRange(min=1, max=999),
         ],
         default=1,
     )
     annee_construction = IntegerField(
-        "Année de construction",
+        _l("Année de construction"),
         validators=[
-            InputRequired(message="L'année de construction est requise."),
+            InputRequired(message=_l("L'année de construction est requise.")),
             NumberRange(min=2020, max=2099),
         ],
         render_kw={"placeholder": "2026"},
@@ -169,43 +170,43 @@ class WizardQ4Form(FlaskForm):  # type: ignore[misc]
     """
 
     categorie_ped = SelectField(
-        "Catégorie PED",
+        _l("Catégorie PED"),
         choices=[
-            ("", "— Sélectionner —"),
-            ("I", "I — Risque faible"),
-            ("II", "II — Risque modéré"),
-            ("III", "III — Risque élevé"),
-            ("IV", "IV — Risque très élevé"),
+            ("", _l("— Sélectionner —")),
+            ("I", _l("I — Risque faible")),
+            ("II", _l("II — Risque modéré")),
+            ("III", _l("III — Risque élevé")),
+            ("IV", _l("IV — Risque très élevé")),
         ],
-        validators=[DataRequired(message="La catégorie PED est requise.")],
+        validators=[DataRequired(message=_l("La catégorie PED est requise."))],
     )
     module_ped = SelectField(
-        "Module de conformité",
+        _l("Module de conformité"),
         choices=[
-            ("", "— Sélectionner —"),
-            ("A", "A — Contrôle interne de fabrication"),
-            ("A2", "A2 — Contrôle interne + surveillance"),
-            ("B+C2", "B + C2 — Examen UE de type + contrôle"),
-            ("B+D", "B + D — Examen UE de type + AQ production"),
-            ("B+F", "B + F — Examen UE de type + vérif. produit"),
-            ("G", "G — Vérification CE à l'unité"),
-            ("H", "H — Assurance qualité complète"),
+            ("", _l("— Sélectionner —")),
+            ("A", _l("A — Contrôle interne de fabrication")),
+            ("A2", _l("A2 — Contrôle interne + surveillance")),
+            ("B+C2", _l("B + C2 — Examen UE de type + contrôle")),
+            ("B+D", _l("B + D — Examen UE de type + AQ production")),
+            ("B+F", _l("B + F — Examen UE de type + vérif. produit")),
+            ("G", _l("G — Vérification CE à l'unité")),
+            ("H", _l("H — Assurance qualité complète")),
         ],
-        validators=[DataRequired(message="Le module de conformité est requis.")],
+        validators=[DataRequired(message=_l("Le module de conformité est requis."))],
     )
     fluide_groupe = SelectField(
-        "Groupe de fluide",
+        _l("Groupe de fluide"),
         choices=[
-            ("", "— Sélectionner —"),
-            ("1", "Groupe 1 — Fluide dangereux"),
-            ("2", "Groupe 2 — Fluide non dangereux"),
+            ("", _l("— Sélectionner —")),
+            ("1", _l("Groupe 1 — Fluide dangereux")),
+            ("2", _l("Groupe 2 — Fluide non dangereux")),
         ],
-        validators=[DataRequired(message="Le groupe de fluide est requis.")],
+        validators=[DataRequired(message=_l("Le groupe de fluide est requis."))],
     )
     fluide_nom = StringField(
-        "Nom du fluide principal",
+        _l("Nom du fluide principal"),
         validators=[Optional(), Length(max=100)],
-        render_kw={"placeholder": "Eau, huile, vapeur, azote…"},
+        render_kw={"placeholder": _l("Eau, huile, vapeur, azote…")},
     )
 
 
@@ -213,27 +214,29 @@ class WizardQ5Form(FlaskForm):  # type: ignore[misc]
     """Q5 — Conditions de service (pression, température, volume)."""
 
     ps_bar = FloatField(
-        "Pression de service PS (bar)",
+        _l("Pression de service PS (bar)"),
         validators=[
-            InputRequired(message="PS est requise."),
+            InputRequired(message=_l("PS est requise.")),
             NumberRange(min=0, max=1000),
         ],
         render_kw={"step": "0.1"},
-        description="Pression de calcul ; la pression d'épreuve PT = PS × 1.43 sera dérivée.",
+        description=_l(
+            "Pression de calcul ; la pression d'épreuve PT = PS × 1.43 sera dérivée."
+        ),
     )
     temperature_min_c = FloatField(
-        "Température minimale (°C)",
+        _l("Température minimale (°C)"),
         validators=[InputRequired(), NumberRange(min=-273, max=2000)],
         default=0,
         render_kw={"step": "1"},
     )
     temperature_max_c = FloatField(
-        "Température maximale (°C)",
+        _l("Température maximale (°C)"),
         validators=[InputRequired(), NumberRange(min=-273, max=2000)],
         render_kw={"step": "1"},
     )
     volume_l = FloatField(
-        "Volume (litres)",
+        _l("Volume (litres)"),
         validators=[Optional(), NumberRange(min=0, max=1_000_000)],
         render_kw={"step": "0.1"},
     )
@@ -246,25 +249,25 @@ class WizardQ6Form(FlaskForm):  # type: ignore[misc]
     """
 
     procedes_soudage = SelectMultipleField(
-        "Procédés de soudage utilisés",
+        _l("Procédés de soudage utilisés"),
         choices=[
-            ("141", "141 — TIG"),
-            ("111", "111 — Électrode enrobée (manuel)"),
-            ("136", "136 — MAG fil fourré"),
-            ("121", "121 — Sous-flux"),
-            ("131", "131 — MIG"),
+            ("141", _l("141 — TIG")),
+            ("111", _l("111 — Électrode enrobée (manuel)")),
+            ("136", _l("136 — MAG fil fourré")),
+            ("121", _l("121 — Sous-flux")),
+            ("131", _l("131 — MIG")),
         ],
-        validators=[DataRequired(message="Sélectionnez au moins un procédé.")],
-        description="Maintenez Ctrl/Cmd pour sélections multiples.",
+        validators=[DataRequired(message=_l("Sélectionnez au moins un procédé."))],
+        description=_l("Maintenez Ctrl/Cmd pour sélections multiples."),
     )
     tubes_soudes = BooleanField(
-        "Présence de tubes soudés à la calandre",
+        _l("Présence de tubes soudés à la calandre"),
         default=True,
     )
     tth_required = BooleanField(
-        "Traitement thermique après soudage (TTH) requis",
+        _l("Traitement thermique après soudage (TTH) requis"),
         default=False,
-        description="Détendage / recuit normalisé selon ASME ou EN.",
+        description=_l("Détendage / recuit normalisé selon ASME ou EN."),
     )
 
 
@@ -272,30 +275,30 @@ class WizardQ7Form(FlaskForm):  # type: ignore[misc]
     """Q7 — Contrôles non destructifs et tests d'épreuve."""
 
     cnd_methodes = SelectMultipleField(
-        "Méthodes de CND requises",
+        _l("Méthodes de CND requises"),
         choices=[
-            ("RT", "RT — Radiographie"),
-            ("UT", "UT — Ultrasons"),
-            ("PT", "PT — Ressuage"),
-            ("MT", "MT — Magnétoscopie"),
-            ("VT", "VT — Examen visuel"),
+            ("RT", _l("RT — Radiographie")),
+            ("UT", _l("UT — Ultrasons")),
+            ("PT", _l("PT — Ressuage")),
+            ("MT", _l("MT — Magnétoscopie")),
+            ("VT", _l("VT — Examen visuel")),
         ],
-        description="Maintenez Ctrl/Cmd pour sélections multiples.",
+        description=_l("Maintenez Ctrl/Cmd pour sélections multiples."),
     )
     test_pression = SelectField(
-        "Test de pression à réaliser",
+        _l("Test de pression à réaliser"),
         choices=[
-            ("hydrostatique", "Hydrostatique (HYDR)"),
-            ("pneumatique", "Pneumatique (AirSav)"),
-            ("azote", "Étanchéité azote (Azote)"),
+            ("hydrostatique", _l("Hydrostatique (HYDR)")),
+            ("pneumatique", _l("Pneumatique (AirSav)")),
+            ("azote", _l("Étanchéité azote (Azote)")),
         ],
         default="hydrostatique",
         validators=[DataRequired()],
     )
     inspection_client = BooleanField(
-        "Inspection client / TPI prévue",
+        _l("Inspection client / TPI prévue"),
         default=False,
-        description="Tierce Partie Indépendante ou inspecteur client présent.",
+        description=_l("Tierce Partie Indépendante ou inspecteur client présent."),
     )
 
 
@@ -307,11 +310,11 @@ class WizardQ8Form(FlaskForm):  # type: ignore[misc]
     """
 
     confirmation = BooleanField(
-        "Je confirme l'exactitude des informations saisies",
-        validators=[DataRequired(message="Vous devez confirmer pour finaliser.")],
+        _l("Je confirme l'exactitude des informations saisies"),
+        validators=[DataRequired(message=_l("Vous devez confirmer pour finaliser."))],
     )
     commentaire = TextAreaField(
-        "Commentaire (optionnel)",
+        _l("Commentaire (optionnel)"),
         validators=[Optional(), Length(max=2000)],
         render_kw={"rows": 3},
     )

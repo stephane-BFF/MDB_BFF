@@ -18,7 +18,9 @@ Pour les formulaires à tableau dynamique, hériter de
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias
+
+from flask_babel.speaklater import LazyString
 
 from app.enums import Chapitre, Statut
 from app.extensions import db
@@ -34,6 +36,10 @@ if TYPE_CHECKING:
 # ── Types de champ ────────────────────────────────────────────────────────
 
 FieldType = Literal["text", "float", "integer", "date", "select", "checkbox", "textarea"]
+
+# Libellé affichable : str brut ou chaîne paresseuse Flask-Babel (lazy_gettext),
+# évaluée dans la locale de la requête au moment du rendu.
+I18nStr: TypeAlias = str | LazyString
 
 
 # ── Spécification des champs (formulaires simples) ────────────────────────
@@ -60,10 +66,10 @@ class FieldSpec:
     """
 
     name: str
-    label: str
+    label: I18nStr
     field_type: FieldType
     required: bool = False
-    options: list[tuple[str, str]] = field(default_factory=list)
+    options: list[tuple[str, I18nStr]] = field(default_factory=list)
     step: str | None = None
     min_val: str | None = None
     max_val: str | None = None
@@ -71,14 +77,14 @@ class FieldSpec:
     rows: int = 3
     col_class: str = "col-sm-6 col-md-3"
     server_computed: bool = False
-    help_text: str = ""
+    help_text: I18nStr = ""
 
 
 @dataclass
 class SectionSpec:
     """Regroupe des champs sous un titre de section dans le formulaire."""
 
-    title: str
+    title: I18nStr
     fields: list[FieldSpec]
 
 
@@ -104,24 +110,24 @@ class ColSpec:
     """
 
     name: str
-    label: str
+    label: I18nStr
     col_type: FieldType
     required: bool = False
-    options: list[tuple[str, str]] = field(default_factory=list)
+    options: list[tuple[str, I18nStr]] = field(default_factory=list)
     step: str | None = None
     min_val: str | None = None
     max_val: str | None = None
     maxlength: int | None = None
     server_computed: bool = False
     width: str = ""
-    help_text: str = ""
+    help_text: I18nStr = ""
 
 
 @dataclass
 class TableSpec:
     """Décrit un tableau dynamique (lignes ajoutables/supprimables)."""
 
-    title: str
+    title: I18nStr
     cols: list[ColSpec]
 
 

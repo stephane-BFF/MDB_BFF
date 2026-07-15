@@ -17,7 +17,7 @@
 {# Breadcrumb #}
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb small mb-0">
-        <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">{{ _('Affaires') }}</a></li>
         <li class="breadcrumb-item">
             <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">{{ affaire.numero_affaire }}</a>
         </li>
@@ -35,23 +35,23 @@
             </span>
         </h1>
         <p class="text-muted small mb-0">
-            Affaire {{ affaire.numero_affaire }} — {{ affaire.client_nom or '—' }}
+            {{ _('Affaire') }} {{ affaire.numero_affaire }} — {{ affaire.client_nom or '—' }}
             {% if formulaire %}
             · <span class="badge statut-badge bg-secondary">{{ formulaire.statut.label }}</span>
             {% if hash_valid is not none %}
                 {% if hash_valid %}
-                <span class="badge bg-success ms-1" title="Intégrité SHA-256 vérifiée">&#10003; Hash OK</span>
+                <span class="badge bg-success ms-1" title="{{ _('Intégrité SHA-256 vérifiée') }}">&#10003; {{ _('Hash OK') }}</span>
                 {% else %}
-                <span class="badge bg-danger ms-1" title="Contenu altéré depuis la signature !">&#9888; Hash invalide</span>
+                <span class="badge bg-danger ms-1" title="{{ _('Contenu altéré depuis la signature !') }}">&#9888; {{ _('Hash invalide') }}</span>
                 {% endif %}
             {% endif %}
             {% else %}
-            · <span class="badge bg-light text-muted border">Nouveau</span>
+            · <span class="badge bg-light text-muted border">{{ _('Nouveau') }}</span>
             {% endif %}
         </p>
     </div>
     <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}"
-       class="btn btn-sm btn-outline-secondary">&#8592; Retour affaire</a>
+       class="btn btn-sm btn-outline-secondary">&#8592; {{ _('Retour affaire') }}</a>
 </div>
 
 <div id="saveError" class="alert alert-danger d-none" role="alert"></div>
@@ -137,7 +137,7 @@
             <h2 class="h6 mb-0">{{ svc.TABLE_SPEC.title }}</h2>
             {% if can_edit %}
             <button type="button" id="addRowBtn" class="btn btn-sm btn-outline-primary">
-                + Ajouter une ligne
+                + {{ _('Ajouter une ligne') }}
             </button>
             {% endif %}
         </div>
@@ -188,7 +188,7 @@
                             {% if can_edit %}
                             <td class="text-center">
                                 <button type="button" class="btn btn-sm btn-outline-danger remove-row"
-                                        title="Supprimer">&times;</button>
+                                        title="{{ _('Supprimer') }}">&times;</button>
                             </td>
                             {% endif %}
                         </tr>
@@ -198,7 +198,7 @@
             </div>
             <p id="emptyMsg" class="text-muted text-center py-3 small"
                style="{{ '' if not form_data.get('lignes') else 'display:none' }}">
-                Aucune ligne — cliquez « Ajouter une ligne » pour commencer.
+                {{ _('Aucune ligne — cliquez « Ajouter une ligne » pour commencer.') }}
             </p>
         </div>
     </div>
@@ -208,10 +208,10 @@
     <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
         {% if can_edit %}
         <button type="button" id="saveBtn" class="btn btn-primary">
-            Enregistrer le brouillon
+            {{ _('Enregistrer le brouillon') }}
         </button>
         <span id="saveIndicator" class="save-indicator text-success small">
-            &#10003; Enregistré
+            &#10003; {{ _('Enregistré') }}
         </span>
         {% endif %}
 
@@ -221,8 +221,8 @@
               class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-success"
-                    onclick="return confirm('Valider le formulaire {{ svc.CODE }} ? Cette action est irréversible.')">
-                Valider
+                    onclick='return confirm({{ _('Valider le formulaire %(code)s ? Cette action est irréversible.', code=svc.CODE)|tojson }})'>
+                {{ _('Valider') }}
             </button>
         </form>
         {% endif %}
@@ -233,8 +233,8 @@
               class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-danger"
-                    onclick="return confirm('Signer le formulaire {{ svc.CODE }} ? La signature est définitive.')">
-                Signer (SHA-256)
+                    onclick='return confirm({{ _('Signer le formulaire %(code)s ? La signature est définitive.', code=svc.CODE)|tojson }})'>
+                {{ _('Signer (SHA-256)') }}
             </button>
         </form>
         {% endif %}
@@ -242,15 +242,17 @@
         {% if formulaire and formulaire.statut.value in ('valide', 'signe') %}
         <a href="{{ url_for('formulaires.pdf', affaire_id=affaire.id, code=code) }}"
            class="btn btn-outline-dark ms-auto" target="_blank">
-            &#128196; Télécharger PDF
+            &#128196; {{ _('Télécharger PDF') }}
         </a>
         {% endif %}
     </div>
 
     {% if formulaire and formulaire.signatures %}
+    {% set derniere_signature = formulaire.signatures[-1] %}
     <div class="text-muted small mt-1">
-        Signé le {{ formulaire.signatures[-1].created_at.strftime('%d/%m/%Y à %H:%M') }}
-        par {{ formulaire.signatures[-1].user.full_name if formulaire.signatures[-1].user else '—' }}
+        {{ _('Signé le %(date)s par %(nom)s',
+             date=derniere_signature.created_at.strftime('%d/%m/%Y %H:%M'),
+             nom=derniere_signature.user.full_name if derniere_signature.user else '—') }}
     </div>
     {% endif %}
 </form>
@@ -281,7 +283,7 @@
         {% endfor %}
         <td class="text-center">
             <button type="button" class="btn btn-sm btn-outline-danger remove-row"
-                    title="Supprimer">&times;</button>
+                    title="{{ _('Supprimer') }}">&times;</button>
         </td>
     </tr>
 </template>
@@ -367,12 +369,12 @@
                     setTimeout(() => saveIndicator.classList.remove('visible'), 2500);
                 }
             } else if (saveError) {
-                saveError.textContent = json.error || 'Erreur lors de la sauvegarde.';
+                saveError.textContent = json.error || {{ _('Erreur lors de la sauvegarde.')|tojson }};
                 saveError.classList.remove('d-none');
             }
         } catch (_) {
             if (saveError) {
-                saveError.textContent = 'Erreur réseau — réessayez.';
+                saveError.textContent = {{ _('Erreur réseau — réessayez.')|tojson }};
                 saveError.classList.remove('d-none');
             }
         } finally {

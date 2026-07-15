@@ -1,6 +1,7 @@
 """Formulaires WTForms pour les affaires (filtres liste, wizard, etc.)."""
 from __future__ import annotations
 
+from flask_babel import lazy_gettext as _l
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField
 from wtforms.validators import Length, Optional
@@ -20,18 +21,18 @@ class AffaireFilterForm(FlaskForm):  # type: ignore[misc]
         csrf = False
 
     statut = SelectField(
-        "Statut",
-        choices=[("", "— Tous —"), *((s.value, s.label) for s in Statut)],
+        _l("Statut"),
+        choices=[("", _l("— Tous —")), *((s.value, s.label) for s in Statut)],
         default="",
         validators=[Optional()],
     )
     annee = StringField(
-        "Année",
+        _l("Année"),
         validators=[Optional(), Length(max=4)],
         render_kw={"placeholder": "2026", "inputmode": "numeric", "pattern": "[0-9]*"},
     )
     q = StringField(
-        "Recherche",
+        _l("Recherche"),
         validators=[Optional(), Length(max=100)],
-        render_kw={"placeholder": "N° affaire, client, repère…"},
+        render_kw={"placeholder": _l("N° affaire, client, repère…")},
     )

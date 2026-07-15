@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from flask_babel import lazy_gettext as _l
+
 from app.enums import Chapitre
 from app.services.formulaires.base import (
     ColSpec,
@@ -26,37 +28,37 @@ from app.services.formulaires.base import (
 _REQUIRED_HDR = frozenset({"ep_mini_acceptable", "date_mesure"})
 
 _HEADER_SECTIONS = [
-    SectionSpec("Paramètres du contrôle", [
-        FieldSpec("date_mesure", "Date de mesure", "date",
+    SectionSpec(_l("Paramètres du contrôle"), [
+        FieldSpec("date_mesure", _l("Date de mesure"), "date",
                   required=True, col_class="col-sm-6 col-md-3"),
-        FieldSpec("appareil_mesure", "Appareil de mesure UT", "text",
+        FieldSpec("appareil_mesure", _l("Appareil de mesure UT"), "text",
                   maxlength=100, col_class="col-sm-6 col-md-4",
-                  help_text="Phase 4 : sélection depuis le référentiel métrologie."),
-        FieldSpec("sonde", "Type de sonde", "text",
+                  help_text=_l("Phase 4 : sélection depuis le référentiel métrologie.")),
+        FieldSpec("sonde", _l("Type de sonde"), "text",
                   maxlength=100, col_class="col-sm-6 col-md-3"),
-        FieldSpec("couplant", "Couplant utilisé", "text",
+        FieldSpec("couplant", _l("Couplant utilisé"), "text",
                   maxlength=100, col_class="col-sm-6 col-md-3"),
-        FieldSpec("ep_mini_acceptable", "Ép. mini acceptable (mm)", "float",
+        FieldSpec("ep_mini_acceptable", _l("Ép. mini acceptable (mm)"), "float",
                   required=True, step="0.001", min_val="0",
                   col_class="col-sm-6 col-md-3"),
-        FieldSpec("operateur", "Opérateur", "text",
+        FieldSpec("operateur", _l("Opérateur"), "text",
                   maxlength=100, col_class="col-sm-6 col-md-3",
-                  help_text="Phase 4 : sélection depuis le référentiel QC."),
+                  help_text=_l("Phase 4 : sélection depuis le référentiel QC.")),
     ]),
 ]
 
 _TABLE_SPEC = TableSpec(
-    title="Mesures par tube",
+    title=_l("Mesures par tube"),
     cols=[
-        ColSpec("num_tube", "N° tube", "text",
+        ColSpec("num_tube", _l("N° tube"), "text",
                 required=True, maxlength=20, width="w-10"),
-        ColSpec("mesure_1", "Mesure 1 (mm)", "float",
+        ColSpec("mesure_1", _l("Mesure 1 (mm)"), "float",
                 required=True, step="0.001", min_val="0", width="w-12"),
-        ColSpec("mesure_2", "Mesure 2 (mm)", "float",
+        ColSpec("mesure_2", _l("Mesure 2 (mm)"), "float",
                 required=True, step="0.001", min_val="0", width="w-12"),
-        ColSpec("mesure_moy", "Moyenne (mm)", "float",
+        ColSpec("mesure_moy", _l("Moyenne (mm)"), "float",
                 server_computed=True, step="0.001", width="w-10"),
-        ColSpec("conformite", "Conforme", "checkbox",
+        ColSpec("conformite", _l("Conforme"), "checkbox",
                 server_computed=True, width="w-8"),
     ],
 )

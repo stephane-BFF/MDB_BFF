@@ -14,7 +14,7 @@
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb small mb-0">
-        <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">{{ _('Affaires') }}</a></li>
         <li class="breadcrumb-item">
             <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">{{ affaire.numero_affaire }}</a>
         </li>
@@ -26,27 +26,27 @@
 <div class="d-flex align-items-start justify-content-between mb-4">
     <div>
         <h1 class="h3 mb-1">
-            Procès-verbal d'épreuve hydrostatique
+            {{ _("Procès-verbal d'épreuve hydrostatique") }}
             <span class="badge bg-light text-dark border fw-normal ms-2 small align-middle">HYDR v{{ tmpl.version if tmpl else 1 }}</span>
         </h1>
         <p class="text-muted small mb-0">
-            Affaire {{ affaire.numero_affaire }} — {{ affaire.client_nom or '—' }}
+            {{ _('Affaire') }} {{ affaire.numero_affaire }} — {{ affaire.client_nom or '—' }}
             {% if formulaire %}
             · <span class="badge statut-badge bg-secondary">{{ formulaire.statut.label }}</span>
             {% if hash_valid is not none %}
                 {% if hash_valid %}
-                <span class="badge bg-success ms-1" title="Intégrité SHA-256 vérifiée">&#10003; Hash OK</span>
+                <span class="badge bg-success ms-1" title="{{ _('Intégrité SHA-256 vérifiée') }}">&#10003; {{ _('Hash OK') }}</span>
                 {% else %}
-                <span class="badge bg-danger ms-1" title="Contenu altéré depuis la signature !">&#9888; Hash invalide</span>
+                <span class="badge bg-danger ms-1" title="{{ _('Contenu altéré depuis la signature !') }}">&#9888; {{ _('Hash invalide') }}</span>
                 {% endif %}
             {% endif %}
             {% else %}
-            · <span class="badge bg-light text-muted border">Nouveau</span>
+            · <span class="badge bg-light text-muted border">{{ _('Nouveau') }}</span>
             {% endif %}
         </p>
     </div>
     <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}"
-       class="btn btn-sm btn-outline-secondary">&#8592; Retour affaire</a>
+       class="btn btn-sm btn-outline-secondary">&#8592; {{ _('Retour affaire') }}</a>
 </div>
 
 <!-- Alerte AJAX (masquée par défaut) -->
@@ -59,13 +59,13 @@
     <!-- ── Section Pression ──────────────────────────────────────────── -->
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white py-2">
-            <h2 class="h6 mb-0">Pressions</h2>
+            <h2 class="h6 mb-0">{{ _('Pressions') }}</h2>
         </div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-sm-6 col-md-3">
                     <label for="ps" class="form-label">
-                        Pression de service PS (bar) <span class="text-danger">*</span>
+                        {{ _('Pression de service PS (bar)') }} <span class="text-danger">*</span>
                     </label>
                     <input type="number" id="ps" name="ps" step="0.1" min="0.1" max="999"
                            class="form-control {% if not can_edit %}field-readonly{% endif %}"
@@ -74,13 +74,13 @@
                 </div>
                 <div class="col-sm-6 col-md-3">
                     <label for="pt" class="form-label">
-                        Pression d'épreuve PT (bar)
+                        {{ _("Pression d'épreuve PT (bar)") }}
                         <small class="text-muted">= PS × 1,43</small>
                     </label>
                     <input type="number" id="pt" name="pt" step="0.1" readonly
                            class="form-control field-readonly"
                            value="{{ form_data.get('pt', '') }}">
-                    <div class="form-text text-muted">Calculé automatiquement.</div>
+                    <div class="form-text text-muted">{{ _('Calculé automatiquement.') }}</div>
                 </div>
             </div>
         </div>
@@ -89,13 +89,13 @@
     <!-- ── Section Conditions d'épreuve ─────────────────────────────── -->
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white py-2">
-            <h2 class="h6 mb-0">Conditions d'épreuve</h2>
+            <h2 class="h6 mb-0">{{ _("Conditions d'épreuve") }}</h2>
         </div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-sm-6 col-md-3">
                     <label for="date_epreuve" class="form-label">
-                        Date de l'épreuve <span class="text-danger">*</span>
+                        {{ _("Date de l'épreuve") }} <span class="text-danger">*</span>
                     </label>
                     <input type="date" id="date_epreuve" name="date_epreuve"
                            class="form-control {% if not can_edit %}field-readonly{% endif %}"
@@ -104,13 +104,13 @@
                 </div>
                 <div class="col-sm-6 col-md-3">
                     <label for="fluide" class="form-label">
-                        Fluide d'épreuve <span class="text-danger">*</span>
+                        {{ _("Fluide d'épreuve") }} <span class="text-danger">*</span>
                     </label>
                     {% if can_edit %}
                     <select id="fluide" name="fluide" class="form-select">
-                        <option value="">— Sélectionner —</option>
-                        <option value="eau" {{ 'selected' if form_data.get('fluide') == 'eau' }}>Eau</option>
-                        <option value="huile" {{ 'selected' if form_data.get('fluide') == 'huile' }}>Huile</option>
+                        <option value="">{{ _('— Sélectionner —') }}</option>
+                        <option value="eau" {{ 'selected' if form_data.get('fluide') == 'eau' }}>{{ _('Eau') }}</option>
+                        <option value="huile" {{ 'selected' if form_data.get('fluide') == 'huile' }}>{{ _('Huile') }}</option>
                     </select>
                     {% else %}
                     <input type="text" class="form-control field-readonly"
@@ -118,15 +118,15 @@
                     {% endif %}
                 </div>
                 <div class="col-sm-6 col-md-3">
-                    <label for="duree_minutes" class="form-label">Durée de maintien (min.)</label>
+                    <label for="duree_minutes" class="form-label">{{ _('Durée de maintien (min.)') }}</label>
                     <input type="number" id="duree_minutes" name="duree_minutes" min="30" step="1"
                            class="form-control {% if not can_edit %}field-readonly{% endif %}"
                            value="{{ form_data.get('duree_minutes', '') }}"
                            {% if not can_edit %}readonly{% endif %}>
-                    <div class="form-text text-muted">Minimum 30 min.</div>
+                    <div class="form-text text-muted">{{ _('Minimum 30 min.') }}</div>
                 </div>
                 <div class="col-sm-6 col-md-3">
-                    <label for="temperature_c" class="form-label">Température fluide (°C)</label>
+                    <label for="temperature_c" class="form-label">{{ _('Température fluide (°C)') }}</label>
                     <input type="number" id="temperature_c" name="temperature_c" step="0.5"
                            class="form-control {% if not can_edit %}field-readonly{% endif %}"
                            value="{{ form_data.get('temperature_c', '') }}"
@@ -139,12 +139,12 @@
     <!-- ── Section Instrumentation & Résultat ───────────────────────── -->
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white py-2">
-            <h2 class="h6 mb-0">Instrumentation &amp; Résultat</h2>
+            <h2 class="h6 mb-0">{{ _('Instrumentation & Résultat') }}</h2>
         </div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-sm-6 col-md-4">
-                    <label for="numero_manometre" class="form-label">N° manomètre</label>
+                    <label for="numero_manometre" class="form-label">{{ _('N° manomètre') }}</label>
                     <input type="text" id="numero_manometre" name="numero_manometre"
                            maxlength="50"
                            class="form-control {% if not can_edit %}field-readonly{% endif %}"
@@ -159,12 +159,12 @@
                                {{ 'checked' if form_data.get('conforme') }}
                                {% if not can_edit %}disabled{% endif %}>
                         <label class="form-check-label fw-semibold" for="conforme">
-                            Épreuve conforme — aucune fuite ni déformation constatée
+                            {{ _('Épreuve conforme — aucune fuite ni déformation constatée') }}
                         </label>
                     </div>
                 </div>
                 <div class="col-12">
-                    <label for="observations" class="form-label">Observations</label>
+                    <label for="observations" class="form-label">{{ _('Observations') }}</label>
                     <textarea id="observations" name="observations" rows="3" maxlength="2000"
                               class="form-control {% if not can_edit %}field-readonly{% endif %}"
                               {% if not can_edit %}readonly{% endif %}>{{ form_data.get('observations', '') }}</textarea>
@@ -177,10 +177,10 @@
     <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
         {% if can_edit %}
         <button type="button" id="saveBtn" class="btn btn-primary">
-            Enregistrer le brouillon
+            {{ _('Enregistrer le brouillon') }}
         </button>
         <span id="saveIndicator" class="save-indicator text-success small">
-            &#10003; Enregistré
+            &#10003; {{ _('Enregistré') }}
         </span>
         {% endif %}
 
@@ -190,8 +190,8 @@
               class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-success"
-                    onclick="return confirm('Valider le formulaire HYDR ? Cette action est irréversible.')">
-                Valider
+                    onclick='return confirm({{ _('Valider le formulaire %(code)s ? Cette action est irréversible.', code='HYDR')|tojson }})'>
+                {{ _('Valider') }}
             </button>
         </form>
         {% endif %}
@@ -202,8 +202,8 @@
               class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-danger"
-                    onclick="return confirm('Signer le formulaire HYDR ? La signature est définitive.')">
-                Signer (SHA-256)
+                    onclick='return confirm({{ _('Signer le formulaire %(code)s ? La signature est définitive.', code='HYDR')|tojson }})'>
+                {{ _('Signer (SHA-256)') }}
             </button>
         </form>
         {% endif %}
@@ -211,21 +211,18 @@
         {% if formulaire and formulaire.statut.value in ('valide', 'signe') %}
         <a href="{{ url_for('formulaires.pdf', affaire_id=affaire.id, code='HYDR') }}"
            class="btn btn-outline-dark ms-auto" target="_blank"
-           title="Générer et télécharger le PDF (WeasyPrint + sauvegarde NAS)">
-            &#128196; Télécharger PDF
+           title="{{ _('Générer et télécharger le PDF') }}">
+            &#128196; {{ _('Télécharger PDF') }}
         </a>
         {% endif %}
     </div>
 
     {% if formulaire and formulaire.signatures %}
+    {% set derniere_signature = formulaire.signatures[-1] %}
     <div class="text-muted small mt-1">
-        Signé le {{ formulaire.signatures[-1].created_at.strftime('%d/%m/%Y à %H:%M') }}
-        par
-        {% if formulaire.signatures[-1].user %}
-            {{ formulaire.signatures[-1].user.full_name }}
-        {% else %}
-            —
-        {% endif %}
+        {{ _('Signé le %(date)s par %(nom)s',
+             date=derniere_signature.created_at.strftime('%d/%m/%Y %H:%M'),
+             nom=derniere_signature.user.full_name if derniere_signature.user else '—') }}
     </div>
     {% endif %}
 </form>
@@ -301,13 +298,13 @@
                 }
             } else {
                 if (saveError) {
-                    saveError.textContent = json.error || 'Erreur lors de la sauvegarde.';
+                    saveError.textContent = json.error || {{ _('Erreur lors de la sauvegarde.')|tojson }};
                     saveError.classList.remove('d-none');
                 }
             }
         } catch (_) {
             if (saveError) {
-                saveError.textContent = 'Erreur réseau — réessayez.';
+                saveError.textContent = {{ _('Erreur réseau — réessayez.')|tojson }};
                 saveError.classList.remove('d-none');
             }
         } finally {

@@ -6,6 +6,8 @@ de matériau (numéro de coulée, norme, fournisseur, référence CCPU).
 """
 from __future__ import annotations
 
+from flask_babel import lazy_gettext as _l
+
 from app.enums import Chapitre
 from app.services.formulaires.base import ColSpec, TableFormulaireService, TableSpec
 
@@ -18,24 +20,26 @@ class BimService(TableFormulaireService):
     REQUIRED_LIGNES = 1
     HEADER_SECTIONS = []
     TABLE_SPEC = TableSpec(
-        title="Matériaux de base",
+        title=_l("Matériaux de base"),
         cols=[
-            ColSpec("repere_composant", "Repère composant", "text",
+            ColSpec("repere_composant", _l("Repère composant"), "text",
                     required=True, maxlength=50, width="w-15"),
-            ColSpec("designation", "Désignation", "text",
+            ColSpec("designation", _l("Désignation"), "text",
                     required=True, maxlength=150, width="w-20"),
-            ColSpec("norme_materiau", "Norme matériau", "text",
+            ColSpec("norme_materiau", _l("Norme matériau"), "text",
                     required=True, maxlength=100, width="w-15"),
-            ColSpec("num_coulee", "N° coulée", "text",
+            ColSpec("num_coulee", _l("N° coulée"), "text",
                     required=True, maxlength=50, width="w-10"),
-            ColSpec("num_lot", "N° lot", "text",
+            ColSpec("num_lot", _l("N° lot"), "text",
                     maxlength=50, width="w-10"),
-            ColSpec("fournisseur", "Fournisseur", "text",
+            ColSpec("fournisseur", _l("Fournisseur"), "text",
                     maxlength=100, width="w-15"),
-            ColSpec("ref_ccpu", "Réf. CCPU", "text",
+            ColSpec("ref_ccpu", _l("Réf. CCPU"), "text",
                     maxlength=50, width="w-10",
-                    help_text="Référence dans le cahier des contrôles et procédures d'usinage."),
-            ColSpec("remarques", "Remarques", "text",
+                    help_text=_l(
+                        "Référence dans le cahier des contrôles et procédures d'usinage."
+                    )),
+            ColSpec("remarques", _l("Remarques"), "text",
                     maxlength=200, width="w-auto"),
         ],
     )

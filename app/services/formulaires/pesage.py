@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from flask_babel import lazy_gettext as _l
+
 from app.enums import Chapitre
 from app.services.formulaires.base import FieldSpec, SectionSpec, SimpleFormulaireService
 
@@ -18,38 +20,38 @@ class PesageService(SimpleFormulaireService):
     TITLE_EN = "Weighing record"
     REQUIRED_FOR_VALIDATION = frozenset({"date_pesage", "poids_mesure", "poids_plan", "tolerance"})
     SECTIONS = [
-        SectionSpec("Pesage", [
-            FieldSpec("date_pesage", "Date de pesage", "date",
+        SectionSpec(_l("Pesage"), [
+            FieldSpec("date_pesage", _l("Date de pesage"), "date",
                       required=True, col_class="col-sm-6 col-md-3"),
-            FieldSpec("conditions", "Conditions de pesage", "text",
+            FieldSpec("conditions", _l("Conditions de pesage"), "text",
                       maxlength=200, col_class="col-sm-6 col-md-6",
-                      help_text="Ex : À vide, sans fluide ni protections."),
-            FieldSpec("bascule", "Bascule / pont bascule", "text",
+                      help_text=_l("Ex : À vide, sans fluide ni protections.")),
+            FieldSpec("bascule", _l("Bascule / pont bascule"), "text",
                       maxlength=100, col_class="col-sm-6 col-md-4",
-                      help_text="Phase 4 : sélection depuis le référentiel métrologie."),
-            FieldSpec("operateur", "Opérateur", "text",
+                      help_text=_l("Phase 4 : sélection depuis le référentiel métrologie.")),
+            FieldSpec("operateur", _l("Opérateur"), "text",
                       maxlength=100, col_class="col-sm-6 col-md-3",
-                      help_text="Phase 4 : sélection depuis le référentiel QC."),
+                      help_text=_l("Phase 4 : sélection depuis le référentiel QC.")),
         ]),
-        SectionSpec("Mesures", [
-            FieldSpec("poids_mesure", "Poids mesuré (kg)", "float",
+        SectionSpec(_l("Mesures"), [
+            FieldSpec("poids_mesure", _l("Poids mesuré (kg)"), "float",
                       required=True, step="0.1", min_val="0",
                       col_class="col-sm-6 col-md-3"),
-            FieldSpec("poids_plan", "Poids théorique selon plan (kg)", "float",
+            FieldSpec("poids_plan", _l("Poids théorique selon plan (kg)"), "float",
                       required=True, step="0.1", min_val="0",
                       col_class="col-sm-6 col-md-3"),
-            FieldSpec("tolerance", "Tolérance acceptée (%)", "float",
+            FieldSpec("tolerance", _l("Tolérance acceptée (%)"), "float",
                       required=True, step="0.1", min_val="0",
                       col_class="col-sm-6 col-md-3"),
-            FieldSpec("ecart_pct", "Écart (%)", "float",
+            FieldSpec("ecart_pct", _l("Écart (%)"), "float",
                       server_computed=True,
-                      help_text="Calculé automatiquement.",
+                      help_text=_l("Calculé automatiquement."),
                       col_class="col-sm-6 col-md-3"),
         ]),
-        SectionSpec("Résultat", [
-            FieldSpec("conforme", "Poids conforme (écart ≤ tolérance)", "checkbox",
+        SectionSpec(_l("Résultat"), [
+            FieldSpec("conforme", _l("Poids conforme (écart ≤ tolérance)"), "checkbox",
                       col_class="col-12 col-md-6"),
-            FieldSpec("remarques", "Remarques", "textarea",
+            FieldSpec("remarques", _l("Remarques"), "textarea",
                       maxlength=2000, rows=3, col_class="col-12"),
         ]),
     ]

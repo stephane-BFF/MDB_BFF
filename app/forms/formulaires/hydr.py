@@ -6,6 +6,7 @@ Il sert uniquement à la validation serveur lors du POST ``/valider``.
 """
 from __future__ import annotations
 
+from flask_babel import lazy_gettext as _l
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, FloatField, IntegerField, SelectField, StringField
 from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, Optional
@@ -19,45 +20,45 @@ class HydrValidateForm(FlaskForm):  # type: ignore[misc]
     """
 
     ps_bar = FloatField(
-        "Pression de service PS (bar)",
+        _l("Pression de service PS (bar)"),
         validators=[
-            InputRequired(message="La pression de service PS est requise."),
-            NumberRange(min=0.1, max=999, message="PS doit être entre 0,1 et 999 bar."),
+            InputRequired(message=_l("La pression de service PS est requise.")),
+            NumberRange(min=0.1, max=999, message=_l("PS doit être entre 0,1 et 999 bar.")),
         ],
     )
     fluide = SelectField(
-        "Fluide d'épreuve",
+        _l("Fluide d'épreuve"),
         choices=[
-            ("", "— Sélectionner —"),
-            ("eau", "Eau"),
-            ("huile", "Huile"),
+            ("", _l("— Sélectionner —")),
+            ("eau", _l("Eau")),
+            ("huile", _l("Huile")),
         ],
-        validators=[DataRequired(message="Le fluide d'épreuve est requis.")],
+        validators=[DataRequired(message=_l("Le fluide d'épreuve est requis."))],
     )
     date_epreuve = StringField(
-        "Date de l'épreuve",
+        _l("Date de l'épreuve"),
         validators=[
-            DataRequired(message="La date de l'épreuve est requise."),
-            Length(min=10, max=10, message="Format attendu : JJ/MM/AAAA."),
+            DataRequired(message=_l("La date de l'épreuve est requise.")),
+            Length(min=10, max=10, message=_l("Format attendu : JJ/MM/AAAA.")),
         ],
     )
     duree_minutes = IntegerField(
-        "Durée de maintien (minutes)",
+        _l("Durée de maintien (minutes)"),
         validators=[
-            InputRequired(message="La durée de maintien est requise."),
-            NumberRange(min=30, message="Durée minimale : 30 minutes."),
+            InputRequired(message=_l("La durée de maintien est requise.")),
+            NumberRange(min=30, message=_l("Durée minimale : 30 minutes.")),
         ],
     )
     temperature_c = FloatField(
-        "Température du fluide (°C)",
+        _l("Température du fluide (°C)"),
         validators=[Optional(), NumberRange(min=0, max=100)],
     )
     numero_manometre = StringField(
-        "N° manomètre",
+        _l("N° manomètre"),
         validators=[Optional(), Length(max=50)],
     )
-    conforme = BooleanField("Résultat conforme")
+    conforme = BooleanField(_l("Résultat conforme"))
     observations = StringField(
-        "Observations",
+        _l("Observations"),
         validators=[Optional(), Length(max=2000)],
     )

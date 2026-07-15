@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from flask_babel import lazy_gettext as _l
+
 from app.enums import Chapitre
 from app.services.formulaires.base import (
     ColSpec,
@@ -30,43 +32,43 @@ class RollingService(TableFormulaireService):
     REQUIRED_LIGNES = 1
     REQUIRED_HEADER = frozenset({"procedure_roll", "taux_min", "taux_max"})
     HEADER_SECTIONS = [
-        SectionSpec("Paramètres de dudgeonnage", [
-            FieldSpec("procedure_roll", "Référence procédure", "text",
+        SectionSpec(_l("Paramètres de dudgeonnage"), [
+            FieldSpec("procedure_roll", _l("Référence procédure"), "text",
                       required=True, maxlength=100, col_class="col-sm-6 col-md-4"),
-            FieldSpec("outil", "Outil de dudgeonnage", "text",
+            FieldSpec("outil", _l("Outil de dudgeonnage"), "text",
                       required=True, maxlength=100, col_class="col-sm-6 col-md-4"),
-            FieldSpec("dim_tube", "Dimensions tube (Ø × ép.)", "text",
+            FieldSpec("dim_tube", _l("Dimensions tube (Ø × ép.)"), "text",
                       required=True, maxlength=50, col_class="col-sm-6 col-md-3",
-                      help_text="Ex : 25.4 × 2.11 mm"),
-            FieldSpec("materiau_tube", "Matériau tube", "text",
+                      help_text=_l("Ex : 25.4 × 2.11 mm")),
+            FieldSpec("materiau_tube", _l("Matériau tube"), "text",
                       required=True, maxlength=100, col_class="col-sm-6 col-md-3"),
-            FieldSpec("materiau_collecteur", "Matériau collecteur", "text",
+            FieldSpec("materiau_collecteur", _l("Matériau collecteur"), "text",
                       required=True, maxlength=100, col_class="col-sm-6 col-md-3"),
-            FieldSpec("taux_cible", "Taux d'expansion cible (%)", "float",
+            FieldSpec("taux_cible", _l("Taux d'expansion cible (%)"), "float",
                       required=True, step="0.1", min_val="0",
                       col_class="col-sm-6 col-md-2"),
-            FieldSpec("taux_min", "Taux minimum accepté (%)", "float",
+            FieldSpec("taux_min", _l("Taux minimum accepté (%)"), "float",
                       required=True, step="0.1", min_val="0",
                       col_class="col-sm-6 col-md-2"),
-            FieldSpec("taux_max", "Taux maximum accepté (%)", "float",
+            FieldSpec("taux_max", _l("Taux maximum accepté (%)"), "float",
                       required=True, step="0.1", min_val="0",
                       col_class="col-sm-6 col-md-2"),
         ]),
     ]
     TABLE_SPEC = TableSpec(
-        title="Résultats par tube",
+        title=_l("Résultats par tube"),
         cols=[
-            ColSpec("num_tube", "N° tube", "text",
+            ColSpec("num_tube", _l("N° tube"), "text",
                     required=True, maxlength=20, width="w-10"),
-            ColSpec("ep_avant", "Ép. avant (mm)", "float",
+            ColSpec("ep_avant", _l("Ép. avant (mm)"), "float",
                     required=True, step="0.01", min_val="0", width="w-12"),
-            ColSpec("ep_apres", "Ép. après (mm)", "float",
+            ColSpec("ep_apres", _l("Ép. après (mm)"), "float",
                     required=True, step="0.01", min_val="0", width="w-12"),
-            ColSpec("taux_reel", "Taux réel (%)", "float",
+            ColSpec("taux_reel", _l("Taux réel (%)"), "float",
                     server_computed=True, step="0.1", width="w-10"),
-            ColSpec("conformite", "Conforme", "checkbox",
+            ColSpec("conformite", _l("Conforme"), "checkbox",
                     server_computed=True, width="w-8"),
-            ColSpec("remarques", "Remarques", "text",
+            ColSpec("remarques", _l("Remarques"), "text",
                     maxlength=200, width="w-auto"),
         ],
     )

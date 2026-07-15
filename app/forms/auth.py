@@ -1,6 +1,7 @@
 """Formulaires WTForms pour l'authentification."""
 from __future__ import annotations
 
+from flask_babel import lazy_gettext as _l
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, Length, Regexp
@@ -14,23 +15,23 @@ class LoginForm(FlaskForm):  # type: ignore[misc]
     """
 
     email = StringField(
-        "Adresse e-mail",
+        _l("Adresse e-mail"),
         validators=[
-            DataRequired(message="L'adresse e-mail est requise."),
+            DataRequired(message=_l("L'adresse e-mail est requise.")),
             # ``check_deliverability=False`` : pas de résolution DNS MX, indispensable
             # pour les domaines internes type ``.local`` et pour les tests offline.
-            Email(message="Format d'e-mail invalide.", check_deliverability=False),
+            Email(message=_l("Format d'e-mail invalide."), check_deliverability=False),
             Length(max=254),
         ],
         render_kw={"autocomplete": "username", "autofocus": True},
     )
     password = PasswordField(
-        "Mot de passe",
-        validators=[DataRequired(message="Le mot de passe est requis.")],
+        _l("Mot de passe"),
+        validators=[DataRequired(message=_l("Le mot de passe est requis."))],
         render_kw={"autocomplete": "current-password"},
     )
-    remember = BooleanField("Se souvenir de moi", default=False)
-    submit = SubmitField("Se connecter")
+    remember = BooleanField(_l("Se souvenir de moi"), default=False)
+    submit = SubmitField(_l("Se connecter"))
 
 
 class TwoFactorForm(FlaskForm):  # type: ignore[misc]
@@ -41,10 +42,10 @@ class TwoFactorForm(FlaskForm):  # type: ignore[misc]
     """
 
     code = StringField(
-        "Code d'authentification",
+        _l("Code d'authentification"),
         validators=[
-            DataRequired(message="Le code est requis."),
-            Regexp(r"^\d{6,8}$", message="Le code doit comporter 6 à 8 chiffres."),
+            DataRequired(message=_l("Le code est requis.")),
+            Regexp(r"^\d{6,8}$", message=_l("Le code doit comporter 6 à 8 chiffres.")),
         ],
         render_kw={
             "autocomplete": "one-time-code",
@@ -53,17 +54,17 @@ class TwoFactorForm(FlaskForm):  # type: ignore[misc]
             "placeholder": "123456",
         },
     )
-    submit = SubmitField("Vérifier")
+    submit = SubmitField(_l("Vérifier"))
 
 
 class TotpSetupForm(FlaskForm):  # type: ignore[misc]
     """Confirmation d'enrôlement 2FA : premier code TOTP à 6 chiffres."""
 
     code = StringField(
-        "Code à 6 chiffres",
+        _l("Code à 6 chiffres"),
         validators=[
-            DataRequired(message="Saisissez le code affiché par votre application."),
-            Regexp(r"^\d{6}$", message="Le code doit comporter 6 chiffres."),
+            DataRequired(message=_l("Saisissez le code affiché par votre application.")),
+            Regexp(r"^\d{6}$", message=_l("Le code doit comporter 6 chiffres.")),
         ],
         render_kw={
             "autocomplete": "one-time-code",
@@ -72,4 +73,4 @@ class TotpSetupForm(FlaskForm):  # type: ignore[misc]
             "placeholder": "123456",
         },
     )
-    submit = SubmitField("Activer la double authentification")
+    submit = SubmitField(_l("Activer la double authentification"))
