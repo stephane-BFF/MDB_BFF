@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import JSON, ForeignKey, Integer, String
+from sqlalchemy import JSON, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -51,22 +51,30 @@ class Affaire(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
     """
 
     __tablename__ = "affaires"
+    __table_args__ = (
+        UniqueConstraint("numero_affaire", "item", name="uq_affaires_numero_item"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     # ── Identité du dossier (page de garde + sommaire MDB) ───────────────
     numero_affaire: Mapped[str | None] = mapped_column(
-        String(20),
-        unique=True,
+        String(10),
         index=True,
         nullable=True,
-        doc="Numéro au format BN{AAAA}-{NNN} (ex: BN2026-042).",
+        doc="N° d'affaire attribué par le BE, format BN|BP + 4 chiffres (ex: BN0811).",
+    )
+    item: Mapped[str | None] = mapped_column(
+        String(4),
+        nullable=True,
+        doc="N° d'item BE au sein de l'affaire (4 chiffres, ex: 8975) — une "
+        "même affaire peut porter plusieurs items/dossiers.",
     )
     annee: Mapped[int | None] = mapped_column(
         Integer,
         index=True,
         nullable=True,
-        doc="Année de l'affaire (déduite de ``numero_affaire``).",
+        doc="Année de l'affaire.",
     )
     client_nom: Mapped[str | None] = mapped_column(String(255), nullable=True)
     references_client: Mapped[str | None] = mapped_column(
@@ -77,7 +85,8 @@ class Affaire(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
     references_internes: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
-        doc="« NOS REFERENCES » BFF (ex: 9541-BN0909).",
+        doc="« NOS REFERENCES » BFF — calculée automatiquement en "
+        "``{numero_affaire}-{item}`` (ex: BN0811-8975) à la validation de Q1.",
     )
     repere: Mapped[str | None] = mapped_column(
         String(100),

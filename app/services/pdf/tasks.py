@@ -52,7 +52,7 @@ def generate_dossier_pdf(self, affaire_id: int) -> dict:
         path = net_svc.save_pdf(
             pdf_bytes,
             affaire.annee,
-            affaire.numero_affaire,
+            affaire.references_internes,
             "DOSSIER_COMPLET",
         )
         AuditTrail.log(

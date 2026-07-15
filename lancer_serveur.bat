@@ -27,9 +27,9 @@ echo  [2/3] Verification des comptes et modeles (idempotent)...
 echo  [3/3] Demarrage du serveur : http://127.0.0.1:5000
 echo.
 echo  Comptes de connexion  -  mot de passe initial : BFF-init-2026!
-echo    - Stephane.Paumelle@ait-stein.com     Admin
-echo    - Brice.Girard@bffrance.com           Approbateur
-echo    - Corentin.DUVAL-ARNOULD@bffrance.com Redacteur
+echo    - stephane.paumelle@ait-stein.com     Admin
+echo    - brice.girard@bffrance.com           Approbateur
+echo    - corentin.duval-arnould@bffrance.com Redacteur
 echo.
 echo  Langues : ajoutez  ?lang=en  (ou de / it) a l'URL.
 echo  Arret du serveur : Ctrl+C dans cette fenetre.

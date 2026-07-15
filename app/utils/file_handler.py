@@ -1,9 +1,8 @@
 """Gestion des fichiers : sauvegarde sur chemin réseau BFF et validation MIME."""
 import os
-import magic
-from flask import current_app
-from werkzeug.datastructures import FileStorage
 
+import magic
+from werkzeug.datastructures import FileStorage
 
 # Types MIME autorisés pour les uploads (validés côté serveur)
 ALLOWED_MIME_TYPES: frozenset[str] = frozenset({
@@ -29,28 +28,13 @@ def validate_mime(file: FileStorage) -> bool:
     return detected in ALLOWED_MIME_TYPES
 
 
-def build_network_path(num_affaire: str, code_formulaire: str, filename: str) -> str:
-    """Construit le chemin réseau UNC complet pour un fichier d'affaire.
-
-    Args:
-        num_affaire: Numéro d'affaire au format BN{AAAA}-{NNN}.
-        code_formulaire: Code du formulaire (ex: 'hydr', 'dim').
-        filename: Nom du fichier final.
-
-    Returns:
-        Chemin complet vers le fichier sur le NAS BFF.
-    """
-    base = current_app.config["NETWORK_BASE_PATH"]
-    annee = num_affaire[2:6]  # "BN2026-042" → "2026"
-    return os.path.join(base, annee, num_affaire, "MDB", code_formulaire, filename)
-
-
 def save_file(file: FileStorage, dest_path: str) -> str:
     """Sauvegarde un fichier sur le chemin réseau BFF avec création des dossiers.
 
     Args:
         file: Fichier uploadé à sauvegarder.
-        dest_path: Chemin complet de destination (construit via build_network_path).
+        dest_path: Chemin complet de destination (voir ``app.services.network``
+            pour la construction du chemin NAS).
 
     Returns:
         Chemin absolu du fichier sauvegardé.

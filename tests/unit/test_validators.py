@@ -2,11 +2,7 @@
 from __future__ import annotations
 
 import pytest
-from flask import Flask
 
-from app.enums import Statut
-from app.extensions import db
-from app.models.affaire import Affaire
 from app.utils import validators
 
 
@@ -26,11 +22,13 @@ class TestNumeroAffaire:
     @pytest.mark.parametrize(
         ("numero", "valide"),
         [
-            ("BN2026-042", True),
-            ("BN2026-001", True),
-            ("BP2026-042", False),   # préfixe BP non géré par ce validateur
-            ("BN26-042", False),
-            ("BN2026-42", False),
+            ("BN0811", True),
+            ("BP1234", True),
+            ("bn0811", True),        # normalisé en majuscules
+            ("BN2026-042", False),   # ancien format auto-généré, plus valide
+            ("BN081", False),        # 3 chiffres
+            ("BN08111", False),      # 5 chiffres
+            ("BX0811", False),       # préfixe inconnu
             ("", False),
             ("nimportequoi", False),
         ],
@@ -38,32 +36,21 @@ class TestNumeroAffaire:
     def test_is_valid_numero_affaire(self, numero: str, valide: bool) -> None:
         assert validators.is_valid_numero_affaire(numero) is valide
 
-    def test_parse_valide(self) -> None:
-        assert validators.parse_numero_affaire("BN2026-042") == (2026, 42)
 
-    def test_parse_invalide(self) -> None:
-        assert validators.parse_numero_affaire("BN26-42") is None
-
-
-class TestNextNumeroAffaire:
-    def test_premier_numero_de_lannee(self, app: Flask) -> None:
-        with app.app_context():
-            assert validators.next_numero_affaire(db.session, 2027) == "BN2027-001"
-
-    def test_incremente_le_max(self, app: Flask, user_redacteur) -> None:  # noqa: ANN001
-        with app.app_context():
-            for seq in (1, 2, 5):
-                db.session.add(
-                    Affaire(
-                        numero_affaire=f"BN2028-{seq:03d}",
-                        annee=2028,
-                        statut=Statut.BROUILLON,
-                        cree_par_id=user_redacteur.id,
-                    )
-                )
-            db.session.commit()
-            # max = 5 → suivant = 006 (ignore les autres années)
-            assert validators.next_numero_affaire(db.session, 2028) == "BN2028-006"
+class TestIsValidItem:
+    @pytest.mark.parametrize(
+        ("item", "valide"),
+        [
+            ("8975", True),
+            ("0001", True),
+            ("123", False),
+            ("12345", False),
+            ("", False),
+            ("abcd", False),
+        ],
+    )
+    def test_is_valid_item(self, item: str, valide: bool) -> None:
+        assert validators.is_valid_item(item) is valide
 
 
 class TestExtensions:

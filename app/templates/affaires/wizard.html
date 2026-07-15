@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Wizard {{ step.value }} — {{ affaire.numero_affaire }}{% endblock %}
+{% block title %}Wizard {{ step.value }} — {{ affaire.numero_affaire or "nouvelle affaire" }}{% endblock %}
 
 {% macro render_field(field, classes="form-control") %}
 <div class="mb-3">
@@ -31,7 +31,7 @@
     <div class="col">
         <h1 class="h4 mb-1">Création d'affaire — Wizard</h1>
         <p class="text-muted mb-0">
-            <code>{{ affaire.numero_affaire }}</code> · Étape {{ step.numero }} / 8
+            <code>{{ affaire.numero_affaire or "—" }}</code> · Étape {{ step.numero }} / 8
         </p>
     </div>
 </div>
@@ -99,9 +99,42 @@
         <form method="post" novalidate>
             {{ form.hidden_tag() }}
 
-            {% for field in form if field.name not in ('csrf_token', 'submit') %}
-                {{ render_field(field) }}
-            {% endfor %}
+            {% if step.value == 'Q1' %}
+                {% set is_manuel = form.numero_affaire.data == '__manuel__' %}
+                <div class="mb-3">
+                    {{ form.annee.label(class="form-label") }}
+                    {{ form.annee(class="form-control" + (" is-invalid" if form.annee.errors else ""), id="q1-annee") }}
+                    {% for error in form.annee.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.numero_affaire.label(class="form-label") }}
+                    {{ form.numero_affaire(class="form-select" + (" is-invalid" if form.numero_affaire.errors else ""), id="q1-numero-affaire") }}
+                    {% if form.numero_affaire.description %}<div class="form-text">{{ form.numero_affaire.description }}</div>{% endif %}
+                    {% for error in form.numero_affaire.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="mb-3{{ '' if is_manuel else ' d-none' }}" id="q1-numero-manuel-wrap">
+                    {{ form.numero_affaire_manuel.label(class="form-label") }}
+                    {{ form.numero_affaire_manuel(class="form-control" + (" is-invalid" if form.numero_affaire_manuel.errors else ""), id="q1-numero-manuel") }}
+                    {% if form.numero_affaire_manuel.description %}<div class="form-text">{{ form.numero_affaire_manuel.description }}</div>{% endif %}
+                    {% for error in form.numero_affaire_manuel.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.item.label(class="form-label") }}
+                    {% if is_manuel %}
+                        {{ form.item(class="form-select d-none" + (" is-invalid" if form.item.errors else ""), id="q1-item-select", disabled=True) }}
+                        <input type="text" class="form-control{{ ' is-invalid' if form.item.errors else '' }}" id="q1-item-manuel" name="item" maxlength="4" placeholder="8975" value="{{ form.item.data or '' }}">
+                    {% else %}
+                        {{ form.item(class="form-select" + (" is-invalid" if form.item.errors else ""), id="q1-item-select") }}
+                        <input type="text" class="form-control d-none" id="q1-item-manuel" maxlength="4" placeholder="8975" disabled>
+                    {% endif %}
+                    {% if form.item.description %}<div class="form-text">{{ form.item.description }}</div>{% endif %}
+                    {% for error in form.item.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+            {% else %}
+                {% for field in form if field.name not in ('csrf_token', 'submit') %}
+                    {{ render_field(field) }}
+                {% endfor %}
+            {% endif %}
 
             <div class="d-flex justify-content-between mt-4">
                 {% if step.numero > 1 %}
@@ -132,4 +165,79 @@
         {% endif %}
     </div>
 </div>
+
+{% if step.value == 'Q1' %}
+<script>
+(function () {
+    "use strict";
+    var MANUEL = "__manuel__";
+    var numeroSelect = document.getElementById("q1-numero-affaire");
+    var manuelWrap = document.getElementById("q1-numero-manuel-wrap");
+    var itemSelect = document.getElementById("q1-item-select");
+    var itemManuel = document.getElementById("q1-item-manuel");
+    var anneeInput = document.getElementById("q1-annee");
+    var itemsUrl = {{ url_for('affaires.registre_be_items')|tojson }};
+
+    function toggleManuel() {
+        var manuel = numeroSelect.value === MANUEL;
+        manuelWrap.classList.toggle("d-none", !manuel);
+        itemSelect.classList.toggle("d-none", manuel);
+        itemSelect.disabled = manuel;
+        itemManuel.classList.toggle("d-none", !manuel);
+        itemManuel.disabled = !manuel;
+        if (manuel) {
+            itemManuel.name = "item";
+            itemSelect.removeAttribute("name");
+        } else {
+            itemSelect.name = "item";
+            itemManuel.removeAttribute("name");
+        }
+    }
+
+    function loadItems() {
+        var numero = numeroSelect.value;
+        itemSelect.innerHTML = "";
+        var placeholder = document.createElement("option");
+        placeholder.value = "";
+        if (!numero || numero === MANUEL) {
+            placeholder.textContent = "— Sélectionnez d'abord un n° d'affaire —";
+            itemSelect.appendChild(placeholder);
+            return;
+        }
+        placeholder.textContent = "Chargement…";
+        itemSelect.appendChild(placeholder);
+        fetch(itemsUrl + "?numero_affaire=" + encodeURIComponent(numero))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                itemSelect.innerHTML = "";
+                var opt0 = document.createElement("option");
+                opt0.value = "";
+                opt0.textContent = data.items.length ? "— Sélectionner —" : "— Aucun item connu pour cette affaire —";
+                itemSelect.appendChild(opt0);
+                data.items.forEach(function (it) {
+                    var opt = document.createElement("option");
+                    opt.value = it.item;
+                    opt.textContent = it.label;
+                    opt.dataset.annee = it.annee || "";
+                    itemSelect.appendChild(opt);
+                });
+            });
+    }
+
+    itemSelect.addEventListener("change", function () {
+        var opt = itemSelect.selectedOptions[0];
+        if (opt && opt.dataset.annee) {
+            anneeInput.value = opt.dataset.annee;
+        }
+    });
+
+    numeroSelect.addEventListener("change", function () {
+        toggleManuel();
+        loadItems();
+    });
+
+    toggleManuel();
+})();
+</script>
+{% endif %}
 {% endblock %}

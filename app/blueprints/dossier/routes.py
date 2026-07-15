@@ -61,13 +61,13 @@ def pdf(affaire_id: int) -> Response:
         net_svc.save_pdf(
             pdf_bytes,
             affaire.annee,
-            affaire.numero_affaire,
+            affaire.references_internes,
             "DOSSIER_COMPLET",
         )
     except OSError as exc:
         flash(f"Dossier généré mais non sauvegardé sur le NAS : {exc}", "warning")
 
-    filename = f"{affaire.numero_affaire}_DOSSIER_COMPLET.pdf"
+    filename = f"{affaire.references_internes}_DOSSIER_COMPLET.pdf"
     return send_file(  # type: ignore[return-value]
         io.BytesIO(pdf_bytes),
         mimetype="application/pdf",

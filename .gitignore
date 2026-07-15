@@ -87,3 +87,10 @@ $RECYCLE.BIN/
 # ── Fichiers de déploiement sensibles ─────────────────────
 gunicorn.conf.py.local
 nginx_bff_mdb.conf.local
+
+# ── Brouillons de démarrage (copies .txt d'avant les vrais fichiers) ──
+/claude_settings.txt
+/env_example.txt
+/gitignore.txt
+/run_py.txt
+/test_mdb.py

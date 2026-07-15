@@ -41,6 +41,9 @@ flower>=2.0.1
 # ── Authentification Windows / LDAP Active Directory ──────────
 ldap3>=2.9.1
 
+# ── Import du registre général de commande BE (Excel) ──────────
+openpyxl>=3.1.5
+
 # ── Double authentification (2FA TOTP) ────────────────────────
 pyotp>=2.9.0
 

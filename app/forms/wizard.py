@@ -29,6 +29,7 @@ from wtforms import (
     SelectMultipleField,
     StringField,
     TextAreaField,
+    ValidationError,
 )
 from wtforms.validators import (
     DataRequired,
@@ -36,12 +37,30 @@ from wtforms.validators import (
     Length,
     NumberRange,
     Optional,
-    Regexp,
 )
+
+from app.utils.validators import is_valid_item, is_valid_numero_affaire
+
+# Valeur spéciale du champ ``numero_affaire`` déclenchant la saisie manuelle
+# de secours, pour les affaires pas encore répertoriées dans le registre BE.
+NUMERO_AFFAIRE_MANUEL = "__manuel__"
 
 
 class WizardQ1Form(FlaskForm):  # type: ignore[misc]
-    """Q1 — Identification du dossier."""
+    """Q1 — Identification du dossier.
+
+    Le n° d'affaire est choisi dans une liste déroulante alimentée par le
+    registre général de commande BE (import ``flask import-registre-be``) ;
+    ses choix sont peuplés côté route (``form.numero_affaire.choices = …``)
+    car ils dépendent des données en base. Si l'affaire n'y figure pas
+    encore, la valeur spéciale ``NUMERO_AFFAIRE_MANUEL`` bascule sur les
+    champs de saisie manuelle (``numero_affaire_manuel`` / ``item``).
+
+    Le champ ``item`` est un ``SelectField`` sans validation de choix
+    (``validate_choice=False``) : ses options réelles sont peuplées en JS via
+    l'endpoint JSON ``/affaires/registre-be/items`` une fois l'affaire
+    choisie, et sa valeur est revérifiée côté service à la sauvegarde.
+    """
 
     annee = IntegerField(
         "Année de l'affaire",
@@ -51,22 +70,38 @@ class WizardQ1Form(FlaskForm):  # type: ignore[misc]
         ],
         render_kw={"placeholder": "2026"},
     )
-    numero_affaire = StringField(
-        "Numéro d'affaire",
-        validators=[
-            DataRequired(message="Le numéro d'affaire est requis."),
-            Regexp(
-                r"^BN\d{4}-\d{3}$",
-                message="Format attendu : BN{AAAA}-{NNN} (ex: BN2026-042).",
-            ),
-        ],
-        render_kw={"placeholder": "BN2026-042"},
+    numero_affaire = SelectField(
+        "N° d'affaire",
+        validators=[DataRequired(message="Le n° d'affaire est requis.")],
+        description="Issu du registre général de commande BE.",
     )
-    references_internes = StringField(
-        "Référence interne BFF",
-        validators=[Optional(), Length(max=100)],
-        description="« NOS REFERENCES » — code interne BFF (ex: 9541-BN0909).",
+    numero_affaire_manuel = StringField(
+        "N° d'affaire (saisie manuelle)",
+        validators=[Optional(), Length(max=10)],
+        filters=[lambda v: v.strip().upper() if v else v],
+        render_kw={"placeholder": "BN0811"},
+        description="Uniquement si l'affaire n'est pas encore dans le registre BE.",
     )
+    item = SelectField(
+        "N° d'item",
+        validators=[DataRequired(message="Le n° d'item est requis.")],
+        validate_choice=False,
+        description="4 chiffres — un même n° d'affaire peut porter plusieurs items.",
+    )
+
+    def validate_numero_affaire_manuel(
+        self, field: StringField
+    ) -> None:  # noqa: D102 — validateur WTForms conventionnel
+        if self.numero_affaire.data != NUMERO_AFFAIRE_MANUEL:
+            return
+        if not field.data:
+            raise ValidationError("Le n° d'affaire manuel est requis.")
+        if not is_valid_numero_affaire(field.data):
+            raise ValidationError("Format attendu : BN ou BP + 4 chiffres (ex: BN0811).")
+
+    def validate_item(self, field: SelectField) -> None:  # noqa: D102
+        if not field.data or not is_valid_item(field.data):
+            raise ValidationError("Le n° d'item doit comporter 4 chiffres (ex: 8975).")
 
 
 class WizardQ2Form(FlaskForm):  # type: ignore[misc]

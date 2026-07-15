@@ -101,7 +101,9 @@ class _PlanAssemblage:
 def generate_qr_data_uri(affaire: Affaire) -> str:
     """Génère le QR code de l'affaire et le retourne en data URI PNG base64.
 
-    Contenu encodé : ``BFF-MDB:{numero_affaire}:{annee}``
+    Contenu encodé : ``BFF-MDB:{references_internes}:{annee}`` — la référence
+    interne (``numero_affaire-item``) est utilisée plutôt que le seul n°
+    d'affaire, car une même affaire BE peut porter plusieurs items/dossiers.
 
     Args:
         affaire: Affaire dont on encode l'identifiant.
@@ -117,7 +119,7 @@ def generate_qr_data_uri(affaire: Affaire) -> str:
     except ImportError as exc:
         raise RuntimeError("qrcode non installé — pip install qrcode[pil]") from exc
 
-    content = f"BFF-MDB:{affaire.numero_affaire}:{affaire.annee}"
+    content = f"BFF-MDB:{affaire.references_internes}:{affaire.annee}"
     qr = qrcode.QRCode(version=1, box_size=8, border=3)
     qr.add_data(content)
     qr.make(fit=True)

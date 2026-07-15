@@ -1,12 +1,12 @@
 """Routes du module Affaires — liste paginée + wizard de création Q1-Q8."""
 from __future__ import annotations
 
-from datetime import datetime
-
 import csv
 import io
+from datetime import datetime
+from typing import TYPE_CHECKING
 
-from flask import abort, flash, make_response, redirect, render_template, request, url_for
+from flask import abort, flash, jsonify, make_response, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
@@ -17,6 +17,7 @@ from app.enums import Role, Statut, StatutWizard
 from app.extensions import db
 from app.forms.affaire import AffaireFilterForm
 from app.forms.wizard import (
+    NUMERO_AFFAIRE_MANUEL,
     WizardQ1Form,
     WizardQ2Form,
     WizardQ3Form,
@@ -29,7 +30,11 @@ from app.forms.wizard import (
 from app.models.affaire import Affaire
 from app.models.user import User
 from app.services import affaire as affaire_svc
+from app.services import registre_be as registre_be_svc
 from app.utils.decorators import role_required
+
+if TYPE_CHECKING:
+    from app.models.registre_be import RegistreBEItem
 
 # Nombre d'affaires par page — peut devenir paramétrable plus tard.
 _PER_PAGE = 20
@@ -286,13 +291,42 @@ def export_csv() -> Response:
 def wizard_start() -> Response:
     """Crée une nouvelle affaire en WIZARD_BROUILLON et redirige vers Q1.
 
-    Le numéro d'affaire est auto-généré pour l'année courante (modifiable en Q1).
+    Le n° d'affaire n'est pas encore connu : il sera choisi en Q1 dans le
+    registre BE (ou saisi manuellement).
     """
     annee = datetime.now().year
     affaire = affaire_svc.start_wizard(user=_current_user(), annee=annee)
-    flash(f"Affaire {affaire.numero_affaire} créée. Étape 1/8.", "success")
+    flash("Affaire créée. Étape 1/8.", "success")
     return redirect(
         url_for("affaires.wizard_step", affaire_id=affaire.id, step="Q1")
+    )
+
+
+@bp.route("/registre-be/items")
+@login_required  # type: ignore[untyped-decorator]
+@role_required(*_WIZARD_ROLES)
+def registre_be_items() -> Response:
+    """Liste JSON des items du registre BE pour un n° d'affaire (JS de Q1).
+
+    Query string : ``numero_affaire`` (ex: ``BN0811``).
+    """
+    numero_affaire = (request.args.get("numero_affaire") or "").strip().upper()
+    if not numero_affaire or numero_affaire == NUMERO_AFFAIRE_MANUEL:
+        return jsonify({"items": []})
+
+    items = registre_be_svc.list_items_for_numero(numero_affaire)
+    return jsonify(
+        {
+            "items": [
+                {
+                    "item": i.item,
+                    "label": i.label,
+                    "client_nom": i.client_nom,
+                    "annee": i.annee,
+                }
+                for i in items
+            ]
+        }
     )
 
 
@@ -321,6 +355,10 @@ def wizard_step(affaire_id: int, step: str) -> str | Response | tuple[str, int]:
     form_class = _WIZARD_FORMS[current_step]
     form = form_class(data=_prefill(affaire, current_step))
 
+    if current_step is StatutWizard.Q1:
+        form.numero_affaire.choices = _numero_affaire_choices()
+        form.item.choices = _item_choices(form.numero_affaire.data)
+
     if form.validate_on_submit():
         if current_step is StatutWizard.Q8:
             affaire_svc.finish_wizard(
@@ -334,12 +372,32 @@ def wizard_step(affaire_id: int, step: str) -> str | Response | tuple[str, int]:
             )
             return redirect(url_for("affaires.index"))
 
-        next_step = affaire_svc.save_step(
-            affaire,
-            current_step,
-            _form_payload(form),
-            user=_current_user(),
-        )
+        if current_step is StatutWizard.Q1:
+            resolution = _resolve_q1(form, affaire.id)
+            if resolution is None:
+                return render_template(
+                    "affaires/wizard.html",
+                    affaire=affaire,
+                    form=form,
+                    step=current_step,
+                    steps=list(StatutWizard),
+                )
+            numero_affaire, item, registre_item = resolution
+            next_step = affaire_svc.resolve_q1_selection(
+                affaire,
+                annee=form.annee.data,
+                numero_affaire=numero_affaire,
+                item=item,
+                registre_item=registre_item,
+                user=_current_user(),
+            )
+        else:
+            next_step = affaire_svc.save_step(
+                affaire,
+                current_step,
+                _form_payload(form),
+                user=_current_user(),
+            )
         return redirect(
             url_for(
                 "affaires.wizard_step",
@@ -404,11 +462,20 @@ def _prefill(affaire: Affaire, step: StatutWizard) -> dict[str, object]:
     data: dict[str, object] = {}
 
     if step is StatutWizard.Q1:
-        data = {
-            "annee": affaire.annee,
-            "numero_affaire": affaire.numero_affaire,
-            "references_internes": affaire.references_internes,
-        }
+        data = {"annee": affaire.annee}
+        if affaire.numero_affaire:
+            registre_item = (
+                registre_be_svc.get_item(affaire.numero_affaire, affaire.item)
+                if affaire.item
+                else None
+            )
+            if registre_item is not None:
+                data["numero_affaire"] = affaire.numero_affaire
+                data["item"] = affaire.item
+            else:
+                data["numero_affaire"] = NUMERO_AFFAIRE_MANUEL
+                data["numero_affaire_manuel"] = affaire.numero_affaire
+                data["item"] = affaire.item
     elif step is StatutWizard.Q2:
         data = {
             "client_nom": affaire.client_nom,
@@ -444,3 +511,74 @@ def _form_payload(form: object) -> dict[str, object]:
         for name, field in form._fields.items()  # type: ignore[attr-defined]
         if name not in skipped
     }
+
+
+def _numero_affaire_choices() -> list[tuple[str, str]]:
+    """Choix du ``SelectField`` n° d'affaire : registre BE + saisie manuelle."""
+    rows = registre_be_svc.list_numeros_affaire()
+    choices = [("", "— Sélectionner —")]
+    choices += [
+        (
+            row["numero_affaire"],
+            f"{row['numero_affaire']} — {row['client_nom'] or '?'} "
+            f"({row['nb_items']} item{'s' if row['nb_items'] > 1 else ''})",
+        )
+        for row in rows
+    ]
+    choices.append((NUMERO_AFFAIRE_MANUEL, "Saisie manuelle (affaire non répertoriée)"))
+    return choices
+
+
+def _item_choices(numero_affaire: str | None) -> list[tuple[str, str]]:
+    """Choix du ``SelectField`` item, dépendant du n° d'affaire déjà sélectionné."""
+    if not numero_affaire or numero_affaire == NUMERO_AFFAIRE_MANUEL:
+        return [("", "— Sélectionnez d'abord un n° d'affaire —")]
+    items = registre_be_svc.list_items_for_numero(numero_affaire)
+    if not items:
+        return [("", "— Aucun item connu pour cette affaire —")]
+    return [("", "— Sélectionner —")] + [(i.item, i.label) for i in items]
+
+
+def _resolve_q1(
+    form: WizardQ1Form, affaire_id: int
+) -> tuple[str, str, RegistreBEItem | None] | None:
+    """Résout la sélection Q1 (n° affaire + item) en mode registre ou manuel.
+
+    Returns:
+        ``(numero_affaire, item, registre_item)`` — ``registre_item`` vaut
+        ``None`` en saisie manuelle — ou ``None`` si la sélection est
+        invalide (un ``flash`` d'erreur a alors été émis).
+    """
+    if form.numero_affaire.data == NUMERO_AFFAIRE_MANUEL:
+        numero_affaire = (form.numero_affaire_manuel.data or "").upper()
+        item = form.item.data or ""
+        registre_item = None
+    else:
+        numero_affaire = form.numero_affaire.data
+        item = form.item.data or ""
+        registre_item = registre_be_svc.get_item(numero_affaire, item)
+        if registre_item is None:
+            flash(
+                "Cet item n'est pas reconnu pour ce n° d'affaire — "
+                "réessayez la sélection.",
+                "danger",
+            )
+            return None
+
+    clash = (
+        db.session.query(Affaire)
+        .filter(
+            Affaire.numero_affaire == numero_affaire,
+            Affaire.item == item,
+            Affaire.id != affaire_id,
+        )
+        .first()
+    )
+    if clash is not None:
+        flash(
+            f"Une affaire {numero_affaire}-{item} existe déjà — vérifiez le n° d'item.",
+            "danger",
+        )
+        return None
+
+    return numero_affaire, item, registre_item

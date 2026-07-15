@@ -212,7 +212,7 @@ def pdf(affaire_id: int, code: str) -> Response:
         from app.services import network as net_svc  # noqa: PLC0415
 
         saved_path = net_svc.save_pdf(
-            pdf_bytes, affaire.annee, affaire.numero_affaire, code.upper()
+            pdf_bytes, affaire.annee, affaire.references_internes, code.upper()
         )
         current_app.logger.info(
             "pdf.nas_saved",
@@ -221,7 +221,7 @@ def pdf(affaire_id: int, code: str) -> Response:
     except OSError as exc:
         flash(f"PDF généré mais non sauvegardé sur le NAS : {exc}", "warning")
 
-    filename = f"{affaire.numero_affaire}_{code.upper()}.pdf"
+    filename = f"{affaire.references_internes}_{code.upper()}.pdf"
     return send_file(  # type: ignore[return-value]
         io.BytesIO(pdf_bytes),
         mimetype="application/pdf",

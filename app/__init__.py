@@ -66,7 +66,17 @@ def _select_locale() -> str:
 def _register_models() -> None:
     """Importe explicitement chaque module de modèle pour qu'il s'enregistre
     dans ``Base.metadata`` (requis pour Flask-Migrate)."""
-    from app.models import affaire, audit, fichier, formulaire, jalon, referentiel, signature, user  # noqa: F401
+    from app.models import (  # noqa: F401
+        affaire,
+        audit,
+        fichier,
+        formulaire,
+        jalon,
+        referentiel,
+        registre_be,
+        signature,
+        user,
+    )
 
 
 def _register_context_processors(app: Flask) -> None:
@@ -94,10 +104,12 @@ def _register_context_processors(app: Flask) -> None:
 def _register_cli(app: Flask) -> None:
     """Enregistre les commandes ``flask <…>`` personnalisées."""
     from app.cli.api_token import api_token_group
+    from app.cli.import_registre import import_registre_be_command
     from app.cli.seed import seed_command
 
     app.cli.add_command(seed_command)
     app.cli.add_command(api_token_group)
+    app.cli.add_command(import_registre_be_command)
 
 
 def _register_blueprints(app: Flask) -> None:

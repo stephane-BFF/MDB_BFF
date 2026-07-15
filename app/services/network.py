@@ -5,7 +5,12 @@ En production, ``NETWORK_BASE_PATH`` pointe vers le partage UNC Windows :
 
 Structure cible :
     {NETWORK_BASE_PATH}/{annee}/{numero_affaire}/MDB/{code}.pdf
-    ex: \\\\BFF-FICHIERS\\Affaires\\2026\\BN2026-042\\MDB\\HYDR.pdf
+    ex: \\\\BFF-FICHIERS\\Affaires\\2026\\BN0811-8975\\MDB\\HYDR.pdf
+
+Le paramètre ``numero_affaire`` accepte en pratique la référence interne
+complète (``Affaire.references_internes``, ex: ``BN0811-8975``) plutôt que
+le seul n° d'affaire BE : une même affaire peut porter plusieurs items, et
+seule la référence interne identifie un dossier de façon unique.
 
 En développement, ``NETWORK_BASE_PATH`` vaut ``pdf_output`` (répertoire local).
 La fonction ``save_pdf`` crée les dossiers intermédiaires si nécessaire et

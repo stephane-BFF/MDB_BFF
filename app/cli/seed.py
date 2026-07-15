@@ -10,13 +10,18 @@ Pour la prod, utiliser ``flask seed --force`` n'est pas requis — les `INSERT`
 sont gardés par un `SELECT` préalable sur les clés uniques.
 
 Équipe BFF :
-    - Stéphane PAUMELLE  <Stephane.Paumelle@ait-stein.com>  — Admin (Directeur pôle décarbonation)
-    - Brice GIRARD       <Brice.Girard@bffrance.com>         — Approbateur (Responsable QC)
-    - Vincent VAUTHIER   <Vincent.Vauthier@bffrance.com>     — Approbateur (Inspecteur QC, CND niv II Cofrend + niv III ASNT)
-    - Loïc CUVELIER      <Loic.Cuvelier@bffrance.com>        — Vérificateur (Contrôleur CND niv II Cofrend + ASNT)
-    - Paul BRITO         <Paul.BRITO@bffrance.com>           — Vérificateur (Inspecteur QC)
+    - Stéphane PAUMELLE  <stephane.paumelle@ait-stein.com>  — Admin (Directeur pôle décarbonation)
+    - Brice GIRARD       <brice.girard@bffrance.com>         — Approbateur (Responsable QC)
+    - Vincent VAUTHIER   <vincent.vauthier@bffrance.com>     — Approbateur (Inspecteur QC, CND niv II Cofrend + niv III ASNT)
+    - Loïc CUVELIER      <loic.cuvelier@bffrance.com>        — Vérificateur (Contrôleur CND niv II Cofrend + ASNT)
+    - Paul BRITO         <paul.brito@bffrance.com>           — Vérificateur (Inspecteur QC)
     - Florence MARQUE    <florence.marque@bffrance.com>      — Vérificateur (Inspecteur QC)
-    - Corentin DUVAL-ARNOULD <Corentin.DUVAL-ARNOULD@bffrance.com> — Rédacteur (Responsable production et soudage)
+    - Corentin DUVAL-ARNOULD <corentin.duval-arnould@bffrance.com> — Rédacteur (Responsable production et soudage)
+
+Tous les e-mails de seed sont normalisés en minuscules : les logins sont
+insensibles à la casse (``ldap_auth._find_user`` compare via ``func.lower``),
+mais la donnée stockée doit rester cohérente avec l'identifiant réel de
+l'utilisateur pour éviter toute confusion en base ou dans les exports.
 """
 from __future__ import annotations
 
@@ -48,13 +53,13 @@ class _TemplateSpec:
 _SEED_PASSWORD = "BFF-init-2026!"  # noqa: S105 — placeholder de seed, à changer au 1er login
 
 _SEED_USERS: tuple[tuple[str, str, str, Role], ...] = (
-    ("Stephane.Paumelle@ait-stein.com", "Stéphane", "PAUMELLE", Role.ADMIN),
-    ("Brice.Girard@bffrance.com", "Brice", "GIRARD", Role.APPROBATEUR),
-    ("Vincent.Vauthier@bffrance.com", "Vincent", "VAUTHIER", Role.APPROBATEUR),
-    ("Loic.Cuvelier@bffrance.com", "Loïc", "CUVELIER", Role.VERIFICATEUR),
-    ("Paul.BRITO@bffrance.com", "Paul", "BRITO", Role.VERIFICATEUR),
+    ("stephane.paumelle@ait-stein.com", "Stéphane", "PAUMELLE", Role.ADMIN),
+    ("brice.girard@bffrance.com", "Brice", "GIRARD", Role.APPROBATEUR),
+    ("vincent.vauthier@bffrance.com", "Vincent", "VAUTHIER", Role.APPROBATEUR),
+    ("loic.cuvelier@bffrance.com", "Loïc", "CUVELIER", Role.VERIFICATEUR),
+    ("paul.brito@bffrance.com", "Paul", "BRITO", Role.VERIFICATEUR),
     ("florence.marque@bffrance.com", "Florence", "MARQUE", Role.VERIFICATEUR),
-    ("Corentin.DUVAL-ARNOULD@bffrance.com", "Corentin", "DUVAL-ARNOULD", Role.REDACTEUR),
+    ("corentin.duval-arnould@bffrance.com", "Corentin", "DUVAL-ARNOULD", Role.REDACTEUR),
 )
 
 _SEED_TEMPLATES: tuple[_TemplateSpec, ...] = (
@@ -322,10 +327,23 @@ def seed_command() -> None:
 
 
 def _seed_users() -> int:
-    """Crée les 7 utilisateurs de l'équipe BFF. Retourne le nombre de créations effectives."""
+    """Crée les 7 utilisateurs de l'équipe BFF. Retourne le nombre de créations effectives.
+
+    La recherche d'existence est insensible à la casse : si un compte a été
+    créé lors d'un seed antérieur avec une casse différente de l'e-mail
+    canonique (ex. ``Stephane.Paumelle@…``), il est retrouvé et sa casse est
+    corrigée plutôt que de créer un doublon.
+    """
+    from sqlalchemy import func  # noqa: PLC0415
+
     created = 0
     for email, prenom, nom, role in _SEED_USERS:
-        if db.session.query(User).filter_by(email=email).first() is not None:
+        existing = (
+            db.session.query(User).filter(func.lower(User.email) == email).first()
+        )
+        if existing is not None:
+            if existing.email != email:
+                existing.email = email
             continue
         u = User(email=email, prenom=prenom, nom=nom, role=role, actif=True)
         u.set_password(_SEED_PASSWORD)
