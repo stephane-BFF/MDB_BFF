@@ -1,5 +1,7 @@
 @echo off
-setlocal enabledelayedexpansion
+rem NB : pas de "enabledelayedexpansion" — il avalerait le "!" du mot de
+rem passe initial affiche plus bas (BFF-init-2026!).
+setlocal
 chcp 65001 >nul
 title MDB BFF - Serveur local partage (Waitress)
 cd /d "%~dp0"
@@ -26,9 +28,12 @@ echo  [2/3] Verification des comptes et modeles (idempotent)...
 "%PY%" -m flask seed
 
 rem --- Detection de l'adresse IP de ce PC sur le reseau local ---
+rem NB : pas de caret devant les pipes DANS les guillemets (cmd les
+rem transmettrait tels quels a PowerShell, qui echouerait en silence).
+rem Le repli ne doit contenir ni "<" ni ">" (cmd y verrait une redirection).
 set "LANIP="
-for /f "delims=" %%I in ('powershell -NoProfile -Command "(Get-NetIPConfiguration ^| Where-Object { $_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -eq 'Up' } ^| Select-Object -First 1 -ExpandProperty IPv4Address).IPAddress" 2^>nul') do set "LANIP=%%I"
-if not defined LANIP set "LANIP=<adresse-IP-de-ce-PC>"
+for /f "delims=" %%I in ('powershell -NoProfile -Command "(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -eq 'Up' } | Select-Object -First 1 -ExpandProperty IPv4Address).IPAddress" 2^>nul') do set "LANIP=%%I"
+if not defined LANIP set "LANIP=IP-de-ce-PC_voir-ipconfig"
 
 echo  [3/3] Demarrage du serveur sur le port %PORT%...
 echo.
