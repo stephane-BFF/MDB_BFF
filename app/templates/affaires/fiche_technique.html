@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Fiche technique — {{ affaire.references_internes }}{% endblock %}
+
+{% macro render_field(field) %}
+<div class="mb-3">
+    {% if field.type == 'BooleanField' %}
+        <div class="form-check">
+            {{ field(class="form-check-input", disabled=not peut_editer) }}
+            {{ field.label(class="form-check-label") }}
+        </div>
+        {% if field.description %}<div class="form-text">{{ field.description }}</div>{% endif %}
+    {% elif field.type == 'MultiCheckboxField' %}
+        {{ field.label(class="form-label d-block") }}
+        <div class="row">
+        {% for option in field %}
+            <div class="col-sm-6 col-lg-4">
+                <div class="form-check">
+                    {{ option(class="form-check-input", disabled=not peut_editer) }}
+                    {{ option.label(class="form-check-label") }}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+        {% if field.description %}<div class="form-text">{{ field.description }}</div>{% endif %}
+    {% elif field.type == 'SelectField' %}
+        {{ field.label(class="form-label") }}
+        {{ field(class="form-select" + (" is-invalid" if field.errors else ""), disabled=not peut_editer) }}
+        {% if field.description %}<div class="form-text">{{ field.description }}</div>{% endif %}
+    {% else %}
+        {{ field.label(class="form-label") }}
+        {{ field(class="form-control" + (" is-invalid" if field.errors else ""), disabled=not peut_editer) }}
+        {% if field.description %}<div class="form-text">{{ field.description }}</div>{% endif %}
+    {% endif %}
+    {% for error in field.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">{{ affaire.references_internes }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Fiche technique</li>
+            </ol>
+        </nav>
+        <h1 class="h4 mb-1">Fiche technique de l'item</h1>
+        <p class="text-muted small mb-0">
+            <code>{{ affaire.references_internes }}</code>
+            · {{ affaire.type_equipement.libelle if affaire.type_equipement else 'Type d\'équipement non renseigné' }}
+            · {{ affaire.client_nom or '—' }}
+            {% if not peut_editer %}<span class="badge bg-secondary ms-2">Lecture seule</span>{% endif %}
+        </p>
+    </div>
+</div>
+
+<form method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white"><h2 class="h6 mb-0">Réglementation</h2></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">{{ render_field(form.desp) }}</div>
+                <div class="col-md-6">{{ render_field(form.stamp_u) }}</div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">{{ render_field(form.categorie_ped) }}</div>
+                <div class="col-md-6">{{ render_field(form.module_ped) }}</div>
+            </div>
+            <div id="verif-categorie-bloc" class="border rounded p-3 bg-light d-none">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="btn-verifier-categorie">
+                        Vérifier la catégorie de risque
+                    </button>
+                    <span id="verif-categorie-resultat" class="small"></span>
+                    <button type="button" class="btn btn-sm btn-outline-success d-none" id="btn-appliquer-categorie">
+                        Appliquer
+                    </button>
+                </div>
+                <div class="form-text mt-2">
+                    Calcul selon les tableaux 1 à 4 (récipients) de l'annexe II — nécessite
+                    l'état du fluide, sa dangerosité, PS et le volume. Cas particuliers non
+                    couverts : gaz instables, extincteurs/bouteilles respiratoires.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white"><h2 class="h6 mb-0">Caractéristiques du fluide</h2></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">{{ render_field(form.fluide_etat) }}</div>
+                <div class="col-md-4">{{ render_field(form.fluide_groupe) }}</div>
+                <div class="col-md-4">{{ render_field(form.fluide_nom) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white"><h2 class="h6 mb-0">Conditions de service</h2></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">{{ render_field(form.ps_bar) }}</div>
+                <div class="col-md-3">{{ render_field(form.temperature_min_c) }}</div>
+                <div class="col-md-3">{{ render_field(form.temperature_max_c) }}</div>
+                <div class="col-md-3">{{ render_field(form.volume_l) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white"><h2 class="h6 mb-0">Procédés de fabrication</h2></div>
+        <div class="card-body">
+            {{ render_field(form.procedes_soudage) }}
+            <div class="row">
+                <div class="col-md-6">{{ render_field(form.tubes_soudes) }}</div>
+                <div class="col-md-6">{{ render_field(form.tth_required) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white"><h2 class="h6 mb-0">Contrôles et essais</h2></div>
+        <div class="card-body">
+            {{ render_field(form.cnd_methodes) }}
+            {{ render_field(form.test_pressions) }}
+            {{ render_field(form.inspection_client) }}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-4">
+        <a class="btn btn-outline-secondary" href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">← Retour au dossier</a>
+        {% if peut_editer %}
+        <button type="submit" class="btn btn-primary">Enregistrer la fiche technique</button>
+        {% endif %}
+    </div>
+</form>
+
+<script>
+(function () {
+    "use strict";
+    var MODULES = {{ ped_modules|tojson }};
+    var USUELS = {{ ped_modules_par_cat|tojson }};
+    var SUPERIEURS = {{ ped_modules_sup_par_cat|tojson }};
+    var PEUT_EDITER = {{ peut_editer|tojson }};
+    var VERIF_URL = {{ url_for('affaires.verifier_categorie', affaire_id=affaire.id)|tojson }};
+
+    var despChk = document.getElementById("desp");
+    var catSel = document.getElementById("categorie_ped");
+    var modSel = document.getElementById("module_ped");
+    if (!despChk || !catSel || !modSel) { return; }
+
+    var catWrap = catSel.closest(".mb-3");
+    var modWrap = modSel.closest(".mb-3");
+    var verifBloc = document.getElementById("verif-categorie-bloc");
+
+    function addGroup(label, codes, current) {
+        if (!codes.length) { return; }
+        var group = document.createElement("optgroup");
+        group.label = label;
+        codes.forEach(function (code) {
+            var opt = document.createElement("option");
+            opt.value = code;
+            opt.textContent = MODULES[code] || code;
+            if (code === current) { opt.selected = true; }
+            group.appendChild(opt);
+        });
+        modSel.appendChild(group);
+    }
+
+    function rebuildModules(cat) {
+        var current = modSel.value;
+        modSel.innerHTML = "";
+        var ph = document.createElement("option");
+        ph.value = "";
+        ph.textContent = "— Sélectionner —";
+        modSel.appendChild(ph);
+        addGroup("Catégorie " + cat + " (prévus)", USUELS[cat] || [], current);
+        addGroup("Catégories supérieures (art. 14 PED)", SUPERIEURS[cat] || [], current);
+    }
+
+    function refresh() {
+        var desp = despChk.checked;
+        if (catWrap) { catWrap.classList.toggle("d-none", !desp); }
+        if (verifBloc) { verifBloc.classList.toggle("d-none", !desp); }
+        var cat = catSel.value;
+        var hasModule = desp && Object.prototype.hasOwnProperty.call(USUELS, cat);
+        if (hasModule) {
+            rebuildModules(cat);
+            if (modWrap) { modWrap.classList.remove("d-none"); }
+        } else {
+            modSel.value = "";
+            if (modWrap) { modWrap.classList.add("d-none"); }
+        }
+    }
+
+    despChk.addEventListener("change", refresh);
+    catSel.addEventListener("change", refresh);
+    refresh();
+
+    // ── Vérification de la catégorie de risque (annexe II) ───────────────
+    var btnVerif = document.getElementById("btn-verifier-categorie");
+    var btnAppliquer = document.getElementById("btn-appliquer-categorie");
+    var resultat = document.getElementById("verif-categorie-resultat");
+    var derniereCategorie = null;
+
+    function champ(id) {
+        var el = document.getElementById(id);
+        return el ? el.value : "";
+    }
+
+    btnVerif.addEventListener("click", function () {
+        resultat.textContent = "Calcul…";
+        btnAppliquer.classList.add("d-none");
+        var params = new URLSearchParams({
+            etat: champ("fluide_etat"),
+            groupe: champ("fluide_groupe"),
+            ps: champ("ps_bar"),
+            volume: champ("volume_l"),
+        });
+        fetch(VERIF_URL + "?" + params.toString())
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d.ok) {
+                    resultat.className = "small text-danger";
+                    resultat.textContent = d.error;
+                    return;
+                }
+                derniereCategorie = d.categorie;
+                var declaree = catSel.value;
+                var concorde = declaree === d.categorie;
+                resultat.className = concorde ? "small text-success" : "small text-warning";
+                resultat.textContent = d.explication +
+                    (concorde ? " ✓ Concorde avec la catégorie déclarée."
+                              : " ⚠ Catégorie déclarée : " + (declaree || "aucune") + ".");
+                if (!concorde && PEUT_EDITER &&
+                    ["I", "II", "III", "IV", "Art.4.3"].indexOf(d.categorie) !== -1) {
+                    btnAppliquer.classList.remove("d-none");
+                }
+            })
+            .catch(function () {
+                resultat.className = "small text-danger";
+                resultat.textContent = "Erreur lors du calcul.";
+            });
+    });
+
+    btnAppliquer.addEventListener("click", function () {
+        if (!derniereCategorie) { return; }
+        catSel.value = derniereCategorie;
+        refresh();
+        btnAppliquer.classList.add("d-none");
+        resultat.className = "small text-success";
+        resultat.textContent = "Catégorie " + derniereCategorie +
+            " appliquée — enregistrez la fiche pour valider.";
+    });
+})();
+</script>
+{% endblock %}

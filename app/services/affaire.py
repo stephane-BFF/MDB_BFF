@@ -248,6 +248,93 @@ def finish_wizard(affaire: Affaire, user: User, commentaire: str | None = None) 
     db.session.commit()
 
 
+# ── Fiche technique de l'item (V1.2 Lot 2) ───────────────────────────────
+
+# Routage des champs de la fiche technique vers les préfixes JSONB
+# historiques (contrat D2 — consommés par ATTDECR/ETATDESC/HYDR/PED).
+_FICHE_PREFIXES: dict[str, str] = {
+    # Réglementation + fluide → q4_
+    "desp": "q4_",
+    "stamp_u": "q4_",
+    "categorie_ped": "q4_",
+    "module_ped": "q4_",
+    "fluide_etat": "q4_",
+    "fluide_groupe": "q4_",
+    "fluide_nom": "q4_",
+    # Conditions de service → q5_
+    "ps_bar": "q5_",
+    "temperature_min_c": "q5_",
+    "temperature_max_c": "q5_",
+    "volume_l": "q5_",
+    # Procédés de fabrication → q6_
+    "procedes_soudage": "q6_",
+    "tubes_soudes": "q6_",
+    "tth_required": "q6_",
+    # Contrôles et essais → q7_
+    "cnd_methodes": "q7_",
+    "test_pressions": "q7_",
+    "inspection_client": "q7_",
+}
+
+#: Version de matrice signalant une saisie via la fiche technique.
+_TEMPLATE_VERSION_FICHE = 2
+
+
+def get_fiche_technique(affaire: Affaire) -> dict[str, Any]:
+    """Valeurs actuelles de la fiche technique, indexées par nom de champ.
+
+    Lit les clés JSONB ``q4_*``–``q7_*``. Repli de compatibilité (D3) :
+    l'ancienne clé ``q7_test_pression`` (choix unique, str) est convertie en
+    liste si la nouvelle ``q7_test_pressions`` est absente.
+    """
+    reponses = ((affaire.parametrage.reponses if affaire.parametrage else {}) or {})
+    data: dict[str, Any] = {}
+    for field, prefix in _FICHE_PREFIXES.items():
+        key = f"{prefix}{field}"
+        if key in reponses:
+            data[field] = reponses[key]
+    if "test_pressions" not in data and reponses.get("q7_test_pression"):
+        data["test_pressions"] = [reponses["q7_test_pression"]]
+    return data
+
+
+def save_fiche_technique(
+    affaire: Affaire, payload: dict[str, Any], user: User
+) -> None:
+    """Enregistre la fiche technique dans ``ParametrageAffaire.reponses``.
+
+    Chaque champ est stocké sous son préfixe historique (``_FICHE_PREFIXES``,
+    contrat D2). ``template_version`` passe à 2 pour tracer la saisie via la
+    fiche technique. La modification est auditée.
+
+    Args:
+        affaire: Le dossier concerné (créé, hors wizard).
+        payload: Champs validés du formulaire ``FicheTechniqueForm``.
+        user: Utilisateur effectuant la sauvegarde.
+    """
+    if affaire.parametrage is None:
+        affaire.parametrage = ParametrageAffaire(affaire_id=affaire.id, reponses={})
+
+    reponses = dict(affaire.parametrage.reponses or {})
+    for field, value in payload.items():
+        prefix = _FICHE_PREFIXES.get(field)
+        if prefix is None:
+            continue
+        if hasattr(value, "isoformat"):
+            value = value.isoformat()
+        reponses[f"{prefix}{field}"] = value
+    affaire.parametrage.reponses = reponses
+    affaire.parametrage.template_version = _TEMPLATE_VERSION_FICHE
+
+    AuditTrail.log(
+        "affaire.fiche_technique_saved",
+        user=user,
+        entity_type="affaire",
+        entity_id=affaire.id,
+    )
+    db.session.commit()
+
+
 # ── Helpers internes ─────────────────────────────────────────────────────
 
 

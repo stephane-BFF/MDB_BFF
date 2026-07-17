@@ -293,6 +293,99 @@ def export_csv() -> Response:
 
 
 # ────────────────────────────────────────────────────────────────────────
+# Fiche technique de l'item (V1.2 Lot 2)
+# ────────────────────────────────────────────────────────────────────────
+
+
+@bp.route("/<int:affaire_id>/fiche-technique", methods=["GET", "POST"])
+@login_required  # type: ignore[untyped-decorator]
+def fiche_technique(affaire_id: int) -> str | Response:
+    """Fiche technique de l'item — consultation et édition (ex-Q4→Q7).
+
+    Lecture pour tous les rôles ; enregistrement réservé aux Rédacteurs et
+    plus, tant que le dossier est éditable. Les dossiers encore en wizard
+    sont redirigés vers leur étape courante.
+    """
+    from app.forms.fiche_technique import FicheTechniqueForm  # noqa: PLC0415
+
+    affaire = db.session.get(Affaire, affaire_id)
+    if affaire is None:
+        abort(404)
+    if affaire.statut is Statut.WIZARD_BROUILLON:
+        return redirect(url_for("affaires.show", affaire_id=affaire.id))
+
+    peut_editer = (
+        current_user.role in _WIZARD_ROLES and affaire.is_editable  # type: ignore[attr-defined]
+    )
+    if request.method == "POST" and not peut_editer:
+        abort(403)
+
+    form = FicheTechniqueForm(data=affaire_svc.get_fiche_technique(affaire))
+
+    if form.validate_on_submit():
+        payload = _form_payload(form)
+        if not payload.get("desp"):
+            payload["categorie_ped"] = ""
+            payload["module_ped"] = ""
+        affaire_svc.save_fiche_technique(affaire, payload, user=_current_user())
+        flash("Fiche technique enregistrée.", "success")
+        return redirect(url_for("affaires.fiche_technique", affaire_id=affaire.id))
+
+    return render_template(
+        "affaires/fiche_technique.html",
+        affaire=affaire,
+        form=form,
+        peut_editer=peut_editer,
+        ped_modules=MODULES_PED,
+        ped_modules_par_cat=MODULES_PAR_CATEGORIE,
+        ped_modules_sup_par_cat=MODULES_SUPERIEURS_PAR_CATEGORIE,
+    )
+
+
+@bp.route("/<int:affaire_id>/fiche-technique/verifier-categorie")
+@login_required  # type: ignore[untyped-decorator]
+def verifier_categorie(affaire_id: int) -> Response:
+    """Calcule la catégorie de risque PED (annexe II, récipients) en JSON.
+
+    Query string : ``etat`` (gaz|liquide), ``groupe`` (1|2), ``ps`` (bar),
+    ``volume`` (L). Le calcul ne modifie rien (décision D5) — le bouton
+    « Appliquer » côté client reporte la valeur dans le formulaire.
+    """
+    from app.services.ped_categorie import compute_categorie_recipient  # noqa: PLC0415
+
+    if db.session.get(Affaire, affaire_id) is None:
+        abort(404)
+
+    etat = (request.args.get("etat") or "").strip()
+    groupe = (request.args.get("groupe") or "").strip()
+    try:
+        ps = float(request.args.get("ps") or "")
+        volume = float(request.args.get("volume") or "")
+    except ValueError:
+        return jsonify(
+            {"ok": False, "error": "PS et volume doivent être renseignés (nombres)."}
+        )
+    if not etat or not groupe:
+        return jsonify(
+            {"ok": False, "error": "État et dangerosité du fluide sont requis."}
+        )
+
+    try:
+        resultat = compute_categorie_recipient(etat, groupe, ps, volume)
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)})
+
+    return jsonify(
+        {
+            "ok": True,
+            "categorie": resultat.categorie,
+            "tableau": resultat.tableau,
+            "explication": resultat.explication,
+        }
+    )
+
+
+# ────────────────────────────────────────────────────────────────────────
 # Wizard de création d'affaire (Q1 → Q4 — V1.2)
 # ────────────────────────────────────────────────────────────────────────
 
