@@ -248,6 +248,120 @@ def finish_wizard(affaire: Affaire, user: User, commentaire: str | None = None) 
     db.session.commit()
 
 
+# ── Regroupement par affaire (V1.2 Lot 3) ────────────────────────────────
+
+
+def start_wizard_pour_affaire(user: User, numero_affaire: str) -> Affaire:
+    """Démarre le wizard d'un nouvel item pour une affaire déjà connue.
+
+    Les informations génériques (année, client, réf. commande) sont copiées
+    du dossier le plus récent de l'affaire — à défaut, du registre BE — et
+    le wizard démarre directement à l'étape Item (Q2). L'étape Affaire (Q1)
+    reste consultable/modifiable via le stepper.
+
+    Args:
+        user: Utilisateur initiateur.
+        numero_affaire: N° d'affaire BE (``BN``/``BP`` + 4 chiffres).
+
+    Returns:
+        Le nouveau dossier en ``WIZARD_BROUILLON``, étape Q2.
+    """
+    modele = (
+        db.session.query(Affaire)
+        .filter(Affaire.numero_affaire == numero_affaire, Affaire.item.isnot(None))
+        .order_by(Affaire.created_at.desc())
+        .first()
+    )
+
+    affaire = Affaire(
+        numero_affaire=numero_affaire,
+        cree_par_id=user.id,
+        statut=Statut.WIZARD_BROUILLON,
+        statut_wizard=StatutWizard.Q2,
+    )
+    if modele is not None:
+        affaire.annee = modele.annee
+        affaire.client_nom = modele.client_nom
+        affaire.references_client = modele.references_client
+    else:
+        from app.services import registre_be as registre_be_svc  # noqa: PLC0415
+
+        items = registre_be_svc.list_items_for_numero(numero_affaire)
+        if items:
+            affaire.annee = items[0].annee
+            affaire.client_nom = items[0].client_nom
+    if affaire.annee is None:
+        import datetime as _dt  # noqa: PLC0415
+
+        affaire.annee = _dt.datetime.now().year
+
+    db.session.add(affaire)
+    db.session.flush()
+
+    AuditTrail.log(
+        "affaire.wizard_started",
+        user=user,
+        entity_type="affaire",
+        entity_id=affaire.id,
+        contexte={"numero_affaire": numero_affaire, "nouvel_item": True},
+    )
+    db.session.commit()
+    return affaire
+
+
+def propager_infos_generiques(
+    numero_affaire: str,
+    *,
+    client_nom: str,
+    references_client: str | None,
+    user: User,
+) -> tuple[int, int]:
+    """Applique les infos génériques à tous les dossiers modifiables de l'affaire.
+
+    Propagation **sur confirmation** (arbitrage du 2026-07-16) : cette
+    fonction n'est appelée qu'après que l'utilisateur a coché la case de
+    confirmation. Les dossiers non modifiables (signés, clôturés…) sont
+    ignorés et comptés à part. Chaque dossier modifié est audité.
+
+    Returns:
+        ``(nb_modifiés, nb_ignorés_non_modifiables)``.
+    """
+    dossiers = (
+        db.session.query(Affaire)
+        .filter(Affaire.numero_affaire == numero_affaire)
+        .all()
+    )
+    modifies = 0
+    ignores = 0
+    for dossier in dossiers:
+        if not dossier.is_editable:
+            ignores += 1
+            continue
+        if (
+            dossier.client_nom == client_nom
+            and dossier.references_client == references_client
+        ):
+            continue
+        ancien = {
+            "client_nom": dossier.client_nom,
+            "references_client": dossier.references_client,
+        }
+        dossier.client_nom = client_nom
+        dossier.references_client = references_client
+        AuditTrail.log(
+            "affaire.infos_generiques_propagees",
+            user=user,
+            entity_type="affaire",
+            entity_id=dossier.id,
+            old_value=str(ancien),
+            new_value=str({"client_nom": client_nom, "references_client": references_client}),
+            contexte={"numero_affaire": numero_affaire},
+        )
+        modifies += 1
+    db.session.commit()
+    return modifies, ignores
+
+
 # ── Fiche technique de l'item (V1.2 Lot 2) ───────────────────────────────
 
 # Routage des champs de la fiche technique vers les préfixes JSONB

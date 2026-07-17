@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Affaire {{ numero_affaire }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Affaire {{ numero_affaire }}</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-0">
+            Affaire <code>{{ numero_affaire }}</code>
+            <span class="badge bg-info ms-2">{{ dossiers|length }} dossier{{ 's' if dossiers|length > 1 }}</span>
+        </h1>
+        <p class="text-muted small mt-1 mb-0">
+            {{ reference.client_nom or '—' }}
+            {% if reference.references_client %} · Réf. client : {{ reference.references_client }}{% endif %}
+            {% if reference.annee %} · {{ reference.annee }}{% endif %}
+        </p>
+    </div>
+    {% if peut_editer %}
+    <div class="col-auto d-flex align-items-start mt-2 mt-md-0">
+        <form method="post" action="{{ url_for('affaires.par_affaire_nouvel_item', numero_affaire=numero_affaire) }}" class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-primary">+ Ajouter un item</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Dossiers/items de l'affaire -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-2">
+        <h2 class="h6 mb-0">Dossiers constructeurs (1 par item)</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light small">
+                <tr>
+                    <th>Item</th><th>Repère</th><th>Type d'échangeur</th>
+                    <th>Type d'équipement</th><th>Nb</th><th>Statut</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in dossiers %}
+                <tr>
+                    <td><code>{{ d.references_internes or (d.item or 'wizard en cours') }}</code></td>
+                    <td class="small">{{ d.repere or '—' }}</td>
+                    <td class="small text-muted">{{ d.type_echangeur or '—' }}</td>
+                    <td class="small">{{ d.type_equipement.libelle if d.type_equipement else '—' }}</td>
+                    <td class="small">{{ d.nombre or '—' }}</td>
+                    <td><span class="badge statut-badge bg-secondary">{{ d.statut.label }}</span></td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('affaires.show', affaire_id=d.id) }}">Ouvrir</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Items du registre BE non encore ouverts -->
+{% set restants = registre_items | rejectattr('item', 'in', items_utilises) | list %}
+{% if restants %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-2">
+        <h2 class="h6 mb-0">Items du registre BE sans dossier ({{ restants|length }})</h2>
+    </div>
+    <div class="card-body py-2">
+        <ul class="mb-0 small">
+            {% for i in restants %}
+            <li><code>{{ i.item }}</code> — {{ i.repere_client or i.type_appareil or '?' }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<!-- Infos génériques : édition avec propagation contrôlée -->
+{% if peut_editer %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-2">
+        <h2 class="h6 mb-0">Informations génériques de l'affaire</h2>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{{ url_for('affaires.par_affaire_infos_generiques', numero_affaire=numero_affaire) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="pa-client">Nom du client</label>
+                    <input type="text" class="form-control" id="pa-client" name="client_nom"
+                           maxlength="255" value="{{ reference.client_nom or '' }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="pa-refclient">Référence client</label>
+                    <input type="text" class="form-control" id="pa-refclient" name="references_client"
+                           maxlength="100" value="{{ reference.references_client or '' }}">
+                </div>
+            </div>
+            <div class="form-check mt-3">
+                <input class="form-check-input" type="checkbox" id="pa-confirmer" name="confirmer" value="1">
+                <label class="form-check-label" for="pa-confirmer">
+                    Appliquer ces informations aux {{ dossiers|length }} dossier{{ 's' if dossiers|length > 1 }}
+                    de l'affaire (les dossiers signés/clôturés seront ignorés)
+                </label>
+            </div>
+            <button type="submit" class="btn btn-outline-primary mt-3">Enregistrer et propager</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

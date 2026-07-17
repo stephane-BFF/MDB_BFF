@@ -9,7 +9,10 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small mb-1">
                 <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{ affaire.numero_affaire }}</li>
+                {% if affaire.numero_affaire %}
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.par_affaire', numero_affaire=affaire.numero_affaire) }}">Affaire {{ affaire.numero_affaire }}</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active" aria-current="page">{{ affaire.references_internes or affaire.numero_affaire }}</li>
             </ol>
         </nav>
         <h1 class="h3 mb-0">

@@ -105,6 +105,29 @@ def index() -> str:
 
     stmt = stmt.order_by(Affaire.created_at.desc())
 
+    # Vue groupée par n° d'affaire (V1.2 Lot 3) : agrégat sans pagination.
+    if (request.args.get("vue") or "").strip() == "groupee":
+        dossiers = db.session.execute(stmt).scalars().all()
+        groupes: dict[str, dict[str, object]] = {}
+        for a in dossiers:
+            numero = a.numero_affaire or "—"
+            g = groupes.setdefault(
+                numero,
+                {"numero": numero, "client": a.client_nom, "annee": a.annee,
+                 "nb": 0, "statuts": {}},
+            )
+            g["nb"] = int(g["nb"]) + 1  # type: ignore[call-overload]
+            statuts: dict[str, int] = g["statuts"]  # type: ignore[assignment]
+            statuts[a.statut.label] = statuts.get(a.statut.label, 0) + 1
+        return render_template(
+            "affaires/index.html",
+            form=form,
+            pagination=None,
+            affaires=[],
+            groupes=list(groupes.values()),
+            vue="groupee",
+        )
+
     pagination = db.paginate(stmt, per_page=_PER_PAGE, error_out=False)
 
     return render_template(
@@ -112,6 +135,8 @@ def index() -> str:
         form=form,
         pagination=pagination,
         affaires=pagination.items,
+        groupes=None,
+        vue="liste",
     )
 
 
@@ -290,6 +315,100 @@ def export_csv() -> Response:
     response.headers["Content-Type"] = "text/csv; charset=utf-8-sig"
     response.headers["Content-Disposition"] = "attachment; filename=\"affaires.csv\""
     return response
+
+
+# ────────────────────────────────────────────────────────────────────────
+# Page « Affaire » — regroupement des dossiers/items (V1.2 Lot 3)
+# ────────────────────────────────────────────────────────────────────────
+
+
+@bp.route("/par-affaire/<numero_affaire>")
+@login_required  # type: ignore[untyped-decorator]
+def par_affaire(numero_affaire: str) -> str:
+    """Page d'une affaire BE : ses dossiers/items, infos génériques, registre.
+
+    Regroupement UI sans table parente (décision D1) : l'affaire est
+    matérialisée par son n° BE ; ses dossiers sont les lignes ``affaires``
+    partageant ce numéro.
+    """
+    numero_affaire = numero_affaire.strip().upper()
+    dossiers = (
+        db.session.query(Affaire)
+        .filter(Affaire.numero_affaire == numero_affaire)
+        .order_by(Affaire.item)
+        .all()
+    )
+    if not dossiers:
+        abort(404)
+
+    registre_items = registre_be_svc.list_items_for_numero(numero_affaire)
+    items_utilises = {d.item for d in dossiers if d.item}
+    reference = next((d for d in dossiers if d.item), dossiers[0])
+
+    return render_template(
+        "affaires/par_affaire.html",
+        numero_affaire=numero_affaire,
+        dossiers=dossiers,
+        reference=reference,
+        registre_items=registre_items,
+        items_utilises=items_utilises,
+        peut_editer=current_user.role in _WIZARD_ROLES,  # type: ignore[attr-defined]
+    )
+
+
+@bp.route("/par-affaire/<numero_affaire>/nouvel-item", methods=["POST"])
+@login_required  # type: ignore[untyped-decorator]
+@role_required(*_WIZARD_ROLES)
+def par_affaire_nouvel_item(numero_affaire: str) -> Response:
+    """Démarre le wizard d'un nouvel item, infos génériques pré-remplies."""
+    numero_affaire = numero_affaire.strip().upper()
+    affaire = affaire_svc.start_wizard_pour_affaire(
+        user=_current_user(), numero_affaire=numero_affaire
+    )
+    flash(
+        f"Nouvel item pour {numero_affaire} — informations génériques reprises, "
+        "choisissez l'item.",
+        "success",
+    )
+    return redirect(
+        url_for("affaires.wizard_step", affaire_id=affaire.id, step="Q2")
+    )
+
+
+@bp.route("/par-affaire/<numero_affaire>/infos-generiques", methods=["POST"])
+@login_required  # type: ignore[untyped-decorator]
+@role_required(*_WIZARD_ROLES)
+def par_affaire_infos_generiques(numero_affaire: str) -> Response:
+    """Propage les infos génériques à tous les items modifiables de l'affaire.
+
+    Propagation sur confirmation explicite (case ``confirmer`` — arbitrage
+    du 2026-07-16) ; les dossiers non modifiables sont ignorés.
+    """
+    numero_affaire = numero_affaire.strip().upper()
+    if not request.form.get("confirmer"):
+        flash(
+            "Propagation non confirmée — cochez la case de confirmation.",
+            "warning",
+        )
+        return redirect(url_for("affaires.par_affaire", numero_affaire=numero_affaire))
+
+    client_nom = (request.form.get("client_nom") or "").strip()
+    if not client_nom:
+        flash("Le nom du client est requis.", "danger")
+        return redirect(url_for("affaires.par_affaire", numero_affaire=numero_affaire))
+    references_client = (request.form.get("references_client") or "").strip() or None
+
+    modifies, ignores = affaire_svc.propager_infos_generiques(
+        numero_affaire,
+        client_nom=client_nom,
+        references_client=references_client,
+        user=_current_user(),
+    )
+    message = f"Informations génériques appliquées à {modifies} dossier(s)."
+    if ignores:
+        message += f" {ignores} dossier(s) non modifiable(s) ignoré(s)."
+    flash(message, "success" if not ignores else "warning")
+    return redirect(url_for("affaires.par_affaire", numero_affaire=numero_affaire))
 
 
 # ────────────────────────────────────────────────────────────────────────
