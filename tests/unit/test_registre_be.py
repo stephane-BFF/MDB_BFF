@@ -15,8 +15,9 @@ def _build_registre_xlsx(rows: list[tuple[Any, ...]]) -> io.BytesIO:
     """Construit un classeur minimal imitant la structure du registre BE réel.
 
     ``rows`` : tuples ``(client, n_commande, destinataire, repere, type_appareil,
-    nb, item, numero_affaire_libelle, annee)`` insérés à partir de la ligne 5,
-    colonnes 4 à 16 (comme le fichier source).
+    nb, item, numero_affaire_libelle, annee)`` — optionnellement prolongés de
+    ``(certification, categorie, module)`` (colonnes R/S/T) — insérés à partir
+    de la ligne 5, colonnes 4 à 20 (comme le fichier source).
     """
     import openpyxl  # noqa: PLC0415
 
@@ -26,7 +27,8 @@ def _build_registre_xlsx(rows: list[tuple[Any, ...]]) -> io.BytesIO:
     ws.cell(row=3, column=4, value="CLIENT")  # en-têtes minimales, non lues par le parseur
 
     for i, row in enumerate(rows):
-        client, n_commande, destinataire, repere, type_appareil, nb, item, libelle, annee = row
+        client, n_commande, destinataire, repere, type_appareil, nb, item, libelle, annee = row[:9]
+        certification, categorie, module = (row[9:12] + (None,) * 3)[:3]
         r = 5 + i
         ws.cell(row=r, column=4, value=client)
         ws.cell(row=r, column=5, value=n_commande)
@@ -37,6 +39,9 @@ def _build_registre_xlsx(rows: list[tuple[Any, ...]]) -> io.BytesIO:
         ws.cell(row=r, column=12, value=item)
         ws.cell(row=r, column=14, value=libelle)
         ws.cell(row=r, column=16, value=annee)
+        ws.cell(row=r, column=18, value=certification)
+        ws.cell(row=r, column=19, value=categorie)
+        ws.cell(row=r, column=20, value=module)
 
     buf = io.BytesIO()
     wb.save(buf)
@@ -55,6 +60,9 @@ _SAMPLE_ROWS = [
         8975,
         "BN0811 - RM11721",
         2026,
+        "DESP 2014/68/UE",
+        "IV",
+        "H1",
     ),
     (
         "Chantiers de l'Atlantique",
@@ -66,6 +74,9 @@ _SAMPLE_ROWS = [
         8976,
         "BN0811 - RM11722",
         2026,
+        "STAMP U",
+        None,
+        None,
     ),
     (
         "TotalEnergies",
@@ -77,6 +88,9 @@ _SAMPLE_ROWS = [
         9001,
         "BP0042 - TK4131",
         2025,
+        "DESP + STAMP U",
+        "II",
+        "D1",
     ),
     (
         "Client sans affaire",
@@ -165,6 +179,92 @@ class TestImportRegistreBe:
             stats = svc.import_registre_be(_build_registre_xlsx(modifie))
             assert stats.crees == 0
             assert stats.mis_a_jour == 1
+
+
+def _row_certification(
+    item: int, certification: Any, categorie: Any = None, module: Any = None
+) -> tuple[Any, ...]:
+    """Ligne minimale valide avec les colonnes R/S/T paramétrables."""
+    return (
+        "Client",
+        None,
+        None,
+        None,
+        None,
+        1,
+        item,
+        f"BN0900 - RM{item}",
+        2026,
+        certification,
+        categorie,
+        module,
+    )
+
+
+class TestReglementation:
+    """Colonnes R/S/T du registre : certification, catégorie, module (V1.2 Lot 0)."""
+
+    def test_flags_desp_et_stamp_u_sur_variantes_reelles(self) -> None:
+        # Libellés réellement observés dans le fichier BE (fautes de frappe incluses).
+        cas = [
+            ("DESP 2014/68/UE", True, False),
+            ("DESP2014/68/UE", True, False),  # sans espace
+            ("DESP 2014/98/UE", True, False),  # faute de frappe réelle
+            ("DESP (sans CE)", True, False),
+            ("STAMP U", False, True),
+            ("STAMP U-2", False, True),
+            ("DESP + STAMP U", True, True),
+            ("DESP 2014/68/EU + STAMP U", True, True),
+            ("Décret 2015/799 du 01/07/2015", False, False),
+            ("DRIRE", False, False),
+            (None, False, False),
+        ]
+        rows = [
+            _row_certification(8000 + i, certification)
+            for i, (certification, _, _) in enumerate(cas)
+        ]
+        parsed = {r.item: r for r in svc.parse_registre_excel(_build_registre_xlsx(rows))}
+        for i, (certification, desp, stamp_u) in enumerate(cas):
+            row = parsed[f"{8000 + i}"]
+            assert row.desp is desp, f"desp pour {certification!r}"
+            assert row.stamp_u is stamp_u, f"stamp_u pour {certification!r}"
+            assert row.certification_brute == certification
+
+    def test_categorie_et_module_stockes(self, app: Flask) -> None:
+        with app.app_context():
+            svc.import_registre_be(_build_registre_xlsx(_SAMPLE_ROWS))
+            item = svc.get_item("BN0811", "8975")
+            assert item is not None
+            assert item.certification_brute == "DESP 2014/68/UE"
+            assert item.desp is True
+            assert item.stamp_u is False
+            assert item.categorie_risque == "IV"
+            assert item.module_evaluation == "H1"
+
+            stamp_seul = svc.get_item("BN0811", "8976")
+            assert stamp_seul is not None
+            assert stamp_seul.desp is False
+            assert stamp_seul.stamp_u is True
+            assert stamp_seul.categorie_risque is None
+            assert stamp_seul.module_evaluation is None
+
+    def test_categorie_numerique_convertie_en_texte(self) -> None:
+        # La colonne S contient parfois 3.3 / 4.3 en numérique dans Excel.
+        rows = [_row_certification(8100, "DESP", 4.3, "A")]
+        (parsed,) = svc.parse_registre_excel(_build_registre_xlsx(rows))
+        assert parsed.categorie_risque == "4.3"
+
+    def test_reimport_met_a_jour_la_reglementation(self, app: Flask) -> None:
+        with app.app_context():
+            svc.import_registre_be(_build_registre_xlsx(_SAMPLE_ROWS))
+            modifie = list(_SAMPLE_ROWS)
+            modifie[0] = modifie[0][:11] + ("G",)  # module H1 → G
+            stats = svc.import_registre_be(_build_registre_xlsx(modifie))
+            assert stats.crees == 0
+            assert stats.mis_a_jour == 1
+            item = svc.get_item("BN0811", "8975")
+            assert item is not None
+            assert item.module_evaluation == "G"
 
 
 class TestConsultation:

@@ -15,7 +15,7 @@ n° d'affaire à l'étape Q1 du wizard de création (voir
 
 from __future__ import annotations
 
-from sqlalchemy import Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.extensions import db
@@ -71,6 +71,38 @@ class RegistreBEItem(db.Model, TimestampMixin):  # type: ignore[name-defined,mis
         nullable=True,
         doc="Texte brut de la colonne source (ex: « BN0811 - RM11721 »), "
         "conservé pour traçabilité.",
+    )
+
+    # ── Réglementation (colonnes R/S/T du registre — chantier V1.2 Lot 0) ──
+    certification_brute: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        doc="Colonne R « CERTIFICATION » telle quelle (ex: « DESP 2014/68/UE », "
+        "« STAMP U », « DESP + STAMP U », régimes historiques…).",
+    )
+    desp: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        doc="True si la certification mentionne la DESP/PED (dérivé de la col. R).",
+    )
+    stamp_u: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        doc="True si la certification mentionne le stamp U ASME (dérivé de la col. R).",
+    )
+    categorie_risque: Mapped[str | None] = mapped_column(
+        String(10),
+        nullable=True,
+        doc="Colonne S « CAT » — catégorie de risque PED (I, II, III, IV, 4.3 ; "
+        "valeurs historiques 97/23 possibles, ex: 3.3).",
+    )
+    module_evaluation: Mapped[str | None] = mapped_column(
+        String(10),
+        nullable=True,
+        doc="Colonne T « MODULE » — module d'évaluation de la conformité "
+        "(A, D1, E1, G, H, H1 ; valeurs historiques possibles, ex: A1, B1+F).",
     )
 
     @property

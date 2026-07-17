@@ -19,13 +19,28 @@ données à partir de la ligne 5) :
     col 12 N°PLAN              → ``item`` (4 chiffres, identifiant de ligne unique)
     col 14 (combiné)           → n° d'affaire (``BN0811 - RM11721`` par ex.)
     col 16 ANNEE               → ``annee``
+    col 18 CERTIFICATION       → ``certification_brute`` + flags ``desp``/``stamp_u``
+    col 19 CAT                 → ``categorie_risque`` (I, II, III, IV, 4.3…)
+    col 20 MODULE              → ``module_evaluation`` (A, D1, E1, G, H, H1…)
+
+La colonne CERTIFICATION est un texte libre historique (36 libellés distincts
+constatés) : elle est conservée brute, et deux drapeaux en sont dérivés —
+``desp`` si le texte contient « DESP » (toutes variantes/fautes de frappe
+incluses : « DESP2014/68/UE », « DESP 2014/98/UE »…) et ``stamp_u`` s'il
+contient « STAMP U » (couvre « STAMP U-2 », « DESP + STAMP U »…).
 
 ``import_registre_be`` est idempotent (upsert par clé naturelle
 ``numero_affaire`` + ``item``), sur le modèle de ``flask seed``.
+
+Le fichier étant souvent ouvert dans Excel (verrou Windows/OneDrive), la
+lecture bascule automatiquement sur une ouverture en partage via l'API
+Windows si l'ouverture normale échoue en ``PermissionError``.
 """
 
 from __future__ import annotations
 
+import io
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -56,6 +71,9 @@ _COL_NOMBRE = 9
 _COL_ITEM = 12
 _COL_NUMERO_AFFAIRE = 14
 _COL_ANNEE = 16
+_COL_CERTIFICATION = 18
+_COL_CATEGORIE = 19
+_COL_MODULE = 20
 
 _NUMERO_AFFAIRE_RE = re.compile(r"(BN|BP)(\d{4})(?!\d)", re.IGNORECASE)
 
@@ -74,6 +92,11 @@ class RegistreRow:
     annee: int | None
     references_client: str | None
     libelle_brut: str
+    certification_brute: str | None = None
+    desp: bool = False
+    stamp_u: bool = False
+    categorie_risque: str | None = None
+    module_evaluation: str | None = None
 
 
 @dataclass(frozen=True)
@@ -103,7 +126,14 @@ def parse_registre_excel(path: str | Path) -> list[RegistreRow]:
     """
     import openpyxl  # noqa: PLC0415
 
-    wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
+    try:
+        wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
+    except PermissionError:
+        # Fichier verrouillé (typiquement ouvert dans Excel / synchronisé
+        # OneDrive) : relecture en partage via l'API Windows.
+        wb = openpyxl.load_workbook(
+            _read_locked_file(path), data_only=True, read_only=True
+        )
     if _SHEET_NAME not in wb.sheetnames:
         raise KeyError(f"Feuille {_SHEET_NAME!r} introuvable dans {path!r}.")
     ws = wb[_SHEET_NAME]
@@ -127,6 +157,9 @@ def parse_registre_excel(path: str | Path) -> list[RegistreRow]:
             continue
         item = f"{int(item_raw):04d}"
 
+        certification = _as_str(cell(_COL_CERTIFICATION))
+        certification_upper = (certification or "").upper()
+
         rows.append(
             RegistreRow(
                 numero_affaire=f"{match.group(1).upper()}{match.group(2)}",
@@ -139,9 +172,61 @@ def parse_registre_excel(path: str | Path) -> list[RegistreRow]:
                 annee=_as_int(cell(_COL_ANNEE)),
                 references_client=_as_str(cell(_COL_REFERENCES_CLIENT)),
                 libelle_brut=libelle_brut.strip(),
+                certification_brute=certification,
+                desp="DESP" in certification_upper,
+                stamp_u="STAMP U" in certification_upper,
+                categorie_risque=_as_str(cell(_COL_CATEGORIE)),
+                module_evaluation=_as_str(cell(_COL_MODULE)),
             )
         )
     return rows
+
+
+def _read_locked_file(path: str | Path) -> io.BytesIO:
+    """Lit un fichier verrouillé par un autre processus (Excel) en partage.
+
+    L'ouverture standard de CPython échoue en ``PermissionError`` quand Excel
+    détient le fichier ; l'API Windows ``CreateFileW`` avec les trois flags
+    ``FILE_SHARE_*`` permet une lecture concurrente sans copie préalable.
+
+    Args:
+        path: Chemin du fichier verrouillé.
+
+    Returns:
+        Le contenu complet du fichier dans un tampon mémoire.
+
+    Raises:
+        PermissionError: Si la lecture partagée échoue aussi (ou hors Windows).
+    """
+    if os.name != "nt":  # pragma: no cover — verrou Excel = cas Windows
+        raise PermissionError(
+            f"{path} est verrouillé — fermez le fichier dans Excel puis relancez."
+        )
+
+    import ctypes  # noqa: PLC0415
+    import msvcrt  # noqa: PLC0415
+
+    generic_read = 0x80000000
+    file_share_all = 0x1 | 0x2 | 0x4  # READ | WRITE | DELETE
+    open_existing = 3
+
+    handle = ctypes.windll.kernel32.CreateFileW(
+        str(Path(path).resolve()),
+        generic_read,
+        file_share_all,
+        None,
+        open_existing,
+        0,
+        None,
+    )
+    if handle in (-1, 0xFFFFFFFFFFFFFFFF):
+        raise PermissionError(
+            f"{path} est verrouillé et la lecture partagée a échoué — "
+            "fermez le fichier dans Excel puis relancez."
+        )
+    fd = msvcrt.open_osfhandle(handle, os.O_RDONLY)
+    with os.fdopen(fd, "rb") as fh:
+        return io.BytesIO(fh.read())
 
 
 def import_registre_be(path: str | Path) -> ImportStats:
@@ -178,6 +263,11 @@ def import_registre_be(path: str | Path) -> ImportStats:
                     annee=row.annee,
                     references_client=row.references_client,
                     libelle_brut=row.libelle_brut,
+                    certification_brute=row.certification_brute,
+                    desp=row.desp,
+                    stamp_u=row.stamp_u,
+                    categorie_risque=row.categorie_risque,
+                    module_evaluation=row.module_evaluation,
                 )
             )
             crees += 1
@@ -192,6 +282,11 @@ def import_registre_be(path: str | Path) -> ImportStats:
                 "annee",
                 "references_client",
                 "libelle_brut",
+                "certification_brute",
+                "desp",
+                "stamp_u",
+                "categorie_risque",
+                "module_evaluation",
             ):
                 value = getattr(row, field)
                 if getattr(record, field) != value:
