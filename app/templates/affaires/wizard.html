@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Wizard {{ step.value }} — {{ affaire.numero_affaire or "nouvelle affaire" }}{% endblock %}
+{% block title %}Wizard {{ step.label }} — {{ affaire.numero_affaire or "nouvelle affaire" }}{% endblock %}
 
 {% macro render_field(field, classes="form-control") %}
 <div class="mb-3">
@@ -8,10 +8,10 @@
     {% if field.type == 'BooleanField' %}
         <div class="form-check">
             {{ field(class="form-check-input") }}
-            <label class="form-check-label">{{ field.description or '' }}</label>
+            <label class="form-check-label" for="{{ field.id }}">{{ field.description or '' }}</label>
         </div>
-    {% elif field.type == 'SelectMultipleField' %}
-        {{ field(class=classes, size=5) }}
+    {% elif field.type == 'SelectField' %}
+        {{ field(class="form-select" + (" is-invalid" if field.errors else "")) }}
         {% if field.description %}<div class="form-text">{{ field.description }}</div>{% endif %}
     {% elif field.type == 'TextAreaField' %}
         {{ field(class=classes + (" is-invalid" if field.errors else "")) }}
@@ -29,28 +29,38 @@
 {% block content %}
 <div class="row mb-3">
     <div class="col">
-        <h1 class="h4 mb-1">Création d'affaire — Wizard</h1>
+        <h1 class="h4 mb-1">Création d'un dossier constructeur</h1>
         <p class="text-muted mb-0">
-            <code>{{ affaire.numero_affaire or "—" }}</code> · Étape {{ step.numero }} / 8
+            <code>{{ affaire.references_internes or affaire.numero_affaire or "—" }}</code>
+            · Étape {{ step.numero }} / 4 — {{ step.label }}
         </p>
     </div>
 </div>
 
-<!-- Stepper visuel -->
+<!-- Stepper cliquable : les étapes déjà atteintes sont des liens -->
 <div class="d-flex justify-content-between mb-4 small">
     {% for s in steps %}
+    {% set reachable = s.numero <= max_step.numero %}
     <div class="text-center flex-fill {% if not loop.last %}border-end{% endif %} pb-2
-                {% if s.numero < step.numero %}text-success
-                {% elif s == step %}text-primary fw-bold
+                {% if s == step %}text-primary fw-bold
+                {% elif s.numero < step.numero %}text-success
+                {% elif reachable %}text-primary
                 {% else %}text-muted{% endif %}">
-        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-1
-                    {% if s.numero < step.numero %}bg-success text-white
-                    {% elif s == step %}bg-primary text-white
-                    {% else %}bg-light border{% endif %}"
-             style="width: 2rem; height: 2rem;">
-            {% if s.numero < step.numero %}✓{% else %}{{ s.numero }}{% endif %}
-        </div>
-        <div>{{ s.value }}</div>
+        {% if reachable and s != step %}
+        <a href="{{ url_for('affaires.wizard_step', affaire_id=affaire.id, step=s.value) }}"
+           class="text-decoration-none d-block text-reset" title="Aller à l'étape {{ s.label }}">
+        {% endif %}
+            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-1
+                        {% if s == step %}bg-primary text-white
+                        {% elif s.numero < step.numero %}bg-success text-white
+                        {% elif reachable %}border border-primary text-primary
+                        {% else %}bg-light border{% endif %}"
+                 style="width: 2rem; height: 2rem;">
+                {% if s.numero < step.numero %}✓{% else %}{{ s.numero }}{% endif %}
+            </div>
+            <div>{{ s.value }}</div>
+            <div class="fw-normal">{{ s.label }}</div>
+        {% if reachable and s != step %}</a>{% endif %}
     </div>
     {% endfor %}
 </div>
@@ -58,42 +68,47 @@
 <div class="card shadow-sm">
     <div class="card-header bg-white">
         <h2 class="h5 mb-0">
-            {% if step.value == 'Q1' %}Q1 · Identification du dossier
-            {% elif step.value == 'Q2' %}Q2 · Identification du client
-            {% elif step.value == 'Q3' %}Q3 · Identification de l'équipement
-            {% elif step.value == 'Q4' %}Q4 · Caractéristiques PED
-            {% elif step.value == 'Q5' %}Q5 · Conditions de service
-            {% elif step.value == 'Q6' %}Q6 · Procédés de fabrication
-            {% elif step.value == 'Q7' %}Q7 · Contrôles et tests
-            {% elif step.value == 'Q8' %}Q8 · Récapitulatif et validation
+            {% if step.value == 'Q1' %}Q1 · Affaire — informations génériques
+            {% elif step.value == 'Q2' %}Q2 · Item — identification de l'équipement
+            {% elif step.value == 'Q3' %}Q3 · Réglementation applicable
+            {% elif step.value == 'Q4' %}Q4 · Récapitulatif et création du dossier
             {% endif %}
         </h2>
     </div>
     <div class="card-body">
 
-        {% if step.value == 'Q8' %}
-        <h3 class="h6 text-muted mb-3">Vérifiez vos saisies avant finalisation :</h3>
+        {% if step.value == 'Q4' %}
+        <h3 class="h6 text-muted mb-3">Vérifiez vos saisies avant la création :</h3>
         <dl class="row mb-4">
-            <dt class="col-sm-4">Numéro d'affaire</dt><dd class="col-sm-8"><code>{{ affaire.numero_affaire }}</code></dd>
+            <dt class="col-sm-4">Référence BFF</dt><dd class="col-sm-8"><code>{{ affaire.references_internes or '—' }}</code></dd>
             <dt class="col-sm-4">Année</dt><dd class="col-sm-8">{{ affaire.annee }}</dd>
             <dt class="col-sm-4">Client</dt><dd class="col-sm-8">{{ affaire.client_nom or '—' }}</dd>
             <dt class="col-sm-4">Référence client</dt><dd class="col-sm-8">{{ affaire.references_client or '—' }}</dd>
-            <dt class="col-sm-4">Référence BFF</dt><dd class="col-sm-8">{{ affaire.references_internes or '—' }}</dd>
             <dt class="col-sm-4">Repère</dt><dd class="col-sm-8">{{ affaire.repere or '—' }}</dd>
             <dt class="col-sm-4">Type d'échangeur</dt><dd class="col-sm-8">{{ affaire.type_echangeur or '—' }}</dd>
+            <dt class="col-sm-4">Type d'équipement</dt><dd class="col-sm-8">{{ affaire.type_equipement.libelle if affaire.type_equipement else '—' }}</dd>
             <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">{{ affaire.nombre or '—' }}</dd>
             <dt class="col-sm-4">Année de construction</dt><dd class="col-sm-8">{{ affaire.annee_construction or '—' }}</dd>
         </dl>
 
-        {% if affaire.parametrage and affaire.parametrage.reponses %}
-        <h3 class="h6 text-muted mb-2">Paramétrage technique (Q4-Q7) :</h3>
-        <dl class="row mb-4 small">
-            {% for key, value in affaire.parametrage.reponses.items() %}
-            <dt class="col-sm-4"><code>{{ key }}</code></dt>
-            <dd class="col-sm-8">{{ value if value is not none and value != '' else '—' }}</dd>
-            {% endfor %}
+        {% set reponses = (affaire.parametrage.reponses if affaire.parametrage else {}) or {} %}
+        <h3 class="h6 text-muted mb-2">Réglementation :</h3>
+        <dl class="row mb-4">
+            <dt class="col-sm-4">DESP 2014/68/UE</dt>
+            <dd class="col-sm-8">{{ 'Oui' if reponses.get('q4_desp') else 'Non' }}</dd>
+            <dt class="col-sm-4">Stamp U (ASME)</dt>
+            <dd class="col-sm-8">{{ 'Oui' if reponses.get('q4_stamp_u') else 'Non' }}</dd>
+            {% if reponses.get('q4_desp') %}
+            <dt class="col-sm-4">Catégorie de risque</dt>
+            <dd class="col-sm-8">{{ reponses.get('q4_categorie_ped') or '—' }}</dd>
+            <dt class="col-sm-4">Module d'évaluation</dt>
+            <dd class="col-sm-8">{{ ped_modules.get(reponses.get('q4_module_ped'), reponses.get('q4_module_ped')) or 'Sans objet' }}</dd>
+            {% endif %}
         </dl>
-        {% endif %}
+        <p class="text-muted small">
+            Les caractéristiques techniques (fluide, conditions de service, procédés,
+            contrôles) se complètent après création, dans la fiche technique de l'item.
+        </p>
         {% endif %}
 
         <form method="post" novalidate>
@@ -101,11 +116,7 @@
 
             {% if step.value == 'Q1' %}
                 {% set is_manuel = form.numero_affaire.data == '__manuel__' %}
-                <div class="mb-3">
-                    {{ form.annee.label(class="form-label") }}
-                    {{ form.annee(class="form-control" + (" is-invalid" if form.annee.errors else ""), id="q1-annee") }}
-                    {% for error in form.annee.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-                </div>
+                {{ render_field(form.annee) }}
                 <div class="mb-3">
                     {{ form.numero_affaire.label(class="form-label") }}
                     {{ form.numero_affaire(class="form-select" + (" is-invalid" if form.numero_affaire.errors else ""), id="q1-numero-affaire") }}
@@ -119,17 +130,40 @@
                     {% for error in form.numero_affaire_manuel.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                 </div>
                 <div class="mb-3">
+                    {{ form.client_nom.label(class="form-label") }}
+                    {{ form.client_nom(class="form-control" + (" is-invalid" if form.client_nom.errors else ""), id="q1-client-nom") }}
+                    <div class="form-text">Prérempli depuis le registre BE — modifiable.</div>
+                    {% for error in form.client_nom.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                {{ render_field(form.references_client) }}
+
+            {% elif step.value == 'Q2' %}
+                {% set has_registre = form.item.choices | length > 1 %}
+                <div class="mb-3">
                     {{ form.item.label(class="form-label") }}
-                    {% if is_manuel %}
-                        {{ form.item(class="form-select d-none" + (" is-invalid" if form.item.errors else ""), id="q1-item-select", disabled=True) }}
-                        <input type="text" class="form-control{{ ' is-invalid' if form.item.errors else '' }}" id="q1-item-manuel" name="item" maxlength="4" placeholder="8975" value="{{ form.item.data or '' }}">
+                    {% if has_registre %}
+                        {{ form.item(class="form-select" + (" is-invalid" if form.item.errors else ""), id="q2-item-select") }}
                     {% else %}
-                        {{ form.item(class="form-select" + (" is-invalid" if form.item.errors else ""), id="q1-item-select") }}
-                        <input type="text" class="form-control d-none" id="q1-item-manuel" maxlength="4" placeholder="8975" disabled>
+                        {{ form.item(class="form-select d-none", id="q2-item-select", disabled=True) }}
+                        <input type="text" class="form-control{{ ' is-invalid' if form.item.errors else '' }}"
+                               id="q2-item-manuel" name="item" maxlength="4" placeholder="8975"
+                               value="{{ form.item.data or '' }}">
                     {% endif %}
                     {% if form.item.description %}<div class="form-text">{{ form.item.description }}</div>{% endif %}
                     {% for error in form.item.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                 </div>
+                {{ render_field(form.repere) }}
+                {{ render_field(form.type_echangeur) }}
+                {{ render_field(form.type_equipement_id) }}
+                {{ render_field(form.nombre) }}
+                {{ render_field(form.annee_construction) }}
+
+            {% elif step.value == 'Q3' %}
+                {{ render_field(form.desp) }}
+                {{ render_field(form.stamp_u) }}
+                {{ render_field(form.categorie_ped) }}
+                {{ render_field(form.module_ped) }}
+
             {% else %}
                 {% for field in form if field.name not in ('csrf_token', 'submit') %}
                     {{ render_field(field) }}
@@ -138,31 +172,24 @@
 
             <div class="d-flex justify-content-between mt-4">
                 {% if step.numero > 1 %}
-                <button type="button" class="btn btn-outline-secondary"
-                        onclick="document.getElementById('backForm').submit();">
+                {% set prev = steps[step.numero - 2] %}
+                <a class="btn btn-outline-secondary"
+                   href="{{ url_for('affaires.wizard_step', affaire_id=affaire.id, step=prev.value) }}">
                     ← Précédent
-                </button>
+                </a>
                 {% else %}
                 <span></span>
                 {% endif %}
 
                 <button type="submit" class="btn btn-primary">
-                    {% if step.value == 'Q8' %}
-                        Finaliser et créer l'affaire ✓
+                    {% if step.value == 'Q4' %}
+                        Créer le dossier ✓
                     {% else %}
                         Étape suivante →
                     {% endif %}
                 </button>
             </div>
         </form>
-
-        {% if step.numero > 1 %}
-        <form id="backForm" method="post"
-              action="{{ url_for('affaires.wizard_back', affaire_id=affaire.id) }}"
-              class="d-none">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        </form>
-        {% endif %}
     </div>
 </div>
 
@@ -171,126 +198,125 @@
 (function () {
     "use strict";
     var MANUEL = "__manuel__";
+    var CLIENTS = {{ numeros_clients|tojson }};   // {n° affaire: client}
     var numeroSelect = document.getElementById("q1-numero-affaire");
     var manuelWrap = document.getElementById("q1-numero-manuel-wrap");
-    var itemSelect = document.getElementById("q1-item-select");
-    var itemManuel = document.getElementById("q1-item-manuel");
-    var anneeInput = document.getElementById("q1-annee");
-    var itemsUrl = {{ url_for('affaires.registre_be_items')|tojson }};
-
-    function toggleManuel() {
-        var manuel = numeroSelect.value === MANUEL;
-        manuelWrap.classList.toggle("d-none", !manuel);
-        itemSelect.classList.toggle("d-none", manuel);
-        itemSelect.disabled = manuel;
-        itemManuel.classList.toggle("d-none", !manuel);
-        itemManuel.disabled = !manuel;
-        if (manuel) {
-            itemManuel.name = "item";
-            itemSelect.removeAttribute("name");
-        } else {
-            itemSelect.name = "item";
-            itemManuel.removeAttribute("name");
-        }
-    }
-
-    function loadItems() {
-        var numero = numeroSelect.value;
-        itemSelect.innerHTML = "";
-        var placeholder = document.createElement("option");
-        placeholder.value = "";
-        if (!numero || numero === MANUEL) {
-            placeholder.textContent = "— Sélectionnez d'abord un n° d'affaire —";
-            itemSelect.appendChild(placeholder);
-            return;
-        }
-        placeholder.textContent = "Chargement…";
-        itemSelect.appendChild(placeholder);
-        fetch(itemsUrl + "?numero_affaire=" + encodeURIComponent(numero))
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                itemSelect.innerHTML = "";
-                var opt0 = document.createElement("option");
-                opt0.value = "";
-                opt0.textContent = data.items.length ? "— Sélectionner —" : "— Aucun item connu pour cette affaire —";
-                itemSelect.appendChild(opt0);
-                data.items.forEach(function (it) {
-                    var opt = document.createElement("option");
-                    opt.value = it.item;
-                    opt.textContent = it.label;
-                    opt.dataset.annee = it.annee || "";
-                    itemSelect.appendChild(opt);
-                });
-            });
-    }
-
-    itemSelect.addEventListener("change", function () {
-        var opt = itemSelect.selectedOptions[0];
-        if (opt && opt.dataset.annee) {
-            anneeInput.value = opt.dataset.annee;
-        }
-    });
+    var clientInput = document.getElementById("q1-client-nom");
 
     numeroSelect.addEventListener("change", function () {
-        toggleManuel();
-        loadItems();
+        var manuel = numeroSelect.value === MANUEL;
+        manuelWrap.classList.toggle("d-none", !manuel);
+        if (!manuel && CLIENTS[numeroSelect.value] !== undefined) {
+            clientInput.value = CLIENTS[numeroSelect.value];
+        }
     });
-
-    toggleManuel();
 })();
 </script>
 {% endif %}
 
-{% if step.value == 'Q4' %}
+{% if step.value == 'Q2' %}
 <script>
 (function () {
     "use strict";
-    var MODULES = {{ ped_modules|tojson }};            // {code: libellé}
-    var PAR_CAT = {{ ped_modules_par_cat|tojson }};    // {catégorie: [codes autorisés]}
+    var itemSelect = document.getElementById("q2-item-select");
+    var itemsUrl = {{ url_for('affaires.registre_be_items')|tojson }};
+    var numero = {{ (affaire.numero_affaire or '')|tojson }};
+    var current = {{ (form.item.data or '')|tojson }};
+    if (!itemSelect || itemSelect.disabled || !numero) { return; }
 
+    // Rafraîchit la liste des items depuis le registre BE et mémorise les
+    // données de préremplissage (repère, type, nombre) sur chaque option.
+    fetch(itemsUrl + "?numero_affaire=" + encodeURIComponent(numero))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            itemSelect.innerHTML = "";
+            var opt0 = document.createElement("option");
+            opt0.value = "";
+            opt0.textContent = data.items.length ? "— Sélectionner —" : "— Aucun item connu pour cette affaire —";
+            itemSelect.appendChild(opt0);
+            data.items.forEach(function (it) {
+                var opt = document.createElement("option");
+                opt.value = it.item;
+                opt.textContent = it.label;
+                opt.dataset.repere = it.repere || "";
+                opt.dataset.type = it.type_appareil || "";
+                opt.dataset.nombre = it.nombre || "";
+                if (it.item === current) { opt.selected = true; }
+                itemSelect.appendChild(opt);
+            });
+        });
+
+    itemSelect.addEventListener("change", function () {
+        var opt = itemSelect.selectedOptions[0];
+        if (!opt) { return; }
+        var repere = document.getElementById("repere");
+        var typeEch = document.getElementById("type_echangeur");
+        var nombre = document.getElementById("nombre");
+        if (opt.dataset.repere && repere) { repere.value = opt.dataset.repere; }
+        if (opt.dataset.type && typeEch) { typeEch.value = opt.dataset.type; }
+        if (opt.dataset.nombre && nombre) { nombre.value = opt.dataset.nombre; }
+    });
+})();
+</script>
+{% endif %}
+
+{% if step.value == 'Q3' %}
+<script>
+(function () {
+    "use strict";
+    var MODULES = {{ ped_modules|tojson }};              // {code: libellé}
+    var USUELS = {{ ped_modules_par_cat|tojson }};       // {catégorie: [codes prévus]}
+    var SUPERIEURS = {{ ped_modules_sup_par_cat|tojson }}; // {catégorie: [codes cat. supérieures]}
+
+    var despChk = document.getElementById("desp");
     var catSel = document.getElementById("categorie_ped");
     var modSel = document.getElementById("module_ped");
-    var fluidEtat = document.getElementById("fluide_etat");
-    var fluidGroupe = document.getElementById("fluide_groupe");
-    if (!catSel || !modSel) { return; }
+    if (!despChk || !catSel || !modSel) { return; }
 
+    var catWrap = catSel.closest(".mb-3");
     var modWrap = modSel.closest(".mb-3");
-    var etatWrap = fluidEtat ? fluidEtat.closest(".mb-3") : null;
-    var groupeWrap = fluidGroupe ? fluidGroupe.closest(".mb-3") : null;
+
+    function addGroup(label, codes, current) {
+        if (!codes.length) { return; }
+        var group = document.createElement("optgroup");
+        group.label = label;
+        codes.forEach(function (code) {
+            var opt = document.createElement("option");
+            opt.value = code;
+            opt.textContent = MODULES[code] || code;
+            if (code === current) { opt.selected = true; }
+            group.appendChild(opt);
+        });
+        modSel.appendChild(group);
+    }
 
     function rebuildModules(cat) {
-        var allowed = PAR_CAT[cat] || [];
         var current = modSel.value;
         modSel.innerHTML = "";
         var ph = document.createElement("option");
         ph.value = "";
         ph.textContent = "— Sélectionner —";
         modSel.appendChild(ph);
-        allowed.forEach(function (code) {
-            var opt = document.createElement("option");
-            opt.value = code;
-            opt.textContent = MODULES[code] || code;
-            if (code === current) { opt.selected = true; }
-            modSel.appendChild(opt);
-        });
+        addGroup("Catégorie " + cat + " (prévus)", USUELS[cat] || [], current);
+        addGroup("Catégories supérieures (art. 14 PED)", SUPERIEURS[cat] || [], current);
     }
 
     function refresh() {
+        var desp = despChk.checked;
+        if (catWrap) { catWrap.classList.toggle("d-none", !desp); }
         var cat = catSel.value;
-        var hasModule = Object.prototype.hasOwnProperty.call(PAR_CAT, cat);
+        var hasModule = desp && Object.prototype.hasOwnProperty.call(USUELS, cat);
         if (hasModule) {
             rebuildModules(cat);
             if (modWrap) { modWrap.classList.remove("d-none"); }
         } else {
-            // Art. 4.3 / N/A / non renseigné : module de conformité sans objet.
+            // Hors DESP ou Art. 4.3 : module d'évaluation sans objet.
             modSel.value = "";
             if (modWrap) { modWrap.classList.add("d-none"); }
         }
-        var isNA = cat === "N/A";
-        if (etatWrap) { etatWrap.classList.toggle("d-none", isNA); }
-        if (groupeWrap) { groupeWrap.classList.toggle("d-none", isNA); }
     }
 
+    despChk.addEventListener("change", refresh);
     catSel.addEventListener("change", refresh);
     refresh();
 })();

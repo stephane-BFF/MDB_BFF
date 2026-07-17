@@ -1,14 +1,14 @@
 """Modèles Affaire et ParametrageAffaire.
 
 Une **Affaire** représente un dossier qualité (manufacturer's data book) pour
-un équipement BFF. Elle est créée via un wizard de 8 étapes (Q1 → Q8) puis
+un équipement BFF. Elle est créée via un wizard de 4 étapes (Q1 → Q4) puis
 suit le workflow ``WIZARD_BROUILLON → BROUILLON → SOUMIS → VALIDE → SIGNE
 → CLOTUREE → ARCHIVEE``.
 
 Le **ParametrageAffaire** stocke les réponses du wizard en JSONB pour deux
 raisons :
 
-1. La matrice de paramétrage Q1-Q8 (CDC v3) peut évoluer sans migration
+1. La matrice de paramétrage (CDC v3) peut évoluer sans migration
    schéma.
 2. Les réponses pilotent l'activation conditionnelle des formulaires, mais
    ne sont pas requêtées atomiquement.
@@ -30,6 +30,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.enums import Statut, StatutWizard
 from app.extensions import db
 from app.models.base import TimestampMixin
+from app.models.referentiel import TypeEquipement
 from app.models.user import User
 
 if TYPE_CHECKING:
@@ -42,7 +43,7 @@ class Affaire(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
     """Dossier constructeur qualité (MDB) pour un équipement BFF.
 
     Cycle de vie :
-        WIZARD_BROUILLON (création via wizard Q1→Q8) → BROUILLON (wizard
+        WIZARD_BROUILLON (création via wizard Q1→Q4) → BROUILLON (wizard
         complet) → SOUMIS → VALIDE → SIGNE → CLOTUREE → ARCHIVEE.
 
     Pendant le wizard, la plupart des champs « identité » sont ``NULL`` et
@@ -98,6 +99,12 @@ class Affaire(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
         nullable=True,
         doc="Type d'échangeur BFF (ex: H1 06-01-72).",
     )
+    type_equipement_id: Mapped[int | None] = mapped_column(
+        ForeignKey("types_equipement.id", ondelete="RESTRICT"),
+        nullable=True,
+        index=True,
+        doc="Type d'équipement (référentiel V1.2 : Réfrigérant, HPIN, BHM…).",
+    )
     nombre: Mapped[int | None] = mapped_column(
         Integer,
         nullable=True,
@@ -131,6 +138,7 @@ class Affaire(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
     )
 
     # ── Relations ────────────────────────────────────────────────────────
+    type_equipement: Mapped[TypeEquipement | None] = relationship()
     parametrage: Mapped[ParametrageAffaire | None] = relationship(
         back_populates="affaire",
         uselist=False,
@@ -168,7 +176,7 @@ class Affaire(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
 
 
 class ParametrageAffaire(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
-    """Réponses Q1-Q8 du wizard de création d'affaire.
+    """Réponses du wizard et de la fiche technique de l'item.
 
     Stockage JSONB pour permettre l'évolution de la matrice de paramétrage
     (CDC v3) sans migration schéma. Les réponses pilotent l'activation

@@ -52,7 +52,7 @@ class Statut(StrEnum):
                                      → VALIDE → SIGNE → CLOTUREE → ARCHIVEE
 
     Transitions notables :
-        - WIZARD_BROUILLON → BROUILLON : sortie du wizard (Q8 validée).
+        - WIZARD_BROUILLON → BROUILLON : sortie du wizard (récapitulatif validé).
         - SOUMIS → REJETE : Vérificateur renvoie le document pour correction.
         - REJETE → BROUILLON : Rédacteur reprend la main pour modifier.
         - SIGNE → CLOTUREE : affaire terminée (tous formulaires signés).
@@ -107,30 +107,46 @@ _STATUTS_EDITABLES: frozenset[Statut] = frozenset(
 
 
 class StatutWizard(StrEnum):
-    """Étape courante du wizard de création d'affaire (Q1 → Q8).
+    """Étape max atteinte du wizard de création d'affaire (Q1 → Q4).
 
     Stockée sur ``Affaire.statut_wizard`` tant que ``Affaire.statut`` vaut
     ``Statut.WIZARD_BROUILLON``. Passe à ``None`` quand le wizard est terminé.
+
+    Depuis la V1.2 (wizard raccourci — voir
+    ``docs/STRATEGIE_AMELIORATIONS_V1.2_2026-07-16.md``), le wizard ne compte
+    plus que 4 étapes : les ex-Q4→Q7 (fluide, conditions de service,
+    procédés, contrôles) sont saisies après création, dans la fiche
+    technique de l'item. La valeur stockée est l'étape **max atteinte** (les
+    étapes antérieures restent librement navigables), plus l'étape courante.
     """
 
     Q1 = "Q1"
     Q2 = "Q2"
     Q3 = "Q3"
     Q4 = "Q4"
-    Q5 = "Q5"
-    Q6 = "Q6"
-    Q7 = "Q7"
-    Q8 = "Q8"
 
     @property
     def numero(self) -> int:
-        """Numéro de l'étape (1 à 8)."""
+        """Numéro de l'étape (1 à 4)."""
         return int(self.value[1:])
 
     @property
+    def label(self) -> str:
+        """Nom court de l'étape, affiché sous la pastille du stepper."""
+        return _WIZARD_LABELS[self]
+
+    @property
     def is_last(self) -> bool:
-        """True si c'est la dernière étape du wizard (Q8)."""
-        return self is StatutWizard.Q8
+        """True si c'est la dernière étape du wizard (Q4 — récapitulatif)."""
+        return self is StatutWizard.Q4
+
+
+_WIZARD_LABELS: dict[StatutWizard, str] = {
+    StatutWizard.Q1: "Affaire",
+    StatutWizard.Q2: "Item",
+    StatutWizard.Q3: "Réglementation",
+    StatutWizard.Q4: "Récapitulatif",
+}
 
 
 class Chapitre(StrEnum):

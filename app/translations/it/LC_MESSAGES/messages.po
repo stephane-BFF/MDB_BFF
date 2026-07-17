@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MDB BFF 1.0\n"
 "Report-Msgid-Bugs-To: stephane.paumelle@ait-stein.com\n"
-"POT-Creation-Date: 2026-07-15 16:03+0200\n"
+"POT-Creation-Date: 2026-07-17 09:11+0200\n"
 "PO-Revision-Date: 2026-07-15 00:00+0200\n"
 "Last-Translator: MDB BFF\n"
 "Language: it\n"
@@ -162,335 +162,198 @@ msgstr "Il codice deve contenere 6 cifre."
 msgid "Activer la double authentification"
 msgstr "Attivare l'autenticazione a due fattori"
 
-#: app/forms/wizard.py:67
+#: app/forms/wizard.py:135
 msgid "Année de l'affaire"
 msgstr "Anno della commessa"
 
-#: app/forms/wizard.py:69
+#: app/forms/wizard.py:137
 msgid "L'année est requise."
 msgstr "L'anno è richiesto."
 
-#: app/forms/wizard.py:70
+#: app/forms/wizard.py:138
 msgid "Année entre 2020 et 2099."
 msgstr "Anno compreso tra 2020 e 2099."
 
-#: app/forms/wizard.py:75
+#: app/forms/wizard.py:143
 msgid "N° d'affaire"
 msgstr "N. commessa"
 
-#: app/forms/wizard.py:76
+#: app/forms/wizard.py:144
 msgid "Le n° d'affaire est requis."
 msgstr "Il n. di commessa è richiesto."
 
-#: app/forms/wizard.py:77
+#: app/forms/wizard.py:145
 msgid "Issu du registre général de commande BE."
 msgstr "Proveniente dal registro generale ordini BE."
 
-#: app/forms/wizard.py:80
+#: app/forms/wizard.py:148
 msgid "N° d'affaire (saisie manuelle)"
 msgstr "N. commessa (inserimento manuale)"
 
-#: app/forms/wizard.py:84
+#: app/forms/wizard.py:152
 msgid "Uniquement si l'affaire n'est pas encore dans le registre BE."
 msgstr "Solo se la commessa non è ancora presente nel registro BE."
 
-#: app/forms/wizard.py:87
-msgid "N° d'item"
-msgstr "N. item"
-
-#: app/forms/wizard.py:88
-msgid "Le n° d'item est requis."
-msgstr "Il n. di item è richiesto."
-
-#: app/forms/wizard.py:90
-msgid "4 chiffres — un même n° d'affaire peut porter plusieurs items."
-msgstr "4 cifre — uno stesso n. di commessa può comprendere più item."
-
-#: app/forms/wizard.py:112
+#: app/forms/wizard.py:155
 msgid "Nom du client"
 msgstr "Nome del cliente"
 
-#: app/forms/wizard.py:114
+#: app/forms/wizard.py:157
 msgid "Le nom du client est requis."
 msgstr "Il nome del cliente è richiesto."
 
-#: app/forms/wizard.py:120
+#: app/forms/wizard.py:163
 msgid "Référence client"
 msgstr "Riferimento cliente"
 
-#: app/forms/wizard.py:122
+#: app/forms/wizard.py:165
 msgid "« VOS REFERENCES » — n° de commande client (ex: 4551559245)."
 msgstr "« VOS REFERENCES » — n. d'ordine del cliente (es.: 4551559245)."
 
-#: app/forms/wizard.py:130
+#: app/forms/wizard.py:190
+msgid "N° d'item"
+msgstr "N. item"
+
+#: app/forms/wizard.py:191
+msgid "Le n° d'item est requis."
+msgstr "Il n. di item è richiesto."
+
+#: app/forms/wizard.py:193
+msgid "4 chiffres — un même n° d'affaire peut porter plusieurs items."
+msgstr "4 cifre — uno stesso n. di commessa può comprendere più item."
+
+#: app/forms/wizard.py:196
 msgid "Repère équipement"
 msgstr "Sigla apparecchio"
 
-#: app/forms/wizard.py:132
+#: app/forms/wizard.py:198
 msgid "Le repère équipement est requis."
 msgstr "La sigla apparecchio è richiesta."
 
-#: app/forms/wizard.py:136
+#: app/forms/wizard.py:202
 msgid "Repère utilisé par le client pour identifier l'appareil."
 msgstr "Sigla utilizzata dal cliente per identificare l'apparecchio."
 
-#: app/forms/wizard.py:139
+#: app/forms/wizard.py:205
 msgid "Type d'échangeur"
 msgstr "Tipo di scambiatore"
 
-#: app/forms/wizard.py:141
+#: app/forms/wizard.py:207
 msgid "Le type d'échangeur est requis."
 msgstr "Il tipo di scambiatore è richiesto."
 
-#: app/forms/wizard.py:145
+#: app/forms/wizard.py:211
 msgid "Référence type BFF (ex: H1 06-01-72)."
 msgstr "Riferimento tipo BFF (es.: H1 06-01-72)."
 
-#: app/forms/wizard.py:148
+#: app/forms/wizard.py:214
+msgid "Type d'équipement"
+msgstr "Tipo di apparecchiatura"
+
+#: app/forms/wizard.py:215
+msgid "Le type d'équipement est requis."
+msgstr "Il tipo di apparecchiatura è obbligatorio."
+
+#: app/forms/wizard.py:216
+msgid "Classification BFF (Réfrigérant, HPIN, BHM, SHELL&TUBE…)."
+msgstr "Classificazione BFF (Réfrigérant, HPIN, BHM, SHELL&TUBE…)."
+
+#: app/forms/wizard.py:219
 msgid "Nombre d'appareils"
 msgstr "Numero di apparecchi"
 
-#: app/forms/wizard.py:150
+#: app/forms/wizard.py:221
 msgid "Le nombre est requis."
 msgstr "Il numero è richiesto."
 
-#: app/forms/wizard.py:156
+#: app/forms/wizard.py:227
 msgid "Année de construction"
 msgstr "Anno di costruzione"
 
-#: app/forms/wizard.py:158
+#: app/forms/wizard.py:229
 msgid "L'année de construction est requise."
 msgstr "L'anno di costruzione è richiesto."
 
-#: app/forms/wizard.py:173 app/services/formulaires/etatdesc.py:20
-#: app/services/formulaires/ped.py:71
-msgid "Catégorie PED"
-msgstr "Categoria PED"
+#: app/forms/wizard.py:257
+msgid "Soumis à la DESP 2014/68/UE"
+msgstr "Soggetto alla PED 2014/68/UE"
 
-#: app/forms/formulaires/hydr.py:32 app/forms/wizard.py:175
-#: app/forms/wizard.py:186 app/forms/wizard.py:200
-#: app/services/formulaires/airsav.py:43 app/services/formulaires/attdecr.py:22
+#: app/forms/wizard.py:258
+msgid "Directive des équipements sous pression (marché UE)."
+msgstr "Direttiva attrezzature a pressione (mercato UE)."
+
+#: app/forms/wizard.py:261
+msgid "Stamp U (ASME)"
+msgstr "Stamp U (ASME)"
+
+#: app/forms/wizard.py:262
+msgid "Code ASME Section VIII — marché nord-américain."
+msgstr "Codice ASME Sezione VIII — mercato nordamericano."
+
+#: app/forms/wizard.py:265
+msgid "Catégorie de risque"
+msgstr "Categoria di rischio"
+
+#: app/forms/formulaires/hydr.py:32 app/forms/wizard.py:267 app/forms/wizard.py:278
+#: app/services/formulaires/airsav.py:43 app/services/formulaires/attdecr.py:49
 #: app/services/formulaires/azote.py:44 app/services/formulaires/durete.py:41
-#: app/services/formulaires/etatdesc.py:22 app/services/formulaires/ped.py:48
+#: app/services/formulaires/etatdesc.py:27 app/services/formulaires/ped.py:48
 #: app/services/formulaires/ped.py:62 app/services/formulaires/ped.py:76
-#: app/services/formulaires/proprete.py:25
-#: app/services/formulaires/proprete.py:42
-#: app/services/formulaires/sechage.py:25
-#: app/services/formulaires/sechage.py:46 app/services/formulaires/tth.py:27
-#: app/services/formulaires/tth.py:58 app/services/formulaires/visufinal.py:13
-#: app/services/formulaires/visufinal.py:18
+#: app/services/formulaires/proprete.py:25 app/services/formulaires/proprete.py:42
+#: app/services/formulaires/sechage.py:25 app/services/formulaires/sechage.py:46
+#: app/services/formulaires/tth.py:27 app/services/formulaires/tth.py:58
+#: app/services/formulaires/visufinal.py:13 app/services/formulaires/visufinal.py:18
 #: app/templates/formulaires/hydr.html:111
 msgid "— Sélectionner —"
 msgstr "— Selezionare —"
 
-#: app/forms/wizard.py:176
+#: app/forms/wizard.py:268
 msgid "I — Risque faible"
 msgstr "I — Rischio basso"
 
-#: app/forms/wizard.py:177
+#: app/forms/wizard.py:269
 msgid "II — Risque modéré"
 msgstr "II — Rischio moderato"
 
-#: app/forms/wizard.py:178
+#: app/forms/wizard.py:270
 msgid "III — Risque élevé"
 msgstr "III — Rischio elevato"
 
-#: app/forms/wizard.py:179
+#: app/forms/wizard.py:271
 msgid "IV — Risque très élevé"
 msgstr "IV — Rischio molto elevato"
 
-#: app/forms/wizard.py:181
-msgid "La catégorie PED est requise."
-msgstr "La categoria PED è richiesta."
+#: app/forms/wizard.py:272
+msgid "Art. 4.3 — Sous les seuils (règles de l'art)"
+msgstr "Art. 4.3 — Sotto le soglie (regola d'arte)"
 
-#: app/forms/wizard.py:184
-msgid "Module de conformité"
-msgstr "Modulo di conformità"
+#: app/forms/wizard.py:274
+msgid "Requise si DESP. Vérifiable ensuite dans la fiche technique."
+msgstr "Obbligatoria se PED. Verificabile in seguito nella scheda tecnica."
 
-#: app/forms/wizard.py:187
-msgid "A — Contrôle interne de fabrication"
-msgstr "A — Controllo interno della produzione"
-
-#: app/forms/wizard.py:188
-msgid "A2 — Contrôle interne + surveillance"
-msgstr "A2 — Controllo interno + sorveglianza"
-
-#: app/forms/wizard.py:189
-msgid "B + C2 — Examen UE de type + contrôle"
-msgstr "B + C2 — Esame UE del tipo + controllo"
-
-#: app/forms/wizard.py:190
-msgid "B + D — Examen UE de type + AQ production"
-msgstr "B + D — Esame UE del tipo + AQ produzione"
-
-#: app/forms/wizard.py:191
-msgid "B + F — Examen UE de type + vérif. produit"
-msgstr "B + F — Esame UE del tipo + verifica del prodotto"
-
-#: app/forms/wizard.py:192
-msgid "G — Vérification CE à l'unité"
-msgstr "G — Verifica CE dell'unità"
-
-#: app/forms/wizard.py:193
-msgid "H — Assurance qualité complète"
-msgstr "H — Garanzia qualità totale"
-
-#: app/forms/wizard.py:195
-msgid "Le module de conformité est requis."
-msgstr "Il modulo di conformità è richiesto."
-
-#: app/forms/wizard.py:198 app/services/formulaires/ped.py:85
-msgid "Groupe de fluide"
-msgstr "Gruppo di fluido"
-
-#: app/forms/wizard.py:201
-msgid "Groupe 1 — Fluide dangereux"
-msgstr "Gruppo 1 — Fluido pericoloso"
-
-#: app/forms/wizard.py:202
-msgid "Groupe 2 — Fluide non dangereux"
-msgstr "Gruppo 2 — Fluido non pericoloso"
-
-#: app/forms/wizard.py:204
-msgid "Le groupe de fluide est requis."
-msgstr "Il gruppo di fluido è richiesto."
-
-#: app/forms/wizard.py:207
-msgid "Nom du fluide principal"
-msgstr "Nome del fluido principale"
-
-#: app/forms/wizard.py:209
-msgid "Eau, huile, vapeur, azote…"
-msgstr "Acqua, olio, vapore, azoto…"
-
-#: app/forms/formulaires/hydr.py:23 app/forms/wizard.py:217
-#: app/templates/formulaires/hydr.html:68
-msgid "Pression de service PS (bar)"
-msgstr "Pressione di esercizio PS (bar)"
-
-#: app/forms/wizard.py:219
-msgid "PS est requise."
-msgstr "PS è richiesta."
-
-#: app/forms/wizard.py:224
-msgid "Pression de calcul ; la pression d'épreuve PT = PS × 1.43 sera dérivée."
-msgstr "Pressione di calcolo; la pressione di prova PT = PS × 1.43 sarà derivata."
-
-#: app/forms/wizard.py:228
-msgid "Température minimale (°C)"
-msgstr "Temperatura minima (°C)"
-
-#: app/forms/wizard.py:234
-msgid "Température maximale (°C)"
-msgstr "Temperatura massima (°C)"
-
-#: app/forms/wizard.py:239 app/services/formulaires/ped.py:154
-msgid "Volume (litres)"
-msgstr "Volume (litri)"
-
-#: app/forms/wizard.py:252
-msgid "Procédés de soudage utilisés"
-msgstr "Procedimenti di saldatura utilizzati"
-
-#: app/forms/wizard.py:254
-msgid "141 — TIG"
-msgstr "141 — TIG"
-
-#: app/forms/wizard.py:255
-msgid "111 — Électrode enrobée (manuel)"
-msgstr "111 — Elettrodo rivestito (manuale)"
-
-#: app/forms/wizard.py:256
-msgid "136 — MAG fil fourré"
-msgstr "136 — MAG filo animato"
-
-#: app/forms/wizard.py:257
-msgid "121 — Sous-flux"
-msgstr "121 — Arco sommerso"
-
-#: app/forms/wizard.py:258
-msgid "131 — MIG"
-msgstr "131 — MIG"
-
-#: app/forms/wizard.py:260
-msgid "Sélectionnez au moins un procédé."
-msgstr "Selezionare almeno un procedimento."
-
-#: app/forms/wizard.py:261 app/forms/wizard.py:286
-msgid "Maintenez Ctrl/Cmd pour sélections multiples."
-msgstr "Tenere premuto Ctrl/Cmd per selezioni multiple."
-
-#: app/forms/wizard.py:264
-msgid "Présence de tubes soudés à la calandre"
-msgstr "Presenza di tubi saldati al mantello"
-
-#: app/forms/wizard.py:268
-msgid "Traitement thermique après soudage (TTH) requis"
-msgstr "Trattamento termico dopo saldatura (TTH) richiesto"
-
-#: app/forms/wizard.py:270
-msgid "Détendage / recuit normalisé selon ASME ou EN."
-msgstr "Distensione / ricottura di normalizzazione secondo ASME o EN."
-
-#: app/forms/wizard.py:278
-msgid "Méthodes de CND requises"
-msgstr "Metodi di controlli non distruttivi (CND) richiesti"
-
-#: app/forms/wizard.py:280
-msgid "RT — Radiographie"
-msgstr "RT — Radiografia"
+#: app/forms/wizard.py:277
+msgid "Module d'évaluation de la conformité"
+msgstr "Modulo di valutazione della conformità"
 
 #: app/forms/wizard.py:281
-msgid "UT — Ultrasons"
-msgstr "UT — Ultrasuoni"
+msgid "Modules de la catégorie, ou d'une catégorie supérieure (art. 14 PED). Sans objet pour Art. 4.3."
+msgstr "Moduli della categoria o di una categoria superiore (art. 14 PED). Non applicabile per l'art. 4.3."
 
-#: app/forms/wizard.py:282
-msgid "PT — Ressuage"
-msgstr "PT — Liquidi penetranti"
-
-#: app/forms/wizard.py:283
-msgid "MT — Magnétoscopie"
-msgstr "MT — Particelle magnetiche"
-
-#: app/forms/wizard.py:284
-msgid "VT — Examen visuel"
-msgstr "VT — Esame visivo"
-
-#: app/forms/wizard.py:289
-msgid "Test de pression à réaliser"
-msgstr "Prova di pressione da eseguire"
-
-#: app/forms/wizard.py:291
-msgid "Hydrostatique (HYDR)"
-msgstr "Idrostatica (HYDR)"
-
-#: app/forms/wizard.py:292
-msgid "Pneumatique (AirSav)"
-msgstr "Pneumatica (AirSav)"
-
-#: app/forms/wizard.py:293
-msgid "Étanchéité azote (Azote)"
-msgstr "Tenuta con azoto (Azote)"
-
-#: app/forms/wizard.py:299
-msgid "Inspection client / TPI prévue"
-msgstr "Ispezione cliente / TPI prevista"
-
-#: app/forms/wizard.py:301
-msgid "Tierce Partie Indépendante ou inspecteur client présent."
-msgstr "Terza Parte Indipendente o ispettore del cliente presente."
-
-#: app/forms/wizard.py:313
+#: app/forms/wizard.py:319
 msgid "Je confirme l'exactitude des informations saisies"
 msgstr "Confermo l'esattezza delle informazioni inserite"
 
-#: app/forms/wizard.py:314
+#: app/forms/wizard.py:320
 msgid "Vous devez confirmer pour finaliser."
 msgstr "È necessario confermare per finalizzare."
 
-#: app/forms/wizard.py:317
+#: app/forms/wizard.py:323
 msgid "Commentaire (optionnel)"
 msgstr "Commento (facoltativo)"
+
+#: app/forms/formulaires/hydr.py:23 app/templates/formulaires/hydr.html:68
+msgid "Pression de service PS (bar)"
+msgstr "Pressione di esercizio PS (bar)"
 
 #: app/forms/formulaires/hydr.py:25
 msgid "La pression de service PS est requise."
@@ -552,12 +415,10 @@ msgstr "N. manometro"
 msgid "Résultat conforme"
 msgstr "Risultato conforme"
 
-#: app/forms/formulaires/hydr.py:62 app/services/formulaires/attdecr.py:46
-#: app/services/formulaires/attrep.py:31 app/services/formulaires/confcom.py:35
-#: app/services/formulaires/etatdesc.py:51
-#: app/services/formulaires/proprete.py:47
-#: app/services/formulaires/visufinal.py:58
-#: app/templates/formulaires/hydr.html:167
+#: app/forms/formulaires/hydr.py:62 app/services/formulaires/attdecr.py:76
+#: app/services/formulaires/attrep.py:31 app/services/formulaires/confcom.py:44
+#: app/services/formulaires/etatdesc.py:56 app/services/formulaires/proprete.py:47
+#: app/services/formulaires/visufinal.py:58 app/templates/formulaires/hydr.html:167
 msgid "Observations"
 msgstr "Osservazioni"
 
@@ -584,8 +445,8 @@ msgstr "Manometro utilizzato"
 #: app/services/formulaires/airsav.py:32 app/services/formulaires/azote.py:29
 #: app/services/formulaires/dim.py:44 app/services/formulaires/durete.py:38
 #: app/services/formulaires/ferrite.py:38 app/services/formulaires/pesage.py:31
-#: app/services/formulaires/recordhydro.py:30
-#: app/services/formulaires/sechage.py:36 app/services/formulaires/ut0.py:36
+#: app/services/formulaires/recordhydro.py:30 app/services/formulaires/sechage.py:36
+#: app/services/formulaires/ut0.py:36
 msgid "Phase 4 : sélection depuis le référentiel métrologie."
 msgstr "Fase 4: selezione dall'anagrafica metrologia."
 
@@ -608,18 +469,15 @@ msgid "Phase 4 : sélection depuis le référentiel QC."
 msgstr "Fase 4: selezione dall'anagrafica QC."
 
 #: app/services/formulaires/airsav.py:36 app/services/formulaires/azote.py:37
-#: app/services/formulaires/proprete.py:35
-#: app/services/formulaires/visufinal.py:39
+#: app/services/formulaires/proprete.py:35 app/services/formulaires/visufinal.py:39
 msgid "Contrôleur"
 msgstr "Controllore"
 
 #: app/services/formulaires/airsav.py:40 app/services/formulaires/airsav.py:41
 #: app/services/formulaires/azote.py:41 app/services/formulaires/azote.py:42
-#: app/services/formulaires/pesage.py:51
-#: app/services/formulaires/proprete.py:39
-#: app/services/formulaires/proprete.py:40
-#: app/services/formulaires/sechage.py:44 app/services/formulaires/tth.py:55
-#: app/services/formulaires/tth.py:56
+#: app/services/formulaires/pesage.py:51 app/services/formulaires/proprete.py:39
+#: app/services/formulaires/proprete.py:40 app/services/formulaires/sechage.py:44
+#: app/services/formulaires/tth.py:55 app/services/formulaires/tth.py:56
 msgid "Résultat"
 msgstr "Risultato"
 
@@ -643,82 +501,57 @@ msgstr "Se applicabile."
 msgid "Actions correctives"
 msgstr "Azioni correttive"
 
-#: app/services/formulaires/attdecr.py:17 app/services/formulaires/dim.py:35
+#: app/services/formulaires/attdecr.py:45 app/services/formulaires/dim.py:35
 #: app/services/formulaires/visufinal.py:32
 msgid "Identification"
 msgstr "Identificazione"
 
-#: app/services/formulaires/attdecr.py:18 app/services/formulaires/attrep.py:18
-#: app/services/formulaires/confcom.py:18
-#: app/services/formulaires/etatdesc.py:18
+#: app/services/formulaires/attdecr.py:46 app/services/formulaires/attrep.py:18
+#: app/services/formulaires/confcom.py:23 app/services/formulaires/etatdesc.py:23
 msgid "Date d'émission"
 msgstr "Data di emissione"
 
-#: app/services/formulaires/attdecr.py:20
+#: app/services/formulaires/attdecr.py:48
 msgid "Module d'évaluation"
 msgstr "Modulo di valutazione"
 
-#: app/services/formulaires/attdecr.py:23
-msgid "Module A"
-msgstr "Modulo A"
+#: app/services/formulaires/attdecr.py:52
+msgid "Imposé par la catégorie PED (Q4) — réappliqué automatiquement à l'enregistrement."
+msgstr "Imposto dalla categoria PED (Q4) — riapplicato automaticamente al salvataggio."
 
-#: app/services/formulaires/attdecr.py:24
-msgid "Module A1"
-msgstr "Modulo A1"
+#: app/services/formulaires/attdecr.py:55
+msgid "Organisme notifié (modules autres que A)"
+msgstr "Organismo notificato (moduli diversi da A)"
 
-#: app/services/formulaires/attdecr.py:25
-msgid "Module A2"
-msgstr "Modulo A2"
-
-#: app/services/formulaires/attdecr.py:26
-msgid "Module B"
-msgstr "Modulo B"
-
-#: app/services/formulaires/attdecr.py:27
-msgid "Module C2"
-msgstr "Modulo C2"
-
-#: app/services/formulaires/attdecr.py:28
-msgid "Module D"
-msgstr "Modulo D"
-
-#: app/services/formulaires/attdecr.py:29
-msgid "Module D1"
-msgstr "Modulo D1"
-
-#: app/services/formulaires/attdecr.py:30
-msgid "Module E"
-msgstr "Modulo E"
-
-#: app/services/formulaires/attdecr.py:31
-msgid "Module G"
-msgstr "Modulo G"
-
-#: app/services/formulaires/attdecr.py:32
-msgid "Module H"
-msgstr "Modulo H"
-
-#: app/services/formulaires/attdecr.py:33
-msgid "Module H1"
-msgstr "Modulo H1"
-
-#: app/services/formulaires/attdecr.py:36
+#: app/services/formulaires/attdecr.py:56
 msgid "Organisme notifié"
 msgstr "Organismo notificato"
 
-#: app/services/formulaires/attdecr.py:38
+#: app/services/formulaires/attdecr.py:60
+msgid "Choisir dans la liste NANDO : le n° d'ON est renseigné automatiquement."
+msgstr "Scegliere dall'elenco NANDO: il numero dell'organismo notificato viene inserito automaticamente."
+
+#: app/services/formulaires/attdecr.py:62
+msgid "N° d'organisme notifié"
+msgstr "N. organismo notificato"
+
+#: app/services/formulaires/attdecr.py:65
+msgid "N° NANDO à 4 chiffres (ex: 0062)."
+msgstr "Numero NANDO a 4 cifre (es. 0062)."
+
+#: app/services/formulaires/attdecr.py:66
 msgid "N° certificat CE"
 msgstr "N. certificato CE"
 
-#: app/services/formulaires/attdecr.py:40
+#: app/services/formulaires/attdecr.py:69
 msgid "Date du certificat"
 msgstr "Data del certificato"
 
-#: app/services/formulaires/attdecr.py:43 app/services/formulaires/attrep.py:27
+#: app/services/formulaires/attdecr.py:73 app/services/formulaires/attrep.py:27
 msgid "Attestation"
 msgstr "Attestato"
 
-#: app/services/formulaires/attdecr.py:44
+#: app/services/formulaires/attdecr.py:74
 msgid "Équipement conforme à la directive PED 2014/68/UE"
 msgstr "Apparecchiatura conforme alla direttiva PED 2014/68/UE"
 
@@ -765,17 +598,15 @@ msgstr "Pressione verificata a fine operazione (bar g)"
 #: app/services/formulaires/azote.py:45 app/services/formulaires/dim.py:67
 #: app/services/formulaires/durete.py:74 app/services/formulaires/ferrite.py:69
 #: app/services/formulaires/pmi.py:53 app/services/formulaires/proprete.py:43
-#: app/services/formulaires/rolling.py:69
-#: app/services/formulaires/sechage.py:47 app/services/formulaires/tth.py:59
-#: app/services/formulaires/ut0.py:61 app/services/formulaires/visufinal.py:14
-#: app/services/formulaires/visufinal.py:19
+#: app/services/formulaires/rolling.py:69 app/services/formulaires/sechage.py:47
+#: app/services/formulaires/tth.py:59 app/services/formulaires/ut0.py:61
+#: app/services/formulaires/visufinal.py:14 app/services/formulaires/visufinal.py:19
 msgid "Conforme"
 msgstr "Conforme"
 
 #: app/services/formulaires/azote.py:46 app/services/formulaires/pmi.py:54
-#: app/services/formulaires/proprete.py:44
-#: app/services/formulaires/sechage.py:48 app/services/formulaires/tth.py:60
-#: app/services/formulaires/visufinal.py:15
+#: app/services/formulaires/proprete.py:44 app/services/formulaires/sechage.py:48
+#: app/services/formulaires/tth.py:60 app/services/formulaires/visufinal.py:15
 #: app/services/formulaires/visufinal.py:20
 msgid "Non conforme"
 msgstr "Non conforme"
@@ -783,8 +614,8 @@ msgstr "Non conforme"
 #: app/services/formulaires/azote.py:49 app/services/formulaires/bim.py:42
 #: app/services/formulaires/dim.py:69 app/services/formulaires/nde_map.py:58
 #: app/services/formulaires/pesage.py:54 app/services/formulaires/pmi.py:57
-#: app/services/formulaires/rolling.py:71
-#: app/services/formulaires/sechage.py:51 app/services/formulaires/tth.py:63
+#: app/services/formulaires/rolling.py:71 app/services/formulaires/sechage.py:51
+#: app/services/formulaires/tth.py:63
 msgid "Remarques"
 msgstr "Note"
 
@@ -796,7 +627,7 @@ msgstr "Materiali di base"
 msgid "Repère composant"
 msgstr "Sigla componente"
 
-#: app/services/formulaires/bim.py:27 app/services/formulaires/bimsoud.py:25
+#: app/services/formulaires/bim.py:27 app/services/formulaires/bimsoud.py:36
 msgid "Désignation"
 msgstr "Denominazione"
 
@@ -808,15 +639,15 @@ msgstr "Norma materiale"
 msgid "N° coulée"
 msgstr "N. colata"
 
-#: app/services/formulaires/bim.py:33 app/services/formulaires/bimsoud.py:31
+#: app/services/formulaires/bim.py:33 app/services/formulaires/bimsoud.py:45
 msgid "N° lot"
 msgstr "N. lotto"
 
-#: app/services/formulaires/bim.py:35 app/services/formulaires/bimsoud.py:33
+#: app/services/formulaires/bim.py:35 app/services/formulaires/bimsoud.py:47
 msgid "Fournisseur"
 msgstr "Fornitore"
 
-#: app/services/formulaires/bim.py:37 app/services/formulaires/bimsoud.py:38
+#: app/services/formulaires/bim.py:37 app/services/formulaires/bimsoud.py:52
 msgid "Réf. CCPU"
 msgstr "Rif. CCPU"
 
@@ -824,55 +655,67 @@ msgstr "Rif. CCPU"
 msgid "Référence dans le cahier des contrôles et procédures d'usinage."
 msgstr "Riferimento nel registro dei controlli e delle procedure di lavorazione."
 
-#: app/services/formulaires/bimsoud.py:23
+#: app/services/formulaires/bimsoud.py:34
 msgid "Matériaux de soudage"
 msgstr "Materiali di saldatura"
 
-#: app/services/formulaires/bimsoud.py:27
+#: app/services/formulaires/bimsoud.py:39
+msgid "Choisir dans la liste : norme et fournisseur seront renseignés automatiquement."
+msgstr "Scegliere dall'elenco: norma e fornitore saranno inseriti automaticamente."
+
+#: app/services/formulaires/bimsoud.py:41
 msgid "Norme"
 msgstr "Norma"
 
-#: app/services/formulaires/bimsoud.py:29
+#: app/services/formulaires/bimsoud.py:43
 msgid "Diamètre (mm)"
 msgstr "Diametro (mm)"
 
-#: app/services/formulaires/bimsoud.py:35
+#: app/services/formulaires/bimsoud.py:49
 msgid "Utilisation"
 msgstr "Utilizzo"
 
-#: app/services/formulaires/bimsoud.py:37
+#: app/services/formulaires/bimsoud.py:51
 msgid "Ex : assemblage, rechargement, reprise…"
 msgstr "Es.: assemblaggio, riporto, ripresa…"
 
-#: app/services/formulaires/confcom.py:17
+#: app/services/formulaires/confcom.py:22
 msgid "Référence commande"
 msgstr "Riferimento ordine"
 
-#: app/services/formulaires/confcom.py:20
+#: app/services/formulaires/confcom.py:25
 msgid "Référence commande client"
 msgstr "Riferimento ordine cliente"
 
-#: app/services/formulaires/confcom.py:22
+#: app/services/formulaires/confcom.py:27
+msgid "Auto-remplie depuis le registre BE (colonne « N° Commande ») — inclut l'indice de révision."
+msgstr "Compilata automaticamente dal registro BE (colonna «N° Commande») — include l'indice di revisione."
+
+#: app/services/formulaires/confcom.py:29
 msgid "Indice de révision"
 msgstr "Indice di revisione"
 
-#: app/services/formulaires/confcom.py:25 app/services/formulaires/pmi.py:50
+#: app/services/formulaires/confcom.py:31
+msgid "À préciser uniquement si l'indice n'est pas déjà inclus dans la référence commande."
+msgstr "Da precisare solo se l'indice non è già incluso nel riferimento d'ordine."
+
+#: app/services/formulaires/confcom.py:34 app/services/formulaires/pmi.py:50
 msgid "Conformité"
 msgstr "Conformità"
 
-#: app/services/formulaires/confcom.py:27
+#: app/services/formulaires/confcom.py:36
 msgid "Conforme aux spécifications techniques"
 msgstr "Conforme alle specifiche tecniche"
 
-#: app/services/formulaires/confcom.py:29
+#: app/services/formulaires/confcom.py:38
 msgid "Conforme aux délais contractuels"
 msgstr "Conforme ai termini contrattuali"
 
-#: app/services/formulaires/confcom.py:31
+#: app/services/formulaires/confcom.py:40
 msgid "Documents fournis conformes"
 msgstr "Documenti forniti conformi"
 
-#: app/services/formulaires/confcom.py:33
+#: app/services/formulaires/confcom.py:42
 msgid "Écarts / dérogations"
 msgstr "Scostamenti / deroghe"
 
@@ -885,8 +728,7 @@ msgid "Révision du plan"
 msgstr "Revisione del disegno"
 
 #: app/services/formulaires/dim.py:40 app/services/formulaires/durete.py:53
-#: app/services/formulaires/ferrite.py:48
-#: app/services/formulaires/proprete.py:21
+#: app/services/formulaires/ferrite.py:48 app/services/formulaires/proprete.py:21
 #: app/services/formulaires/visufinal.py:33
 msgid "Date du contrôle"
 msgstr "Data del controllo"
@@ -903,7 +745,7 @@ msgstr "Quote da controllare"
 msgid "N° / Repère"
 msgstr "N. / Sigla"
 
-#: app/services/formulaires/dim.py:55 app/services/formulaires/etatdesc.py:42
+#: app/services/formulaires/dim.py:55 app/services/formulaires/etatdesc.py:47
 msgid "Description"
 msgstr "Descrizione"
 
@@ -978,8 +820,7 @@ msgid "Zone"
 msgstr "Zona"
 
 #: app/services/formulaires/durete.py:66 app/services/formulaires/ferrite.py:61
-#: app/services/formulaires/listcnd.py:33
-#: app/services/formulaires/nde_map.py:42
+#: app/services/formulaires/listcnd.py:33 app/services/formulaires/nde_map.py:42
 #: app/services/formulaires/nde_map.py:53 app/services/formulaires/ped.py:89
 #: app/services/formulaires/pmi.py:52
 msgid "—"
@@ -1001,55 +842,59 @@ msgstr "Zona fusa"
 msgid "Valeur mesurée"
 msgstr "Valore misurato"
 
-#: app/services/formulaires/etatdesc.py:17
+#: app/services/formulaires/etatdesc.py:22
 msgid "Caractéristiques principales"
 msgstr "Caratteristiche principali"
 
-#: app/services/formulaires/etatdesc.py:23 app/services/formulaires/ped.py:77
+#: app/services/formulaires/etatdesc.py:25 app/services/formulaires/ped.py:71
+msgid "Catégorie PED"
+msgstr "Categoria PED"
+
+#: app/services/formulaires/etatdesc.py:28 app/services/formulaires/ped.py:77
 msgid "I"
 msgstr "I"
 
-#: app/services/formulaires/etatdesc.py:24 app/services/formulaires/ped.py:78
+#: app/services/formulaires/etatdesc.py:29 app/services/formulaires/ped.py:78
 msgid "II"
 msgstr "II"
 
-#: app/services/formulaires/etatdesc.py:25 app/services/formulaires/ped.py:79
+#: app/services/formulaires/etatdesc.py:30 app/services/formulaires/ped.py:79
 msgid "III"
 msgstr "III"
 
-#: app/services/formulaires/etatdesc.py:26 app/services/formulaires/ped.py:80
+#: app/services/formulaires/etatdesc.py:31 app/services/formulaires/ped.py:80
 msgid "IV"
 msgstr "IV"
 
-#: app/services/formulaires/etatdesc.py:29
+#: app/services/formulaires/etatdesc.py:34
 msgid "PS max (bar)"
 msgstr "PS max (bar)"
 
-#: app/services/formulaires/etatdesc.py:32
+#: app/services/formulaires/etatdesc.py:37
 msgid "T min (°C)"
 msgstr "T min (°C)"
 
-#: app/services/formulaires/etatdesc.py:35
+#: app/services/formulaires/etatdesc.py:40
 msgid "T max (°C)"
 msgstr "T max (°C)"
 
-#: app/services/formulaires/etatdesc.py:38
+#: app/services/formulaires/etatdesc.py:43
 msgid "Volume (L)"
 msgstr "Volume (L)"
 
-#: app/services/formulaires/etatdesc.py:43
+#: app/services/formulaires/etatdesc.py:48
 msgid "Fluide de service"
 msgstr "Fluido di esercizio"
 
-#: app/services/formulaires/etatdesc.py:45
+#: app/services/formulaires/etatdesc.py:50
 msgid "Matériaux principaux"
 msgstr "Materiali principali"
 
-#: app/services/formulaires/etatdesc.py:47
+#: app/services/formulaires/etatdesc.py:52
 msgid "Description générale"
 msgstr "Descrizione generale"
 
-#: app/services/formulaires/etatdesc.py:49
+#: app/services/formulaires/etatdesc.py:54
 msgid "Spécifications techniques"
 msgstr "Specifiche tecniche"
 
@@ -1122,7 +967,6 @@ msgid "N° certification"
 msgstr "N. certificazione"
 
 #: app/services/formulaires/listcnd.py:44
-#: app/services/formulaires/listsoud.py:43
 msgid "Date de validité"
 msgstr "Data di validità"
 
@@ -1133,59 +977,6 @@ msgstr "Rif. tessera COFREND"
 #: app/services/formulaires/listcnd.py:48
 msgid "Phase 3 : lien vers le fichier réseau."
 msgstr "Fase 3: collegamento al file di rete."
-
-#: app/services/formulaires/listsoud.py:23
-msgid "Soudeurs"
-msgstr "Saldatori"
-
-#: app/services/formulaires/listsoud.py:25
-#: app/services/formulaires/nde_map.py:32
-msgid "ID soudeur"
-msgstr "ID saldatore"
-
-#: app/services/formulaires/listsoud.py:27
-msgid "Phase 4 : sélection depuis le référentiel Soudeurs."
-msgstr "Fase 4: selezione dall'anagrafica Saldatori."
-
-#: app/services/formulaires/listsoud.py:28
-msgid "Initiales / Poinçon"
-msgstr "Iniziali / Punzone"
-
-#: app/services/formulaires/listsoud.py:30
-msgid "Nom complet"
-msgstr "Nome completo"
-
-#: app/services/formulaires/listsoud.py:32
-msgid "Procédés qualifiés"
-msgstr "Procedimenti qualificati"
-
-#: app/services/formulaires/listsoud.py:34
-msgid "Ex : TIG 141, MIG 131"
-msgstr "Es.: TIG 141, MIG 131"
-
-#: app/services/formulaires/listsoud.py:35
-msgid "Matériaux qualifiés"
-msgstr "Materiali qualificati"
-
-#: app/services/formulaires/listsoud.py:37
-msgid "Ex : Acier carbone P1, Inox P8"
-msgstr "Es.: acciaio al carbonio P1, inox P8"
-
-#: app/services/formulaires/listsoud.py:38
-msgid "Positions qualifiées"
-msgstr "Posizioni qualificate"
-
-#: app/services/formulaires/listsoud.py:40
-msgid "Ex : PA, PB, PC, PD, PF"
-msgstr "Es.: PA, PB, PC, PD, PF"
-
-#: app/services/formulaires/listsoud.py:41
-msgid "Référence qualification"
-msgstr "Riferimento qualifica"
-
-#: app/services/formulaires/listsoud.py:45
-msgid "Dernier emploi affaire"
-msgstr "Ultimo impiego in commessa"
 
 #: app/services/formulaires/nde_map.py:24
 msgid "Joints soudés — résultats CND"
@@ -1202,6 +993,10 @@ msgstr "Descrizione del giunto"
 #: app/services/formulaires/nde_map.py:30
 msgid "Procédé soudage"
 msgstr "Procedimento di saldatura"
+
+#: app/services/formulaires/nde_map.py:32
+msgid "ID soudeur"
+msgstr "ID saldatore"
 
 #: app/services/formulaires/nde_map.py:34
 msgid "Phase 4 : sélection depuis ListSoud."
@@ -1223,13 +1018,11 @@ msgstr "N. rapporto RT"
 msgid "Résultat RT"
 msgstr "Risultato RT"
 
-#: app/services/formulaires/nde_map.py:43
-#: app/services/formulaires/nde_map.py:54
+#: app/services/formulaires/nde_map.py:43 app/services/formulaires/nde_map.py:54
 msgid "Acceptable"
 msgstr "Accettabile"
 
-#: app/services/formulaires/nde_map.py:44
-#: app/services/formulaires/nde_map.py:55
+#: app/services/formulaires/nde_map.py:44 app/services/formulaires/nde_map.py:55
 msgid "Non acceptable"
 msgstr "Non accettabile"
 
@@ -1293,6 +1086,10 @@ msgstr "Deutsch"
 msgid "Italiano"
 msgstr "Italiano"
 
+#: app/services/formulaires/ped.py:85
+msgid "Groupe de fluide"
+msgstr "Gruppo di fluido"
+
 #: app/services/formulaires/ped.py:90
 msgid "1"
 msgstr "1"
@@ -1344,6 +1141,10 @@ msgstr "TS max (°C)"
 #: app/services/formulaires/ped.py:147
 msgid "TS min (°C)"
 msgstr "TS min (°C)"
+
+#: app/services/formulaires/ped.py:154
+msgid "Volume (litres)"
+msgstr "Volume (litri)"
 
 #: app/services/formulaires/ped.py:162
 msgid "DN"
@@ -1517,8 +1318,7 @@ msgstr "Scala pressione (bar)"
 msgid "Échelle temps (min)"
 msgstr "Scala tempo (min)"
 
-#: app/services/formulaires/recordhydro.py:38
-#: app/services/formulaires/visufinal.py:43
+#: app/services/formulaires/recordhydro.py:38 app/services/formulaires/visufinal.py:43
 msgid "Résultats"
 msgstr "Risultati"
 
@@ -1787,8 +1587,8 @@ msgid "Tableau de bord"
 msgstr "Cruscotto"
 
 #: app/templates/base.html:38 app/templates/formulaires/_simple.html:17
-#: app/templates/formulaires/_table.html:20
-#: app/templates/formulaires/hydr.html:17
+#: app/templates/formulaires/_table.html:20 app/templates/formulaires/hydr.html:17
+#: app/templates/formulaires/listsoud.html:19
 msgid "Affaires"
 msgstr "Commesse"
 
@@ -1808,126 +1608,107 @@ msgstr "Lingua"
 msgid "Dossier Constructeur Qualité"
 msgstr "Fascicolo qualità del costruttore"
 
-#: app/templates/formulaires/_simple.html:35
-#: app/templates/formulaires/_table.html:38
-#: app/templates/formulaires/hydr.html:33
+#: app/templates/formulaires/_simple.html:35 app/templates/formulaires/_table.html:38
+#: app/templates/formulaires/hydr.html:33 app/templates/formulaires/listsoud.html:36
 msgid "Affaire"
 msgstr "Commessa"
 
-#: app/templates/formulaires/_simple.html:40
-#: app/templates/formulaires/_table.html:43
+#: app/templates/formulaires/_simple.html:40 app/templates/formulaires/_table.html:43
 #: app/templates/formulaires/hydr.html:38
 msgid "Intégrité SHA-256 vérifiée"
 msgstr "Integrità SHA-256 verificata"
 
-#: app/templates/formulaires/_simple.html:40
-#: app/templates/formulaires/_table.html:43
-#: app/templates/formulaires/hydr.html:38
+#: app/templates/formulaires/_simple.html:40 app/templates/formulaires/_table.html:43
+#: app/templates/formulaires/hydr.html:38 app/templates/formulaires/listsoud.html:41
 msgid "Hash OK"
 msgstr "Hash OK"
 
-#: app/templates/formulaires/_simple.html:42
-#: app/templates/formulaires/_table.html:45
+#: app/templates/formulaires/_simple.html:42 app/templates/formulaires/_table.html:45
 #: app/templates/formulaires/hydr.html:40
 msgid "Contenu altéré depuis la signature !"
 msgstr "Contenuto alterato dopo la firma!"
 
-#: app/templates/formulaires/_simple.html:42
-#: app/templates/formulaires/_table.html:45
-#: app/templates/formulaires/hydr.html:40
+#: app/templates/formulaires/_simple.html:42 app/templates/formulaires/_table.html:45
+#: app/templates/formulaires/hydr.html:40 app/templates/formulaires/listsoud.html:43
 msgid "Hash invalide"
 msgstr "Hash non valido"
 
-#: app/templates/formulaires/_simple.html:46
-#: app/templates/formulaires/_table.html:49
-#: app/templates/formulaires/hydr.html:44
+#: app/templates/formulaires/_simple.html:46 app/templates/formulaires/_table.html:49
+#: app/templates/formulaires/hydr.html:44 app/templates/formulaires/listsoud.html:47
 msgid "Nouveau"
 msgstr "Nuovo"
 
-#: app/templates/formulaires/_simple.html:51
-#: app/templates/formulaires/_table.html:54
-#: app/templates/formulaires/hydr.html:49
+#: app/templates/formulaires/_simple.html:51 app/templates/formulaires/_table.html:54
+#: app/templates/formulaires/hydr.html:49 app/templates/formulaires/listsoud.html:52
 msgid "Retour affaire"
 msgstr "Torna alla commessa"
 
-#: app/templates/formulaires/_simple.html:157
-#: app/templates/formulaires/_table.html:211
-#: app/templates/formulaires/hydr.html:180
+#: app/templates/formulaires/_simple.html:166 app/templates/formulaires/_table.html:219
+#: app/templates/formulaires/hydr.html:180 app/templates/formulaires/listsoud.html:87
 msgid "Enregistrer le brouillon"
 msgstr "Salva bozza"
 
-#: app/templates/formulaires/_simple.html:160
-#: app/templates/formulaires/_table.html:214
-#: app/templates/formulaires/hydr.html:183
+#: app/templates/formulaires/_simple.html:169 app/templates/formulaires/_table.html:222
+#: app/templates/formulaires/hydr.html:183 app/templates/formulaires/listsoud.html:88
 msgid "Enregistré"
 msgstr "Salvato"
 
-#: app/templates/formulaires/_simple.html:170
-#: app/templates/formulaires/_table.html:224
-#: app/templates/formulaires/hydr.html:193
+#: app/templates/formulaires/_simple.html:179 app/templates/formulaires/_table.html:232
+#: app/templates/formulaires/hydr.html:193 app/templates/formulaires/listsoud.html:95
 #, python-format
 msgid "Valider le formulaire %(code)s ? Cette action est irréversible."
 msgstr "Convalidare il modulo %(code)s? Questa azione è irreversibile."
 
-#: app/templates/formulaires/_simple.html:171
-#: app/templates/formulaires/_table.html:225
-#: app/templates/formulaires/hydr.html:194
+#: app/templates/formulaires/_simple.html:180 app/templates/formulaires/_table.html:233
+#: app/templates/formulaires/hydr.html:194 app/templates/formulaires/listsoud.html:96
 msgid "Valider"
 msgstr "Convalida"
 
-#: app/templates/formulaires/_simple.html:182
-#: app/templates/formulaires/_table.html:236
-#: app/templates/formulaires/hydr.html:205
+#: app/templates/formulaires/_simple.html:191 app/templates/formulaires/_table.html:244
+#: app/templates/formulaires/hydr.html:205 app/templates/formulaires/listsoud.html:105
 #, python-format
 msgid "Signer le formulaire %(code)s ? La signature est définitive."
 msgstr "Firmare il modulo %(code)s? La firma è definitiva."
 
-#: app/templates/formulaires/_simple.html:183
-#: app/templates/formulaires/_table.html:237
-#: app/templates/formulaires/hydr.html:206
+#: app/templates/formulaires/_simple.html:192 app/templates/formulaires/_table.html:245
+#: app/templates/formulaires/hydr.html:206 app/templates/formulaires/listsoud.html:106
 msgid "Signer (SHA-256)"
 msgstr "Firma (SHA-256)"
 
-#: app/templates/formulaires/_simple.html:191
-#: app/templates/formulaires/hydr.html:214
+#: app/templates/formulaires/_simple.html:200 app/templates/formulaires/hydr.html:214
 msgid "Générer et télécharger le PDF"
 msgstr "Genera e scarica il PDF"
 
-#: app/templates/formulaires/_simple.html:192
-#: app/templates/formulaires/_table.html:245
-#: app/templates/formulaires/hydr.html:215
+#: app/templates/formulaires/_simple.html:201 app/templates/formulaires/_table.html:253
+#: app/templates/formulaires/hydr.html:215 app/templates/formulaires/listsoud.html:113
 msgid "Télécharger PDF"
 msgstr "Scarica PDF"
 
-#: app/templates/formulaires/_simple.html:200
-#: app/templates/formulaires/_table.html:253
-#: app/templates/formulaires/hydr.html:223
+#: app/templates/formulaires/_simple.html:209 app/templates/formulaires/_table.html:261
+#: app/templates/formulaires/hydr.html:223 app/templates/formulaires/listsoud.html:120
 #, python-format
 msgid "Signé le %(date)s par %(nom)s"
 msgstr "Firmato il %(date)s da %(nom)s"
 
-#: app/templates/formulaires/_simple.html:257
-#: app/templates/formulaires/_table.html:372
-#: app/templates/formulaires/hydr.html:301
+#: app/templates/formulaires/_simple.html:266 app/templates/formulaires/_table.html:400
+#: app/templates/formulaires/hydr.html:301 app/templates/formulaires/listsoud.html:373
 msgid "Erreur lors de la sauvegarde."
 msgstr "Errore durante il salvataggio."
 
-#: app/templates/formulaires/_simple.html:263
-#: app/templates/formulaires/_table.html:377
-#: app/templates/formulaires/hydr.html:307
+#: app/templates/formulaires/_simple.html:272 app/templates/formulaires/_table.html:405
+#: app/templates/formulaires/hydr.html:307 app/templates/formulaires/listsoud.html:377
 msgid "Erreur réseau — réessayez."
 msgstr "Errore di rete — riprovare."
 
-#: app/templates/formulaires/_table.html:140
+#: app/templates/formulaires/_table.html:147
 msgid "Ajouter une ligne"
 msgstr "Aggiungi riga"
 
-#: app/templates/formulaires/_table.html:191
-#: app/templates/formulaires/_table.html:286
+#: app/templates/formulaires/_table.html:199 app/templates/formulaires/_table.html:295
 msgid "Supprimer"
 msgstr "Elimina"
 
-#: app/templates/formulaires/_table.html:201
+#: app/templates/formulaires/_table.html:209
 msgid "Aucune ligne — cliquez « Ajouter une ligne » pour commencer."
 msgstr "Nessuna riga — fare clic su « Aggiungi riga » per iniziare."
 
@@ -1966,3 +1747,212 @@ msgstr "Strumentazione & Risultato"
 #: app/templates/formulaires/hydr.html:162
 msgid "Épreuve conforme — aucune fuite ni déformation constatée"
 msgstr "Prova conforme — nessuna perdita né deformazione riscontrata"
+
+#: app/templates/formulaires/listsoud.html:60
+msgid "Code de construction"
+msgstr "Codice di costruzione"
+
+#: app/templates/formulaires/listsoud.html:68
+msgid "Détermine les positions et groupes de matériaux proposés."
+msgstr "Determina le posizioni e i gruppi di materiali proposti."
+
+#: app/templates/formulaires/listsoud.html:77
+msgid "Ajouter un soudeur"
+msgstr "Aggiungi un saldatore"
+
+#: app/templates/formulaires/listsoud.html:81
+msgid "Aucun soudeur — cliquez « Ajouter un soudeur » pour commencer."
+msgstr "Nessun saldatore — fare clic su «Aggiungi un saldatore» per iniziare."
+
+#~ msgid "La catégorie PED est requise."
+#~ msgstr "La categoria PED è richiesta."
+
+#~ msgid "A — Contrôle interne de fabrication"
+#~ msgstr "A — Controllo interno della produzione"
+
+#~ msgid "A2 — Contrôle interne + surveillance"
+#~ msgstr "A2 — Controllo interno + sorveglianza"
+
+#~ msgid "B + C2 — Examen UE de type + contrôle"
+#~ msgstr "B + C2 — Esame UE del tipo + controllo"
+
+#~ msgid "B + D — Examen UE de type + AQ production"
+#~ msgstr "B + D — Esame UE del tipo + AQ produzione"
+
+#~ msgid "B + F — Examen UE de type + vérif. produit"
+#~ msgstr "B + F — Esame UE del tipo + verifica del prodotto"
+
+#~ msgid "G — Vérification CE à l'unité"
+#~ msgstr "G — Verifica CE dell'unità"
+
+#~ msgid "H — Assurance qualité complète"
+#~ msgstr "H — Garanzia qualità totale"
+
+#~ msgid "Le module de conformité est requis."
+#~ msgstr "Il modulo di conformità è richiesto."
+
+#~ msgid "Groupe 1 — Fluide dangereux"
+#~ msgstr "Gruppo 1 — Fluido pericoloso"
+
+#~ msgid "Groupe 2 — Fluide non dangereux"
+#~ msgstr "Gruppo 2 — Fluido non pericoloso"
+
+#~ msgid "Le groupe de fluide est requis."
+#~ msgstr "Il gruppo di fluido è richiesto."
+
+#~ msgid "Nom du fluide principal"
+#~ msgstr "Nome del fluido principale"
+
+#~ msgid "Eau, huile, vapeur, azote…"
+#~ msgstr "Acqua, olio, vapore, azoto…"
+
+#~ msgid "PS est requise."
+#~ msgstr "PS è richiesta."
+
+#~ msgid "Pression de calcul ; la pression d'épreuve PT = PS × 1.43 sera dérivée."
+#~ msgstr "Pressione di calcolo; la pressione di prova PT = PS × 1.43 sarà derivata."
+
+#~ msgid "Température minimale (°C)"
+#~ msgstr "Temperatura minima (°C)"
+
+#~ msgid "Température maximale (°C)"
+#~ msgstr "Temperatura massima (°C)"
+
+#~ msgid "Procédés de soudage utilisés"
+#~ msgstr "Procedimenti di saldatura utilizzati"
+
+#~ msgid "141 — TIG"
+#~ msgstr "141 — TIG"
+
+#~ msgid "111 — Électrode enrobée (manuel)"
+#~ msgstr "111 — Elettrodo rivestito (manuale)"
+
+#~ msgid "136 — MAG fil fourré"
+#~ msgstr "136 — MAG filo animato"
+
+#~ msgid "121 — Sous-flux"
+#~ msgstr "121 — Arco sommerso"
+
+#~ msgid "131 — MIG"
+#~ msgstr "131 — MIG"
+
+#~ msgid "Sélectionnez au moins un procédé."
+#~ msgstr "Selezionare almeno un procedimento."
+
+#~ msgid "Maintenez Ctrl/Cmd pour sélections multiples."
+#~ msgstr "Tenere premuto Ctrl/Cmd per selezioni multiple."
+
+#~ msgid "Présence de tubes soudés à la calandre"
+#~ msgstr "Presenza di tubi saldati al mantello"
+
+#~ msgid "Traitement thermique après soudage (TTH) requis"
+#~ msgstr "Trattamento termico dopo saldatura (TTH) richiesto"
+
+#~ msgid "Détendage / recuit normalisé selon ASME ou EN."
+#~ msgstr "Distensione / ricottura di normalizzazione secondo ASME o EN."
+
+#~ msgid "Méthodes de CND requises"
+#~ msgstr "Metodi di controlli non distruttivi (CND) richiesti"
+
+#~ msgid "RT — Radiographie"
+#~ msgstr "RT — Radiografia"
+
+#~ msgid "UT — Ultrasons"
+#~ msgstr "UT — Ultrasuoni"
+
+#~ msgid "PT — Ressuage"
+#~ msgstr "PT — Liquidi penetranti"
+
+#~ msgid "MT — Magnétoscopie"
+#~ msgstr "MT — Particelle magnetiche"
+
+#~ msgid "VT — Examen visuel"
+#~ msgstr "VT — Esame visivo"
+
+#~ msgid "Test de pression à réaliser"
+#~ msgstr "Prova di pressione da eseguire"
+
+#~ msgid "Hydrostatique (HYDR)"
+#~ msgstr "Idrostatica (HYDR)"
+
+#~ msgid "Pneumatique (AirSav)"
+#~ msgstr "Pneumatica (AirSav)"
+
+#~ msgid "Étanchéité azote (Azote)"
+#~ msgstr "Tenuta con azoto (Azote)"
+
+#~ msgid "Inspection client / TPI prévue"
+#~ msgstr "Ispezione cliente / TPI prevista"
+
+#~ msgid "Tierce Partie Indépendante ou inspecteur client présent."
+#~ msgstr "Terza Parte Indipendente o ispettore del cliente presente."
+
+#~ msgid "Module A"
+#~ msgstr "Modulo A"
+
+#~ msgid "Module A1"
+#~ msgstr "Modulo A1"
+
+#~ msgid "Module A2"
+#~ msgstr "Modulo A2"
+
+#~ msgid "Module B"
+#~ msgstr "Modulo B"
+
+#~ msgid "Module C2"
+#~ msgstr "Modulo C2"
+
+#~ msgid "Module D"
+#~ msgstr "Modulo D"
+
+#~ msgid "Module D1"
+#~ msgstr "Modulo D1"
+
+#~ msgid "Module E"
+#~ msgstr "Modulo E"
+
+#~ msgid "Module G"
+#~ msgstr "Modulo G"
+
+#~ msgid "Module H"
+#~ msgstr "Modulo H"
+
+#~ msgid "Module H1"
+#~ msgstr "Modulo H1"
+
+#~ msgid "Soudeurs"
+#~ msgstr "Saldatori"
+
+#~ msgid "Phase 4 : sélection depuis le référentiel Soudeurs."
+#~ msgstr "Fase 4: selezione dall'anagrafica Saldatori."
+
+#~ msgid "Initiales / Poinçon"
+#~ msgstr "Iniziali / Punzone"
+
+#~ msgid "Nom complet"
+#~ msgstr "Nome completo"
+
+#~ msgid "Procédés qualifiés"
+#~ msgstr "Procedimenti qualificati"
+
+#~ msgid "Ex : TIG 141, MIG 131"
+#~ msgstr "Es.: TIG 141, MIG 131"
+
+#~ msgid "Matériaux qualifiés"
+#~ msgstr "Materiali qualificati"
+
+#~ msgid "Ex : Acier carbone P1, Inox P8"
+#~ msgstr "Es.: acciaio al carbonio P1, inox P8"
+
+#~ msgid "Positions qualifiées"
+#~ msgstr "Posizioni qualificate"
+
+#~ msgid "Ex : PA, PB, PC, PD, PF"
+#~ msgstr "Es.: PA, PB, PC, PD, PF"
+
+#~ msgid "Référence qualification"
+#~ msgstr "Riferimento qualifica"
+
+#~ msgid "Dernier emploi affaire"
+#~ msgstr "Ultimo impiego in commessa"
+

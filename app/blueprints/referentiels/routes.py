@@ -14,14 +14,20 @@ from __future__ import annotations
 
 from datetime import date
 
-from flask import abort, jsonify, redirect, render_template, request, url_for
+from flask import abort, jsonify, render_template, request
 from flask_login import login_required
 from werkzeug.wrappers.response import Response
 
 from app.blueprints.referentiels import bp
 from app.enums import Role
 from app.extensions import db
-from app.models.referentiel import Instrument, Materiau, OperateurCND, Soudeur
+from app.models.referentiel import (
+    Instrument,
+    Materiau,
+    OperateurCND,
+    Soudeur,
+    TypeEquipement,
+)
 from app.utils.decorators import role_required
 
 _EDIT_ROLES = (Role.APPROBATEUR, Role.ADMIN)
@@ -34,11 +40,16 @@ _READ_ROLES = (Role.LECTEUR, Role.REDACTEUR, Role.VERIFICATEUR, Role.APPROBATEUR
 @bp.route("/", methods=["GET"])
 @login_required  # type: ignore[untyped-decorator]
 def index() -> Response:
-    """Page principale avec les 4 onglets référentiels."""
+    """Page principale avec les 5 onglets référentiels."""
     soudeurs = db.session.query(Soudeur).order_by(Soudeur.nom).all()
     operateurs = db.session.query(OperateurCND).order_by(OperateurCND.nom).all()
     materiaux = db.session.query(Materiau).order_by(Materiau.designation).all()
     instruments = db.session.query(Instrument).order_by(Instrument.reference).all()
+    types_equipement = (
+        db.session.query(TypeEquipement)
+        .order_by(TypeEquipement.ordre, TypeEquipement.libelle)
+        .all()
+    )
 
     return render_template(  # type: ignore[return-value]
         "referentiels/index.html",
@@ -46,6 +57,7 @@ def index() -> Response:
         operateurs=operateurs,
         materiaux=materiaux,
         instruments=instruments,
+        types_equipement=types_equipement,
         today=date.today(),
     )
 
@@ -236,6 +248,66 @@ def materiau_delete(mid: int) -> Response:
     if m is None:
         abort(404)
     m.actif = False
+    db.session.commit()
+    return jsonify({"ok": True})  # type: ignore[return-value]
+
+
+# ── Types d'équipement (V1.2, D7) ─────────────────────────────────────────
+
+
+@bp.route("/types-equipement", methods=["POST"])
+@login_required  # type: ignore[untyped-decorator]
+@role_required(*_EDIT_ROLES)
+def type_equipement_create() -> Response:
+    """Crée un type d'équipement."""
+    p = request.get_json(silent=True) or {}
+    libelle = (p.get("libelle") or "").strip()
+    if not libelle:
+        return jsonify({"ok": False, "error": "Le libellé est requis."}), 400  # type: ignore[return-value]
+    existing = db.session.query(TypeEquipement).filter_by(libelle=libelle[:100]).first()
+    if existing is not None:
+        return jsonify({"ok": False, "error": "Ce type d'équipement existe déjà."}), 400  # type: ignore[return-value]
+
+    t = TypeEquipement(
+        libelle=libelle[:100],
+        ordre=int(p.get("ordre") or 0),
+        commentaire=(p.get("commentaire") or "")[:500] or None,
+    )
+    db.session.add(t)
+    db.session.commit()
+    return jsonify({"ok": True, "id": t.id}), 201  # type: ignore[return-value]
+
+
+@bp.route("/types-equipement/<int:tid>", methods=["PATCH"])
+@login_required  # type: ignore[untyped-decorator]
+@role_required(*_EDIT_ROLES)
+def type_equipement_update(tid: int) -> Response:
+    """Met à jour un type d'équipement."""
+    t = db.session.get(TypeEquipement, tid)
+    if t is None:
+        abort(404)
+    p = request.get_json(silent=True) or {}
+    if "libelle" in p and p["libelle"]:
+        t.libelle = str(p["libelle"])[:100]
+    if "ordre" in p:
+        t.ordre = int(p["ordre"] or 0)
+    if "actif" in p:
+        t.actif = bool(p["actif"])
+    if "commentaire" in p:
+        t.commentaire = str(p["commentaire"])[:500] or None
+    db.session.commit()
+    return jsonify({"ok": True})  # type: ignore[return-value]
+
+
+@bp.route("/types-equipement/<int:tid>", methods=["DELETE"])
+@login_required  # type: ignore[untyped-decorator]
+@role_required(*_EDIT_ROLES)
+def type_equipement_delete(tid: int) -> Response:
+    """Désactive un type d'équipement (suppression logique)."""
+    t = db.session.get(TypeEquipement, tid)
+    if t is None:
+        abort(404)
+    t.actif = False
     db.session.commit()
     return jsonify({"ok": True})  # type: ignore[return-value]
 

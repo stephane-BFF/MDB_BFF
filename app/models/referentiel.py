@@ -240,6 +240,42 @@ class OrganismeNotifie(db.Model, TimestampMixin):  # type: ignore[name-defined,m
     commentaire: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class TypeEquipement(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
+    """Type d'équipement BFF — classification métier des items (V1.2, D7).
+
+    Alimente la liste déroulante « Type d'équipement » de l'étape Item du
+    wizard de création et de la fiche technique. Distinct du champ libre
+    ``type_echangeur`` (référence type BFF, ex. « H1 06-01-72 »). Seedé par
+    ``flask seed`` (Réfrigérant, HPIN, BHM, RM, SHELL&TUBE…), administrable
+    dans l'écran Référentiels.
+
+    À terme (V1.2 Lot 6), chaque type portera aussi son modèle de sommaire
+    par défaut (architecture type du dossier constructeur).
+    """
+
+    __tablename__ = "types_equipement"
+    __table_args__ = (
+        UniqueConstraint("libelle", name="uq_types_equipement_libelle"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    libelle: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        index=True,
+        doc="Libellé du type (ex: Réfrigérant, FAISCEAU de rechange).",
+    )
+    ordre: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+        doc="Ordre d'affichage dans les listes déroulantes (0 = premier).",
+    )
+    actif: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    commentaire: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
 class Instrument(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
     """Instrument de métrologie soumis à étalonnage périodique.
 

@@ -2,6 +2,12 @@
 
 Toute la logique non-CRUD vit ici (calculs métier, validations, audit). Les
 routes Flask se contentent d'orchestrer formulaires ↔ service.
+
+Wizard V1.2 (4 étapes — voir ``docs/STRATEGIE_AMELIORATIONS_V1.2_2026-07-16.md``) :
+``Q1 Affaire → Q2 Item → Q3 Réglementation → Q4 Récapitulatif``.
+``Affaire.statut_wizard`` stocke l'étape **max atteinte** : les étapes déjà
+franchies restent librement navigables (stepper cliquable) et leur
+ré-enregistrement ne fait jamais reculer la progression.
 """
 from __future__ import annotations
 
@@ -16,18 +22,21 @@ if TYPE_CHECKING:
     from app.models.registre_be import RegistreBEItem
     from app.models.user import User
 
-# Étape suivante / précédente pour la navigation wizard.
+# Étape suivante pour la navigation wizard.
 _NEXT_STEP: dict[StatutWizard, StatutWizard | None] = {
     StatutWizard.Q1: StatutWizard.Q2,
     StatutWizard.Q2: StatutWizard.Q3,
     StatutWizard.Q3: StatutWizard.Q4,
-    StatutWizard.Q4: StatutWizard.Q5,
-    StatutWizard.Q5: StatutWizard.Q6,
-    StatutWizard.Q6: StatutWizard.Q7,
-    StatutWizard.Q7: StatutWizard.Q8,
-    StatutWizard.Q8: None,  # fin du wizard
+    StatutWizard.Q4: None,  # fin du wizard
 }
-_PREV_STEP: dict[StatutWizard, StatutWizard | None] = {v: k for k, v in _NEXT_STEP.items() if v}
+
+# Préfixe des clés JSONB par étape. ⚠️ L'étape Réglementation (Q3) écrit sous
+# le préfixe historique ``q4_`` : ces clés (``q4_desp``, ``q4_categorie_ped``,
+# ``q4_module_ped``…) sont un contrat consommé par ATTDECR/ETATDESC/… — ne
+# jamais les renommer (décision D2 de la stratégie V1.2).
+_JSON_PREFIX: dict[StatutWizard, str] = {
+    StatutWizard.Q3: "q4_",
+}
 
 
 def start_wizard(user: User, annee: int) -> Affaire:
@@ -35,7 +44,7 @@ def start_wizard(user: User, annee: int) -> Affaire:
 
     Le n° d'affaire n'est pas encore connu à ce stade : il sera choisi (ou
     saisi manuellement) par l'utilisateur à l'étape Q1, dans le registre
-    général de commande BE (voir ``resolve_q1_selection``).
+    général de commande BE (voir ``resolve_q1_affaire``).
 
     Args:
         user: Utilisateur initiateur (sera ``cree_par``).
@@ -64,50 +73,34 @@ def start_wizard(user: User, annee: int) -> Affaire:
     return affaire
 
 
-def resolve_q1_selection(
+def resolve_q1_affaire(
     affaire: Affaire,
     *,
     annee: int,
     numero_affaire: str,
-    item: str,
-    registre_item: RegistreBEItem | None,
+    client_nom: str,
+    references_client: str | None,
     user: User,
 ) -> StatutWizard | None:
-    """Applique la sélection Q1 (n° affaire + item) et avance le wizard.
-
-    Si ``registre_item`` est fourni (affaire connue du registre BE), les
-    champs d'identité Q2/Q3 (client, repère, type d'échangeur, nombre) sont
-    pré-remplis dès maintenant — l'utilisateur les retrouvera prêts (mais
-    modifiables) en arrivant sur ces étapes. En saisie manuelle
-    (``registre_item is None``), ces champs restent vides comme avant.
+    """Applique l'étape Q1 (informations génériques de l'affaire) et avance.
 
     Args:
-        affaire: L'affaire en cours de wizard (étape Q1).
+        affaire: L'affaire en cours de wizard.
         annee: Année de l'affaire.
         numero_affaire: N° d'affaire choisi ou saisi (BN|BP + 4 chiffres).
-        item: N° d'item (4 chiffres).
-        registre_item: Ligne du registre BE correspondante, ou ``None`` en
-            saisie manuelle.
+        client_nom: Nom du client (prérempli du registre, modifiable).
+        references_client: N° de commande client.
         user: Utilisateur effectuant la sauvegarde (pour l'audit).
 
     Returns:
-        L'étape suivante (``StatutWizard.Q2``).
+        L'étape max atteinte après sauvegarde (``Q2`` au premier passage).
     """
     affaire.annee = annee
     affaire.numero_affaire = numero_affaire
-    affaire.item = item
-    affaire.references_internes = f"{numero_affaire}-{item}"
+    affaire.client_nom = client_nom
+    affaire.references_client = references_client
 
-    if registre_item is not None:
-        affaire.client_nom = registre_item.client_nom
-        affaire.references_client = registre_item.references_client
-        affaire.repere = registre_item.repere_client
-        affaire.type_echangeur = registre_item.type_appareil
-        if registre_item.nombre is not None:
-            affaire.nombre = registre_item.nombre
-
-    next_step = _NEXT_STEP[StatutWizard.Q1]
-    affaire.statut_wizard = next_step
+    next_step = _advance(affaire, StatutWizard.Q1)
 
     AuditTrail.log(
         "affaire.wizard_step",
@@ -115,8 +108,63 @@ def resolve_q1_selection(
         entity_type="affaire",
         entity_id=affaire.id,
         old_value=StatutWizard.Q1.value,
-        new_value=next_step.value if next_step else StatutWizard.Q1.value,
-        contexte={"numero_affaire": numero_affaire, "item": item},
+        new_value=(next_step or StatutWizard.Q1).value,
+        contexte={"numero_affaire": numero_affaire},
+    )
+    db.session.commit()
+    return next_step
+
+
+def resolve_q2_item(
+    affaire: Affaire,
+    *,
+    item: str,
+    registre_item: RegistreBEItem | None,
+    payload: dict[str, Any],
+    user: User,
+) -> StatutWizard | None:
+    """Applique l'étape Q2 (item et identification de l'équipement) et avance.
+
+    Calcule ``references_internes`` (``{numero_affaire}-{item}``) — la clé
+    d'unicité par dossier (nom du dossier NAS, QR code).
+
+    Args:
+        affaire: L'affaire en cours de wizard (Q1 déjà renseignée).
+        item: N° d'item (4 chiffres).
+        registre_item: Ligne du registre BE correspondante, ou ``None`` en
+            saisie manuelle (traçabilité d'audit uniquement).
+        payload: Champs validés du formulaire (repère, types, nombre…).
+        user: Utilisateur effectuant la sauvegarde (pour l'audit).
+
+    Returns:
+        L'étape max atteinte après sauvegarde (``Q3`` au premier passage).
+    """
+    affaire.item = item
+    affaire.references_internes = f"{affaire.numero_affaire}-{item}"
+    _apply_affaire_columns(affaire, payload)
+
+    # Complète les informations génériques restées vides à Q1 avec celles du
+    # registre (le n° de commande client est porté par la ligne d'item).
+    if registre_item is not None:
+        if not affaire.references_client and registre_item.references_client:
+            affaire.references_client = registre_item.references_client
+        if not affaire.client_nom and registre_item.client_nom:
+            affaire.client_nom = registre_item.client_nom
+
+    next_step = _advance(affaire, StatutWizard.Q2)
+
+    AuditTrail.log(
+        "affaire.wizard_step",
+        user=user,
+        entity_type="affaire",
+        entity_id=affaire.id,
+        old_value=StatutWizard.Q2.value,
+        new_value=(next_step or StatutWizard.Q2).value,
+        contexte={
+            "numero_affaire": affaire.numero_affaire,
+            "item": item,
+            "registre": registre_item is not None,
+        },
     )
     db.session.commit()
     return next_step
@@ -128,33 +176,30 @@ def save_step(
     payload: dict[str, Any],
     user: User,
 ) -> StatutWizard | None:
-    """Sauvegarde les données d'une étape et avance à la suivante.
+    """Sauvegarde les données d'une étape et avance (sans jamais reculer).
 
     Le routage des champs (colonne typée vs JSONB) est fait selon l'étape :
-        - Q2-Q3 : colonnes typées sur ``Affaire``. (Q1 est traitée à part par
-          ``resolve_q1_selection`` — sélection du n° d'affaire/item.)
-        - Q4-Q7 : clés JSON sur ``ParametrageAffaire.reponses`` préfixées ``qN_``.
-        - Q8 : pas de sauvegarde (récap) — la finalisation est gérée par
+        - Q1/Q2 sont traitées à part (``resolve_q1_affaire`` /
+          ``resolve_q2_item``) — sélection registre + clé d'unicité.
+        - Q3 (Réglementation) : clés JSON sur ``ParametrageAffaire.reponses``
+          sous le préfixe historique ``q4_`` (contrat D2).
+        - Q4 : pas de sauvegarde (récap) — la finalisation est gérée par
           ``finish_wizard()``.
 
     Args:
         affaire: L'affaire en cours de wizard.
-        step: Étape courante (Q2 à Q8 — pas Q1, voir ``resolve_q1_selection``).
+        step: Étape courante (Q3 ou Q4).
         payload: Champs validés du formulaire.
         user: Utilisateur effectuant la sauvegarde (pour l'audit).
 
     Returns:
-        L'étape suivante (``StatutWizard``) ou ``None`` si Q8 (= prêt à
-        finaliser via ``finish_wizard``).
+        L'étape max atteinte, ou ``None`` une fois le wizard prêt à finaliser.
     """
-    if step in (StatutWizard.Q2, StatutWizard.Q3):
-        _apply_affaire_columns(affaire, payload)
-    elif step in (StatutWizard.Q4, StatutWizard.Q5, StatutWizard.Q6, StatutWizard.Q7):
+    if step is StatutWizard.Q3:
         _apply_parametrage(affaire, step, payload)
-    # Q8 : pas de sauvegarde de champs ; juste avancement
+    # Q4 : pas de sauvegarde de champs ; juste avancement
 
-    next_step = _NEXT_STEP[step]
-    affaire.statut_wizard = next_step if next_step else step  # reste sur Q8 jusqu'à finish
+    next_step = _advance(affaire, step)
 
     AuditTrail.log(
         "affaire.wizard_step",
@@ -162,41 +207,27 @@ def save_step(
         entity_type="affaire",
         entity_id=affaire.id,
         old_value=step.value,
-        new_value=next_step.value if next_step else step.value,
+        new_value=(next_step or step).value,
     )
     db.session.commit()
     return next_step
 
 
-def go_back(affaire: Affaire) -> StatutWizard | None:
-    """Revient à l'étape précédente du wizard.
-
-    Returns:
-        L'étape sur laquelle on revient, ou ``None`` si on est déjà à Q1.
-    """
-    current = affaire.statut_wizard
-    if current is None:
-        return None
-    prev = _PREV_STEP.get(current)
-    if prev is not None:
-        affaire.statut_wizard = prev
-        db.session.commit()
-    return prev
-
-
 def finish_wizard(affaire: Affaire, user: User, commentaire: str | None = None) -> None:
     """Finalise le wizard : ``WIZARD_BROUILLON → BROUILLON``, statut_wizard à None.
 
-    Précondition : ``affaire.statut_wizard == StatutWizard.Q8``.
+    Précondition : ``affaire.statut_wizard == StatutWizard.Q4`` (récapitulatif
+    atteint). Le dossier devient utilisable ; la fiche technique (ex-Q4→Q7)
+    pourra être complétée ensuite.
 
     Args:
         affaire: L'affaire à finaliser.
         user: Utilisateur effectuant la finalisation.
-        commentaire: Commentaire libre de Q8 (stocké dans le contexte d'audit).
+        commentaire: Commentaire libre de Q4 (stocké dans le contexte d'audit).
     """
-    if affaire.statut_wizard is not StatutWizard.Q8:
+    if affaire.statut_wizard is not StatutWizard.Q4:
         raise ValueError(
-            f"finish_wizard appelé hors Q8 (statut_wizard={affaire.statut_wizard})"
+            f"finish_wizard appelé hors Q4 (statut_wizard={affaire.statut_wizard})"
         )
     affaire.statut = Statut.BROUILLON
     affaire.statut_wizard = None
@@ -220,13 +251,30 @@ def finish_wizard(affaire: Affaire, user: User, commentaire: str | None = None) 
 # ── Helpers internes ─────────────────────────────────────────────────────
 
 
+def _advance(affaire: Affaire, step: StatutWizard) -> StatutWizard | None:
+    """Avance ``statut_wizard`` (étape max) sans jamais le faire reculer.
+
+    Ré-enregistrer une étape déjà franchie via le stepper cliquable renvoie
+    vers l'étape suivante mais conserve la progression max.
+
+    Returns:
+        L'étape suivant ``step`` (cible de redirection), ou ``None`` si
+        ``step`` est la dernière.
+    """
+    next_step = _NEXT_STEP[step]
+    if next_step is not None:
+        current = affaire.statut_wizard
+        if current is None or next_step.numero > current.numero:
+            affaire.statut_wizard = next_step
+    return next_step
+
+
 def _apply_affaire_columns(affaire: Affaire, payload: dict[str, Any]) -> None:
-    """Applique les champs Q2-Q3 sur les colonnes typées de ``Affaire``."""
+    """Applique les champs d'identité Q2 sur les colonnes typées de ``Affaire``."""
     column_fields = {
-        "client_nom",
-        "references_client",
         "repere",
         "type_echangeur",
+        "type_equipement_id",
         "nombre",
         "annee_construction",
     }
@@ -238,12 +286,15 @@ def _apply_affaire_columns(affaire: Affaire, payload: dict[str, Any]) -> None:
 def _apply_parametrage(
     affaire: Affaire, step: StatutWizard, payload: dict[str, Any]
 ) -> None:
-    """Stocke les champs Q4-Q7 dans ``ParametrageAffaire.reponses`` préfixés ``qN_``."""
+    """Stocke les champs d'une étape dans ``ParametrageAffaire.reponses``.
+
+    Le préfixe des clés vient de ``_JSON_PREFIX`` (Q3 → ``q4_``, contrat D2).
+    """
     if affaire.parametrage is None:
         affaire.parametrage = ParametrageAffaire(affaire_id=affaire.id, reponses={})
 
     reponses = dict(affaire.parametrage.reponses or {})
-    prefix = f"{step.value.lower()}_"
+    prefix = _JSON_PREFIX.get(step, f"{step.value.lower()}_")
     for field, value in payload.items():
         # Sérialise les valeurs non-JSON (datetime, etc.) en string si besoin
         if hasattr(value, "isoformat"):

@@ -15,7 +15,7 @@
 <div class="row mb-3">
     <div class="col">
         <h1 class="h4 mb-0">Référentiels qualité</h1>
-        <p class="text-muted small mb-0">Soudeurs · Opérateurs CND · Matériaux · Instruments de métrologie</p>
+        <p class="text-muted small mb-0">Soudeurs · Opérateurs CND · Matériaux · Types d'équipement · Instruments de métrologie</p>
     </div>
 </div>
 
@@ -37,6 +37,9 @@
     </li>
     <li class="nav-item">
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-mat" type="button">Matériaux</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-typeq" type="button">Types d'équipement</button>
     </li>
     <li class="nav-item">
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-inst" type="button">
@@ -157,6 +160,40 @@
         </div>
     </div>
 
+    <!-- Types d'équipement ------------------------------------------------>
+    <div class="tab-pane fade" id="tab-typeq">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex align-items-center py-2">
+                <h2 class="h6 mb-0 me-auto">Types d'équipement ({{ types_equipement | length }})</h2>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalTypeq">+ Ajouter</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light small"><tr>
+                        <th>Libellé</th><th>Ordre</th><th>Commentaire</th><th>Actif</th><th></th>
+                    </tr></thead>
+                    <tbody>
+                    {% for t in types_equipement %}
+                    <tr class="{% if not t.actif %}text-muted{% endif %}">
+                        <td class="small fw-semibold">{{ t.libelle }}</td>
+                        <td class="small">{{ t.ordre }}</td>
+                        <td class="small text-muted">{{ t.commentaire or '—' }}</td>
+                        <td><span class="badge {% if t.actif %}bg-success{% else %}bg-secondary{% endif %}">{{ 'Actif' if t.actif else 'Inactif' }}</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-xs btn-outline-danger btn-sm py-0 px-2 btn-del"
+                                    data-url="{{ url_for('referentiels.type_equipement_delete', tid=t.id) }}"
+                                    title="Désactiver">✕</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-muted small py-3">Aucun type d'équipement — lancez <code>flask seed</code>.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Instruments de métrologie ----------------------------------------->
     <div class="tab-pane fade" id="tab-inst">
         <div class="card shadow-sm">
@@ -246,6 +283,12 @@
     {"name": "certificat", "label": "Type certificat", "required": False, "placeholder": "ex: 3.1 EN 10204"},
 ]) }}
 
+{{ modal_form("modalTypeq", "Ajouter un type d'équipement", [
+    {"name": "libelle", "label": "Libellé", "required": True, "placeholder": "ex: SHELL&TUBE", "maxlength": 100},
+    {"name": "ordre", "label": "Ordre d'affichage", "required": False, "placeholder": "ex: 4 (0 = premier)"},
+    {"name": "commentaire", "label": "Commentaire", "required": False, "maxlength": 500},
+]) }}
+
 {{ modal_form("modalInst", "Ajouter un instrument", [
     {"name": "reference", "label": "Référence", "required": True, "placeholder": "ex: MAN-042"},
     {"name": "type_instrument", "label": "Type", "required": True, "placeholder": "ex: Manomètre"},
@@ -264,6 +307,7 @@
         modalSoudeur: "{{ url_for('referentiels.soudeur_create') }}",
         modalCND:     "{{ url_for('referentiels.operateur_create') }}",
         modalMat:     "{{ url_for('referentiels.materiau_create') }}",
+        modalTypeq:   "{{ url_for('referentiels.type_equipement_create') }}",
         modalInst:    "{{ url_for('referentiels.instrument_create') }}",
     };
 

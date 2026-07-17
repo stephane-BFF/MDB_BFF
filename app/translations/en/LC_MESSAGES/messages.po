@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MDB BFF 1.0\n"
 "Report-Msgid-Bugs-To: stephane.paumelle@ait-stein.com\n"
-"POT-Creation-Date: 2026-07-15 16:03+0200\n"
+"POT-Creation-Date: 2026-07-17 09:11+0200\n"
 "PO-Revision-Date: 2026-07-15 00:00+0200\n"
 "Last-Translator: MDB BFF\n"
 "Language: en\n"
@@ -162,335 +162,198 @@ msgstr "The code must be 6 digits."
 msgid "Activer la double authentification"
 msgstr "Enable two-factor authentication"
 
-#: app/forms/wizard.py:67
+#: app/forms/wizard.py:135
 msgid "Année de l'affaire"
 msgstr "Project year"
 
-#: app/forms/wizard.py:69
+#: app/forms/wizard.py:137
 msgid "L'année est requise."
 msgstr "The year is required."
 
-#: app/forms/wizard.py:70
+#: app/forms/wizard.py:138
 msgid "Année entre 2020 et 2099."
 msgstr "Year between 2020 and 2099."
 
-#: app/forms/wizard.py:75
+#: app/forms/wizard.py:143
 msgid "N° d'affaire"
 msgstr "Project no."
 
-#: app/forms/wizard.py:76
+#: app/forms/wizard.py:144
 msgid "Le n° d'affaire est requis."
 msgstr "The project no. is required."
 
-#: app/forms/wizard.py:77
+#: app/forms/wizard.py:145
 msgid "Issu du registre général de commande BE."
 msgstr "From the engineering (BE) general order register."
 
-#: app/forms/wizard.py:80
+#: app/forms/wizard.py:148
 msgid "N° d'affaire (saisie manuelle)"
 msgstr "Project no. (manual entry)"
 
-#: app/forms/wizard.py:84
+#: app/forms/wizard.py:152
 msgid "Uniquement si l'affaire n'est pas encore dans le registre BE."
 msgstr "Only if the project is not yet in the BE register."
 
-#: app/forms/wizard.py:87
-msgid "N° d'item"
-msgstr "Item no."
-
-#: app/forms/wizard.py:88
-msgid "Le n° d'item est requis."
-msgstr "The item no. is required."
-
-#: app/forms/wizard.py:90
-msgid "4 chiffres — un même n° d'affaire peut porter plusieurs items."
-msgstr "4 digits — a single project no. may carry several items."
-
-#: app/forms/wizard.py:112
+#: app/forms/wizard.py:155
 msgid "Nom du client"
 msgstr "Client name"
 
-#: app/forms/wizard.py:114
+#: app/forms/wizard.py:157
 msgid "Le nom du client est requis."
 msgstr "The client name is required."
 
-#: app/forms/wizard.py:120
+#: app/forms/wizard.py:163
 msgid "Référence client"
 msgstr "Client reference"
 
-#: app/forms/wizard.py:122
+#: app/forms/wizard.py:165
 msgid "« VOS REFERENCES » — n° de commande client (ex: 4551559245)."
 msgstr "\"YOUR REFERENCES\" — client purchase order no. (e.g. 4551559245)."
 
-#: app/forms/wizard.py:130
+#: app/forms/wizard.py:190
+msgid "N° d'item"
+msgstr "Item no."
+
+#: app/forms/wizard.py:191
+msgid "Le n° d'item est requis."
+msgstr "The item no. is required."
+
+#: app/forms/wizard.py:193
+msgid "4 chiffres — un même n° d'affaire peut porter plusieurs items."
+msgstr "4 digits — a single project no. may carry several items."
+
+#: app/forms/wizard.py:196
 msgid "Repère équipement"
 msgstr "Equipment tag"
 
-#: app/forms/wizard.py:132
+#: app/forms/wizard.py:198
 msgid "Le repère équipement est requis."
 msgstr "The equipment tag is required."
 
-#: app/forms/wizard.py:136
+#: app/forms/wizard.py:202
 msgid "Repère utilisé par le client pour identifier l'appareil."
 msgstr "Tag used by the client to identify the equipment."
 
-#: app/forms/wizard.py:139
+#: app/forms/wizard.py:205
 msgid "Type d'échangeur"
 msgstr "Heat exchanger type"
 
-#: app/forms/wizard.py:141
+#: app/forms/wizard.py:207
 msgid "Le type d'échangeur est requis."
 msgstr "The heat exchanger type is required."
 
-#: app/forms/wizard.py:145
+#: app/forms/wizard.py:211
 msgid "Référence type BFF (ex: H1 06-01-72)."
 msgstr "BFF type reference (e.g. H1 06-01-72)."
 
-#: app/forms/wizard.py:148
+#: app/forms/wizard.py:214
+msgid "Type d'équipement"
+msgstr "Equipment type"
+
+#: app/forms/wizard.py:215
+msgid "Le type d'équipement est requis."
+msgstr "The equipment type is required."
+
+#: app/forms/wizard.py:216
+msgid "Classification BFF (Réfrigérant, HPIN, BHM, SHELL&TUBE…)."
+msgstr "BFF classification (Réfrigérant, HPIN, BHM, SHELL&TUBE…)."
+
+#: app/forms/wizard.py:219
 msgid "Nombre d'appareils"
 msgstr "Number of units"
 
-#: app/forms/wizard.py:150
+#: app/forms/wizard.py:221
 msgid "Le nombre est requis."
 msgstr "The number is required."
 
-#: app/forms/wizard.py:156
+#: app/forms/wizard.py:227
 msgid "Année de construction"
 msgstr "Year of construction"
 
-#: app/forms/wizard.py:158
+#: app/forms/wizard.py:229
 msgid "L'année de construction est requise."
 msgstr "The year of construction is required."
 
-#: app/forms/wizard.py:173 app/services/formulaires/etatdesc.py:20
-#: app/services/formulaires/ped.py:71
-msgid "Catégorie PED"
-msgstr "PED category"
+#: app/forms/wizard.py:257
+msgid "Soumis à la DESP 2014/68/UE"
+msgstr "Subject to PED 2014/68/EU"
 
-#: app/forms/formulaires/hydr.py:32 app/forms/wizard.py:175
-#: app/forms/wizard.py:186 app/forms/wizard.py:200
-#: app/services/formulaires/airsav.py:43 app/services/formulaires/attdecr.py:22
+#: app/forms/wizard.py:258
+msgid "Directive des équipements sous pression (marché UE)."
+msgstr "Pressure Equipment Directive (EU market)."
+
+#: app/forms/wizard.py:261
+msgid "Stamp U (ASME)"
+msgstr "U Stamp (ASME)"
+
+#: app/forms/wizard.py:262
+msgid "Code ASME Section VIII — marché nord-américain."
+msgstr "ASME Section VIII code — North American market."
+
+#: app/forms/wizard.py:265
+msgid "Catégorie de risque"
+msgstr "Risk category"
+
+#: app/forms/formulaires/hydr.py:32 app/forms/wizard.py:267 app/forms/wizard.py:278
+#: app/services/formulaires/airsav.py:43 app/services/formulaires/attdecr.py:49
 #: app/services/formulaires/azote.py:44 app/services/formulaires/durete.py:41
-#: app/services/formulaires/etatdesc.py:22 app/services/formulaires/ped.py:48
+#: app/services/formulaires/etatdesc.py:27 app/services/formulaires/ped.py:48
 #: app/services/formulaires/ped.py:62 app/services/formulaires/ped.py:76
-#: app/services/formulaires/proprete.py:25
-#: app/services/formulaires/proprete.py:42
-#: app/services/formulaires/sechage.py:25
-#: app/services/formulaires/sechage.py:46 app/services/formulaires/tth.py:27
-#: app/services/formulaires/tth.py:58 app/services/formulaires/visufinal.py:13
-#: app/services/formulaires/visufinal.py:18
+#: app/services/formulaires/proprete.py:25 app/services/formulaires/proprete.py:42
+#: app/services/formulaires/sechage.py:25 app/services/formulaires/sechage.py:46
+#: app/services/formulaires/tth.py:27 app/services/formulaires/tth.py:58
+#: app/services/formulaires/visufinal.py:13 app/services/formulaires/visufinal.py:18
 #: app/templates/formulaires/hydr.html:111
 msgid "— Sélectionner —"
 msgstr "— Select —"
 
-#: app/forms/wizard.py:176
+#: app/forms/wizard.py:268
 msgid "I — Risque faible"
 msgstr "I — Low risk"
 
-#: app/forms/wizard.py:177
+#: app/forms/wizard.py:269
 msgid "II — Risque modéré"
 msgstr "II — Moderate risk"
 
-#: app/forms/wizard.py:178
+#: app/forms/wizard.py:270
 msgid "III — Risque élevé"
 msgstr "III — High risk"
 
-#: app/forms/wizard.py:179
+#: app/forms/wizard.py:271
 msgid "IV — Risque très élevé"
 msgstr "IV — Very high risk"
 
-#: app/forms/wizard.py:181
-msgid "La catégorie PED est requise."
-msgstr "The PED category is required."
+#: app/forms/wizard.py:272
+msgid "Art. 4.3 — Sous les seuils (règles de l'art)"
+msgstr "Art. 4.3 — Below thresholds (sound engineering practice)"
 
-#: app/forms/wizard.py:184
-msgid "Module de conformité"
+#: app/forms/wizard.py:274
+msgid "Requise si DESP. Vérifiable ensuite dans la fiche technique."
+msgstr "Required if PED. Can be verified later in the technical sheet."
+
+#: app/forms/wizard.py:277
+msgid "Module d'évaluation de la conformité"
 msgstr "Conformity assessment module"
 
-#: app/forms/wizard.py:187
-msgid "A — Contrôle interne de fabrication"
-msgstr "A — Internal production control"
-
-#: app/forms/wizard.py:188
-msgid "A2 — Contrôle interne + surveillance"
-msgstr "A2 — Internal control + supervised checks"
-
-#: app/forms/wizard.py:189
-msgid "B + C2 — Examen UE de type + contrôle"
-msgstr "B + C2 — EU type-examination + checks"
-
-#: app/forms/wizard.py:190
-msgid "B + D — Examen UE de type + AQ production"
-msgstr "B + D — EU type-examination + production QA"
-
-#: app/forms/wizard.py:191
-msgid "B + F — Examen UE de type + vérif. produit"
-msgstr "B + F — EU type-examination + product verification"
-
-#: app/forms/wizard.py:192
-msgid "G — Vérification CE à l'unité"
-msgstr "G — CE unit verification"
-
-#: app/forms/wizard.py:193
-msgid "H — Assurance qualité complète"
-msgstr "H — Full quality assurance"
-
-#: app/forms/wizard.py:195
-msgid "Le module de conformité est requis."
-msgstr "The conformity assessment module is required."
-
-#: app/forms/wizard.py:198 app/services/formulaires/ped.py:85
-msgid "Groupe de fluide"
-msgstr "Fluid group"
-
-#: app/forms/wizard.py:201
-msgid "Groupe 1 — Fluide dangereux"
-msgstr "Group 1 — Hazardous fluid"
-
-#: app/forms/wizard.py:202
-msgid "Groupe 2 — Fluide non dangereux"
-msgstr "Group 2 — Non-hazardous fluid"
-
-#: app/forms/wizard.py:204
-msgid "Le groupe de fluide est requis."
-msgstr "The fluid group is required."
-
-#: app/forms/wizard.py:207
-msgid "Nom du fluide principal"
-msgstr "Main fluid name"
-
-#: app/forms/wizard.py:209
-msgid "Eau, huile, vapeur, azote…"
-msgstr "Water, oil, steam, nitrogen…"
-
-#: app/forms/formulaires/hydr.py:23 app/forms/wizard.py:217
-#: app/templates/formulaires/hydr.html:68
-msgid "Pression de service PS (bar)"
-msgstr "Service pressure PS (bar)"
-
-#: app/forms/wizard.py:219
-msgid "PS est requise."
-msgstr "PS is required."
-
-#: app/forms/wizard.py:224
-msgid "Pression de calcul ; la pression d'épreuve PT = PS × 1.43 sera dérivée."
-msgstr "Design pressure; the test pressure PT = PS × 1.43 will be derived."
-
-#: app/forms/wizard.py:228
-msgid "Température minimale (°C)"
-msgstr "Minimum temperature (°C)"
-
-#: app/forms/wizard.py:234
-msgid "Température maximale (°C)"
-msgstr "Maximum temperature (°C)"
-
-#: app/forms/wizard.py:239 app/services/formulaires/ped.py:154
-msgid "Volume (litres)"
-msgstr "Volume (litres)"
-
-#: app/forms/wizard.py:252
-msgid "Procédés de soudage utilisés"
-msgstr "Welding processes used"
-
-#: app/forms/wizard.py:254
-msgid "141 — TIG"
-msgstr "141 — TIG"
-
-#: app/forms/wizard.py:255
-msgid "111 — Électrode enrobée (manuel)"
-msgstr "111 — Covered electrode (manual)"
-
-#: app/forms/wizard.py:256
-msgid "136 — MAG fil fourré"
-msgstr "136 — MAG flux-cored wire"
-
-#: app/forms/wizard.py:257
-msgid "121 — Sous-flux"
-msgstr "121 — Submerged arc"
-
-#: app/forms/wizard.py:258
-msgid "131 — MIG"
-msgstr "131 — MIG"
-
-#: app/forms/wizard.py:260
-msgid "Sélectionnez au moins un procédé."
-msgstr "Select at least one process."
-
-#: app/forms/wizard.py:261 app/forms/wizard.py:286
-msgid "Maintenez Ctrl/Cmd pour sélections multiples."
-msgstr "Hold Ctrl/Cmd for multiple selections."
-
-#: app/forms/wizard.py:264
-msgid "Présence de tubes soudés à la calandre"
-msgstr "Tubes welded to the shell"
-
-#: app/forms/wizard.py:268
-msgid "Traitement thermique après soudage (TTH) requis"
-msgstr "Post-weld heat treatment (PWHT) required"
-
-#: app/forms/wizard.py:270
-msgid "Détendage / recuit normalisé selon ASME ou EN."
-msgstr "Stress relieving / normalizing per ASME or EN."
-
-#: app/forms/wizard.py:278
-msgid "Méthodes de CND requises"
-msgstr "Required NDT methods"
-
-#: app/forms/wizard.py:280
-msgid "RT — Radiographie"
-msgstr "RT — Radiographic testing"
-
 #: app/forms/wizard.py:281
-msgid "UT — Ultrasons"
-msgstr "UT — Ultrasonic testing"
+msgid "Modules de la catégorie, ou d'une catégorie supérieure (art. 14 PED). Sans objet pour Art. 4.3."
+msgstr "Modules of the category, or of a higher category (Art. 14 PED). Not applicable to Art. 4.3."
 
-#: app/forms/wizard.py:282
-msgid "PT — Ressuage"
-msgstr "PT — Penetrant testing"
-
-#: app/forms/wizard.py:283
-msgid "MT — Magnétoscopie"
-msgstr "MT — Magnetic particle testing"
-
-#: app/forms/wizard.py:284
-msgid "VT — Examen visuel"
-msgstr "VT — Visual examination"
-
-#: app/forms/wizard.py:289
-msgid "Test de pression à réaliser"
-msgstr "Pressure test to be performed"
-
-#: app/forms/wizard.py:291
-msgid "Hydrostatique (HYDR)"
-msgstr "Hydrostatic (HYDR)"
-
-#: app/forms/wizard.py:292
-msgid "Pneumatique (AirSav)"
-msgstr "Pneumatic (AirSav)"
-
-#: app/forms/wizard.py:293
-msgid "Étanchéité azote (Azote)"
-msgstr "Nitrogen leak test (Azote)"
-
-#: app/forms/wizard.py:299
-msgid "Inspection client / TPI prévue"
-msgstr "Client inspection / TPI planned"
-
-#: app/forms/wizard.py:301
-msgid "Tierce Partie Indépendante ou inspecteur client présent."
-msgstr "Third Party Inspector or client inspector present."
-
-#: app/forms/wizard.py:313
+#: app/forms/wizard.py:319
 msgid "Je confirme l'exactitude des informations saisies"
 msgstr "I confirm the accuracy of the information entered"
 
-#: app/forms/wizard.py:314
+#: app/forms/wizard.py:320
 msgid "Vous devez confirmer pour finaliser."
 msgstr "You must confirm to finalize."
 
-#: app/forms/wizard.py:317
+#: app/forms/wizard.py:323
 msgid "Commentaire (optionnel)"
 msgstr "Comment (optional)"
+
+#: app/forms/formulaires/hydr.py:23 app/templates/formulaires/hydr.html:68
+msgid "Pression de service PS (bar)"
+msgstr "Service pressure PS (bar)"
 
 #: app/forms/formulaires/hydr.py:25
 msgid "La pression de service PS est requise."
@@ -552,12 +415,10 @@ msgstr "Pressure gauge no."
 msgid "Résultat conforme"
 msgstr "Compliant result"
 
-#: app/forms/formulaires/hydr.py:62 app/services/formulaires/attdecr.py:46
-#: app/services/formulaires/attrep.py:31 app/services/formulaires/confcom.py:35
-#: app/services/formulaires/etatdesc.py:51
-#: app/services/formulaires/proprete.py:47
-#: app/services/formulaires/visufinal.py:58
-#: app/templates/formulaires/hydr.html:167
+#: app/forms/formulaires/hydr.py:62 app/services/formulaires/attdecr.py:76
+#: app/services/formulaires/attrep.py:31 app/services/formulaires/confcom.py:44
+#: app/services/formulaires/etatdesc.py:56 app/services/formulaires/proprete.py:47
+#: app/services/formulaires/visufinal.py:58 app/templates/formulaires/hydr.html:167
 msgid "Observations"
 msgstr "Observations"
 
@@ -584,8 +445,8 @@ msgstr "Pressure gauge used"
 #: app/services/formulaires/airsav.py:32 app/services/formulaires/azote.py:29
 #: app/services/formulaires/dim.py:44 app/services/formulaires/durete.py:38
 #: app/services/formulaires/ferrite.py:38 app/services/formulaires/pesage.py:31
-#: app/services/formulaires/recordhydro.py:30
-#: app/services/formulaires/sechage.py:36 app/services/formulaires/ut0.py:36
+#: app/services/formulaires/recordhydro.py:30 app/services/formulaires/sechage.py:36
+#: app/services/formulaires/ut0.py:36
 msgid "Phase 4 : sélection depuis le référentiel métrologie."
 msgstr "Phase 4: selection from the metrology reference data."
 
@@ -608,18 +469,15 @@ msgid "Phase 4 : sélection depuis le référentiel QC."
 msgstr "Phase 4: selection from the QC reference data."
 
 #: app/services/formulaires/airsav.py:36 app/services/formulaires/azote.py:37
-#: app/services/formulaires/proprete.py:35
-#: app/services/formulaires/visufinal.py:39
+#: app/services/formulaires/proprete.py:35 app/services/formulaires/visufinal.py:39
 msgid "Contrôleur"
 msgstr "Inspector"
 
 #: app/services/formulaires/airsav.py:40 app/services/formulaires/airsav.py:41
 #: app/services/formulaires/azote.py:41 app/services/formulaires/azote.py:42
-#: app/services/formulaires/pesage.py:51
-#: app/services/formulaires/proprete.py:39
-#: app/services/formulaires/proprete.py:40
-#: app/services/formulaires/sechage.py:44 app/services/formulaires/tth.py:55
-#: app/services/formulaires/tth.py:56
+#: app/services/formulaires/pesage.py:51 app/services/formulaires/proprete.py:39
+#: app/services/formulaires/proprete.py:40 app/services/formulaires/sechage.py:44
+#: app/services/formulaires/tth.py:55 app/services/formulaires/tth.py:56
 msgid "Résultat"
 msgstr "Result"
 
@@ -643,82 +501,57 @@ msgstr "If applicable."
 msgid "Actions correctives"
 msgstr "Corrective actions"
 
-#: app/services/formulaires/attdecr.py:17 app/services/formulaires/dim.py:35
+#: app/services/formulaires/attdecr.py:45 app/services/formulaires/dim.py:35
 #: app/services/formulaires/visufinal.py:32
 msgid "Identification"
 msgstr "Identification"
 
-#: app/services/formulaires/attdecr.py:18 app/services/formulaires/attrep.py:18
-#: app/services/formulaires/confcom.py:18
-#: app/services/formulaires/etatdesc.py:18
+#: app/services/formulaires/attdecr.py:46 app/services/formulaires/attrep.py:18
+#: app/services/formulaires/confcom.py:23 app/services/formulaires/etatdesc.py:23
 msgid "Date d'émission"
 msgstr "Issue date"
 
-#: app/services/formulaires/attdecr.py:20
+#: app/services/formulaires/attdecr.py:48
 msgid "Module d'évaluation"
 msgstr "Assessment module"
 
-#: app/services/formulaires/attdecr.py:23
-msgid "Module A"
-msgstr "Module A"
+#: app/services/formulaires/attdecr.py:52
+msgid "Imposé par la catégorie PED (Q4) — réappliqué automatiquement à l'enregistrement."
+msgstr "Imposed by the PED category (Q4) — automatically reapplied on save."
 
-#: app/services/formulaires/attdecr.py:24
-msgid "Module A1"
-msgstr "Module A1"
+#: app/services/formulaires/attdecr.py:55
+msgid "Organisme notifié (modules autres que A)"
+msgstr "Notified body (modules other than A)"
 
-#: app/services/formulaires/attdecr.py:25
-msgid "Module A2"
-msgstr "Module A2"
-
-#: app/services/formulaires/attdecr.py:26
-msgid "Module B"
-msgstr "Module B"
-
-#: app/services/formulaires/attdecr.py:27
-msgid "Module C2"
-msgstr "Module C2"
-
-#: app/services/formulaires/attdecr.py:28
-msgid "Module D"
-msgstr "Module D"
-
-#: app/services/formulaires/attdecr.py:29
-msgid "Module D1"
-msgstr "Module D1"
-
-#: app/services/formulaires/attdecr.py:30
-msgid "Module E"
-msgstr "Module E"
-
-#: app/services/formulaires/attdecr.py:31
-msgid "Module G"
-msgstr "Module G"
-
-#: app/services/formulaires/attdecr.py:32
-msgid "Module H"
-msgstr "Module H"
-
-#: app/services/formulaires/attdecr.py:33
-msgid "Module H1"
-msgstr "Module H1"
-
-#: app/services/formulaires/attdecr.py:36
+#: app/services/formulaires/attdecr.py:56
 msgid "Organisme notifié"
 msgstr "Notified body"
 
-#: app/services/formulaires/attdecr.py:38
+#: app/services/formulaires/attdecr.py:60
+msgid "Choisir dans la liste NANDO : le n° d'ON est renseigné automatiquement."
+msgstr "Choose from the NANDO list: the notified body number is filled in automatically."
+
+#: app/services/formulaires/attdecr.py:62
+msgid "N° d'organisme notifié"
+msgstr "Notified body number"
+
+#: app/services/formulaires/attdecr.py:65
+msgid "N° NANDO à 4 chiffres (ex: 0062)."
+msgstr "4-digit NANDO number (e.g. 0062)."
+
+#: app/services/formulaires/attdecr.py:66
 msgid "N° certificat CE"
 msgstr "CE certificate no."
 
-#: app/services/formulaires/attdecr.py:40
+#: app/services/formulaires/attdecr.py:69
 msgid "Date du certificat"
 msgstr "Certificate date"
 
-#: app/services/formulaires/attdecr.py:43 app/services/formulaires/attrep.py:27
+#: app/services/formulaires/attdecr.py:73 app/services/formulaires/attrep.py:27
 msgid "Attestation"
 msgstr "Certificate"
 
-#: app/services/formulaires/attdecr.py:44
+#: app/services/formulaires/attdecr.py:74
 msgid "Équipement conforme à la directive PED 2014/68/UE"
 msgstr "Equipment compliant with PED Directive 2014/68/EU"
 
@@ -765,17 +598,15 @@ msgstr "Pressure verified at end of operation (bar g)"
 #: app/services/formulaires/azote.py:45 app/services/formulaires/dim.py:67
 #: app/services/formulaires/durete.py:74 app/services/formulaires/ferrite.py:69
 #: app/services/formulaires/pmi.py:53 app/services/formulaires/proprete.py:43
-#: app/services/formulaires/rolling.py:69
-#: app/services/formulaires/sechage.py:47 app/services/formulaires/tth.py:59
-#: app/services/formulaires/ut0.py:61 app/services/formulaires/visufinal.py:14
-#: app/services/formulaires/visufinal.py:19
+#: app/services/formulaires/rolling.py:69 app/services/formulaires/sechage.py:47
+#: app/services/formulaires/tth.py:59 app/services/formulaires/ut0.py:61
+#: app/services/formulaires/visufinal.py:14 app/services/formulaires/visufinal.py:19
 msgid "Conforme"
 msgstr "Compliant"
 
 #: app/services/formulaires/azote.py:46 app/services/formulaires/pmi.py:54
-#: app/services/formulaires/proprete.py:44
-#: app/services/formulaires/sechage.py:48 app/services/formulaires/tth.py:60
-#: app/services/formulaires/visufinal.py:15
+#: app/services/formulaires/proprete.py:44 app/services/formulaires/sechage.py:48
+#: app/services/formulaires/tth.py:60 app/services/formulaires/visufinal.py:15
 #: app/services/formulaires/visufinal.py:20
 msgid "Non conforme"
 msgstr "Non-compliant"
@@ -783,8 +614,8 @@ msgstr "Non-compliant"
 #: app/services/formulaires/azote.py:49 app/services/formulaires/bim.py:42
 #: app/services/formulaires/dim.py:69 app/services/formulaires/nde_map.py:58
 #: app/services/formulaires/pesage.py:54 app/services/formulaires/pmi.py:57
-#: app/services/formulaires/rolling.py:71
-#: app/services/formulaires/sechage.py:51 app/services/formulaires/tth.py:63
+#: app/services/formulaires/rolling.py:71 app/services/formulaires/sechage.py:51
+#: app/services/formulaires/tth.py:63
 msgid "Remarques"
 msgstr "Remarks"
 
@@ -796,7 +627,7 @@ msgstr "Base materials"
 msgid "Repère composant"
 msgstr "Component tag"
 
-#: app/services/formulaires/bim.py:27 app/services/formulaires/bimsoud.py:25
+#: app/services/formulaires/bim.py:27 app/services/formulaires/bimsoud.py:36
 msgid "Désignation"
 msgstr "Designation"
 
@@ -808,15 +639,15 @@ msgstr "Material standard"
 msgid "N° coulée"
 msgstr "Heat no."
 
-#: app/services/formulaires/bim.py:33 app/services/formulaires/bimsoud.py:31
+#: app/services/formulaires/bim.py:33 app/services/formulaires/bimsoud.py:45
 msgid "N° lot"
 msgstr "Batch no."
 
-#: app/services/formulaires/bim.py:35 app/services/formulaires/bimsoud.py:33
+#: app/services/formulaires/bim.py:35 app/services/formulaires/bimsoud.py:47
 msgid "Fournisseur"
 msgstr "Supplier"
 
-#: app/services/formulaires/bim.py:37 app/services/formulaires/bimsoud.py:38
+#: app/services/formulaires/bim.py:37 app/services/formulaires/bimsoud.py:52
 msgid "Réf. CCPU"
 msgstr "CCPU ref."
 
@@ -824,55 +655,67 @@ msgstr "CCPU ref."
 msgid "Référence dans le cahier des contrôles et procédures d'usinage."
 msgstr "Reference in the inspection and machining procedures book."
 
-#: app/services/formulaires/bimsoud.py:23
+#: app/services/formulaires/bimsoud.py:34
 msgid "Matériaux de soudage"
 msgstr "Welding consumables"
 
-#: app/services/formulaires/bimsoud.py:27
+#: app/services/formulaires/bimsoud.py:39
+msgid "Choisir dans la liste : norme et fournisseur seront renseignés automatiquement."
+msgstr "Choose from the list: standard and supplier will be filled in automatically."
+
+#: app/services/formulaires/bimsoud.py:41
 msgid "Norme"
 msgstr "Standard"
 
-#: app/services/formulaires/bimsoud.py:29
+#: app/services/formulaires/bimsoud.py:43
 msgid "Diamètre (mm)"
 msgstr "Diameter (mm)"
 
-#: app/services/formulaires/bimsoud.py:35
+#: app/services/formulaires/bimsoud.py:49
 msgid "Utilisation"
 msgstr "Use"
 
-#: app/services/formulaires/bimsoud.py:37
+#: app/services/formulaires/bimsoud.py:51
 msgid "Ex : assemblage, rechargement, reprise…"
 msgstr "E.g. assembly, weld overlay, repair…"
 
-#: app/services/formulaires/confcom.py:17
+#: app/services/formulaires/confcom.py:22
 msgid "Référence commande"
 msgstr "Order reference"
 
-#: app/services/formulaires/confcom.py:20
+#: app/services/formulaires/confcom.py:25
 msgid "Référence commande client"
 msgstr "Client order reference"
 
-#: app/services/formulaires/confcom.py:22
+#: app/services/formulaires/confcom.py:27
+msgid "Auto-remplie depuis le registre BE (colonne « N° Commande ») — inclut l'indice de révision."
+msgstr "Auto-filled from the BE register (\"N° Commande\" column) — includes the revision index."
+
+#: app/services/formulaires/confcom.py:29
 msgid "Indice de révision"
 msgstr "Revision index"
 
-#: app/services/formulaires/confcom.py:25 app/services/formulaires/pmi.py:50
+#: app/services/formulaires/confcom.py:31
+msgid "À préciser uniquement si l'indice n'est pas déjà inclus dans la référence commande."
+msgstr "Specify only if the index is not already included in the order reference."
+
+#: app/services/formulaires/confcom.py:34 app/services/formulaires/pmi.py:50
 msgid "Conformité"
 msgstr "Compliance"
 
-#: app/services/formulaires/confcom.py:27
+#: app/services/formulaires/confcom.py:36
 msgid "Conforme aux spécifications techniques"
 msgstr "Compliant with technical specifications"
 
-#: app/services/formulaires/confcom.py:29
+#: app/services/formulaires/confcom.py:38
 msgid "Conforme aux délais contractuels"
 msgstr "Compliant with contractual deadlines"
 
-#: app/services/formulaires/confcom.py:31
+#: app/services/formulaires/confcom.py:40
 msgid "Documents fournis conformes"
 msgstr "Supplied documents compliant"
 
-#: app/services/formulaires/confcom.py:33
+#: app/services/formulaires/confcom.py:42
 msgid "Écarts / dérogations"
 msgstr "Deviations / concessions"
 
@@ -885,8 +728,7 @@ msgid "Révision du plan"
 msgstr "Drawing revision"
 
 #: app/services/formulaires/dim.py:40 app/services/formulaires/durete.py:53
-#: app/services/formulaires/ferrite.py:48
-#: app/services/formulaires/proprete.py:21
+#: app/services/formulaires/ferrite.py:48 app/services/formulaires/proprete.py:21
 #: app/services/formulaires/visufinal.py:33
 msgid "Date du contrôle"
 msgstr "Inspection date"
@@ -903,7 +745,7 @@ msgstr "Dimensions to check"
 msgid "N° / Repère"
 msgstr "No. / Tag"
 
-#: app/services/formulaires/dim.py:55 app/services/formulaires/etatdesc.py:42
+#: app/services/formulaires/dim.py:55 app/services/formulaires/etatdesc.py:47
 msgid "Description"
 msgstr "Description"
 
@@ -978,8 +820,7 @@ msgid "Zone"
 msgstr "Zone"
 
 #: app/services/formulaires/durete.py:66 app/services/formulaires/ferrite.py:61
-#: app/services/formulaires/listcnd.py:33
-#: app/services/formulaires/nde_map.py:42
+#: app/services/formulaires/listcnd.py:33 app/services/formulaires/nde_map.py:42
 #: app/services/formulaires/nde_map.py:53 app/services/formulaires/ped.py:89
 #: app/services/formulaires/pmi.py:52
 msgid "—"
@@ -1001,55 +842,59 @@ msgstr "Weld metal"
 msgid "Valeur mesurée"
 msgstr "Measured value"
 
-#: app/services/formulaires/etatdesc.py:17
+#: app/services/formulaires/etatdesc.py:22
 msgid "Caractéristiques principales"
 msgstr "Main characteristics"
 
-#: app/services/formulaires/etatdesc.py:23 app/services/formulaires/ped.py:77
+#: app/services/formulaires/etatdesc.py:25 app/services/formulaires/ped.py:71
+msgid "Catégorie PED"
+msgstr "PED category"
+
+#: app/services/formulaires/etatdesc.py:28 app/services/formulaires/ped.py:77
 msgid "I"
 msgstr "I"
 
-#: app/services/formulaires/etatdesc.py:24 app/services/formulaires/ped.py:78
+#: app/services/formulaires/etatdesc.py:29 app/services/formulaires/ped.py:78
 msgid "II"
 msgstr "II"
 
-#: app/services/formulaires/etatdesc.py:25 app/services/formulaires/ped.py:79
+#: app/services/formulaires/etatdesc.py:30 app/services/formulaires/ped.py:79
 msgid "III"
 msgstr "III"
 
-#: app/services/formulaires/etatdesc.py:26 app/services/formulaires/ped.py:80
+#: app/services/formulaires/etatdesc.py:31 app/services/formulaires/ped.py:80
 msgid "IV"
 msgstr "IV"
 
-#: app/services/formulaires/etatdesc.py:29
+#: app/services/formulaires/etatdesc.py:34
 msgid "PS max (bar)"
 msgstr "PS max (bar)"
 
-#: app/services/formulaires/etatdesc.py:32
+#: app/services/formulaires/etatdesc.py:37
 msgid "T min (°C)"
 msgstr "T min (°C)"
 
-#: app/services/formulaires/etatdesc.py:35
+#: app/services/formulaires/etatdesc.py:40
 msgid "T max (°C)"
 msgstr "T max (°C)"
 
-#: app/services/formulaires/etatdesc.py:38
+#: app/services/formulaires/etatdesc.py:43
 msgid "Volume (L)"
 msgstr "Volume (L)"
 
-#: app/services/formulaires/etatdesc.py:43
+#: app/services/formulaires/etatdesc.py:48
 msgid "Fluide de service"
 msgstr "Service fluid"
 
-#: app/services/formulaires/etatdesc.py:45
+#: app/services/formulaires/etatdesc.py:50
 msgid "Matériaux principaux"
 msgstr "Main materials"
 
-#: app/services/formulaires/etatdesc.py:47
+#: app/services/formulaires/etatdesc.py:52
 msgid "Description générale"
 msgstr "General description"
 
-#: app/services/formulaires/etatdesc.py:49
+#: app/services/formulaires/etatdesc.py:54
 msgid "Spécifications techniques"
 msgstr "Technical specifications"
 
@@ -1122,7 +967,6 @@ msgid "N° certification"
 msgstr "Certification no."
 
 #: app/services/formulaires/listcnd.py:44
-#: app/services/formulaires/listsoud.py:43
 msgid "Date de validité"
 msgstr "Validity date"
 
@@ -1133,59 +977,6 @@ msgstr "COFREND card ref."
 #: app/services/formulaires/listcnd.py:48
 msgid "Phase 3 : lien vers le fichier réseau."
 msgstr "Phase 3: link to the network file."
-
-#: app/services/formulaires/listsoud.py:23
-msgid "Soudeurs"
-msgstr "Welders"
-
-#: app/services/formulaires/listsoud.py:25
-#: app/services/formulaires/nde_map.py:32
-msgid "ID soudeur"
-msgstr "Welder ID"
-
-#: app/services/formulaires/listsoud.py:27
-msgid "Phase 4 : sélection depuis le référentiel Soudeurs."
-msgstr "Phase 4: selection from the Welders reference data."
-
-#: app/services/formulaires/listsoud.py:28
-msgid "Initiales / Poinçon"
-msgstr "Initials / Stamp"
-
-#: app/services/formulaires/listsoud.py:30
-msgid "Nom complet"
-msgstr "Full name"
-
-#: app/services/formulaires/listsoud.py:32
-msgid "Procédés qualifiés"
-msgstr "Qualified processes"
-
-#: app/services/formulaires/listsoud.py:34
-msgid "Ex : TIG 141, MIG 131"
-msgstr "E.g. TIG 141, MIG 131"
-
-#: app/services/formulaires/listsoud.py:35
-msgid "Matériaux qualifiés"
-msgstr "Qualified materials"
-
-#: app/services/formulaires/listsoud.py:37
-msgid "Ex : Acier carbone P1, Inox P8"
-msgstr "E.g. carbon steel P1, stainless steel P8"
-
-#: app/services/formulaires/listsoud.py:38
-msgid "Positions qualifiées"
-msgstr "Qualified positions"
-
-#: app/services/formulaires/listsoud.py:40
-msgid "Ex : PA, PB, PC, PD, PF"
-msgstr "E.g. PA, PB, PC, PD, PF"
-
-#: app/services/formulaires/listsoud.py:41
-msgid "Référence qualification"
-msgstr "Qualification reference"
-
-#: app/services/formulaires/listsoud.py:45
-msgid "Dernier emploi affaire"
-msgstr "Last project assignment"
 
 #: app/services/formulaires/nde_map.py:24
 msgid "Joints soudés — résultats CND"
@@ -1202,6 +993,10 @@ msgstr "Joint description"
 #: app/services/formulaires/nde_map.py:30
 msgid "Procédé soudage"
 msgstr "Welding process"
+
+#: app/services/formulaires/nde_map.py:32
+msgid "ID soudeur"
+msgstr "Welder ID"
 
 #: app/services/formulaires/nde_map.py:34
 msgid "Phase 4 : sélection depuis ListSoud."
@@ -1223,13 +1018,11 @@ msgstr "RT report no."
 msgid "Résultat RT"
 msgstr "RT result"
 
-#: app/services/formulaires/nde_map.py:43
-#: app/services/formulaires/nde_map.py:54
+#: app/services/formulaires/nde_map.py:43 app/services/formulaires/nde_map.py:54
 msgid "Acceptable"
 msgstr "Acceptable"
 
-#: app/services/formulaires/nde_map.py:44
-#: app/services/formulaires/nde_map.py:55
+#: app/services/formulaires/nde_map.py:44 app/services/formulaires/nde_map.py:55
 msgid "Non acceptable"
 msgstr "Not acceptable"
 
@@ -1293,6 +1086,10 @@ msgstr "Deutsch"
 msgid "Italiano"
 msgstr "Italiano"
 
+#: app/services/formulaires/ped.py:85
+msgid "Groupe de fluide"
+msgstr "Fluid group"
+
 #: app/services/formulaires/ped.py:90
 msgid "1"
 msgstr "1"
@@ -1344,6 +1141,10 @@ msgstr "TS max (°C)"
 #: app/services/formulaires/ped.py:147
 msgid "TS min (°C)"
 msgstr "TS min (°C)"
+
+#: app/services/formulaires/ped.py:154
+msgid "Volume (litres)"
+msgstr "Volume (litres)"
 
 #: app/services/formulaires/ped.py:162
 msgid "DN"
@@ -1517,8 +1318,7 @@ msgstr "Pressure scale (bar)"
 msgid "Échelle temps (min)"
 msgstr "Time scale (min)"
 
-#: app/services/formulaires/recordhydro.py:38
-#: app/services/formulaires/visufinal.py:43
+#: app/services/formulaires/recordhydro.py:38 app/services/formulaires/visufinal.py:43
 msgid "Résultats"
 msgstr "Results"
 
@@ -1787,8 +1587,8 @@ msgid "Tableau de bord"
 msgstr "Dashboard"
 
 #: app/templates/base.html:38 app/templates/formulaires/_simple.html:17
-#: app/templates/formulaires/_table.html:20
-#: app/templates/formulaires/hydr.html:17
+#: app/templates/formulaires/_table.html:20 app/templates/formulaires/hydr.html:17
+#: app/templates/formulaires/listsoud.html:19
 msgid "Affaires"
 msgstr "Projects"
 
@@ -1808,126 +1608,107 @@ msgstr "Language"
 msgid "Dossier Constructeur Qualité"
 msgstr "Manufacturer Quality Data Book"
 
-#: app/templates/formulaires/_simple.html:35
-#: app/templates/formulaires/_table.html:38
-#: app/templates/formulaires/hydr.html:33
+#: app/templates/formulaires/_simple.html:35 app/templates/formulaires/_table.html:38
+#: app/templates/formulaires/hydr.html:33 app/templates/formulaires/listsoud.html:36
 msgid "Affaire"
 msgstr "Project"
 
-#: app/templates/formulaires/_simple.html:40
-#: app/templates/formulaires/_table.html:43
+#: app/templates/formulaires/_simple.html:40 app/templates/formulaires/_table.html:43
 #: app/templates/formulaires/hydr.html:38
 msgid "Intégrité SHA-256 vérifiée"
 msgstr "SHA-256 integrity verified"
 
-#: app/templates/formulaires/_simple.html:40
-#: app/templates/formulaires/_table.html:43
-#: app/templates/formulaires/hydr.html:38
+#: app/templates/formulaires/_simple.html:40 app/templates/formulaires/_table.html:43
+#: app/templates/formulaires/hydr.html:38 app/templates/formulaires/listsoud.html:41
 msgid "Hash OK"
 msgstr "Hash OK"
 
-#: app/templates/formulaires/_simple.html:42
-#: app/templates/formulaires/_table.html:45
+#: app/templates/formulaires/_simple.html:42 app/templates/formulaires/_table.html:45
 #: app/templates/formulaires/hydr.html:40
 msgid "Contenu altéré depuis la signature !"
 msgstr "Content altered since signing!"
 
-#: app/templates/formulaires/_simple.html:42
-#: app/templates/formulaires/_table.html:45
-#: app/templates/formulaires/hydr.html:40
+#: app/templates/formulaires/_simple.html:42 app/templates/formulaires/_table.html:45
+#: app/templates/formulaires/hydr.html:40 app/templates/formulaires/listsoud.html:43
 msgid "Hash invalide"
 msgstr "Invalid hash"
 
-#: app/templates/formulaires/_simple.html:46
-#: app/templates/formulaires/_table.html:49
-#: app/templates/formulaires/hydr.html:44
+#: app/templates/formulaires/_simple.html:46 app/templates/formulaires/_table.html:49
+#: app/templates/formulaires/hydr.html:44 app/templates/formulaires/listsoud.html:47
 msgid "Nouveau"
 msgstr "New"
 
-#: app/templates/formulaires/_simple.html:51
-#: app/templates/formulaires/_table.html:54
-#: app/templates/formulaires/hydr.html:49
+#: app/templates/formulaires/_simple.html:51 app/templates/formulaires/_table.html:54
+#: app/templates/formulaires/hydr.html:49 app/templates/formulaires/listsoud.html:52
 msgid "Retour affaire"
 msgstr "Back to project"
 
-#: app/templates/formulaires/_simple.html:157
-#: app/templates/formulaires/_table.html:211
-#: app/templates/formulaires/hydr.html:180
+#: app/templates/formulaires/_simple.html:166 app/templates/formulaires/_table.html:219
+#: app/templates/formulaires/hydr.html:180 app/templates/formulaires/listsoud.html:87
 msgid "Enregistrer le brouillon"
 msgstr "Save draft"
 
-#: app/templates/formulaires/_simple.html:160
-#: app/templates/formulaires/_table.html:214
-#: app/templates/formulaires/hydr.html:183
+#: app/templates/formulaires/_simple.html:169 app/templates/formulaires/_table.html:222
+#: app/templates/formulaires/hydr.html:183 app/templates/formulaires/listsoud.html:88
 msgid "Enregistré"
 msgstr "Saved"
 
-#: app/templates/formulaires/_simple.html:170
-#: app/templates/formulaires/_table.html:224
-#: app/templates/formulaires/hydr.html:193
+#: app/templates/formulaires/_simple.html:179 app/templates/formulaires/_table.html:232
+#: app/templates/formulaires/hydr.html:193 app/templates/formulaires/listsoud.html:95
 #, python-format
 msgid "Valider le formulaire %(code)s ? Cette action est irréversible."
 msgstr "Validate form %(code)s? This action is irreversible."
 
-#: app/templates/formulaires/_simple.html:171
-#: app/templates/formulaires/_table.html:225
-#: app/templates/formulaires/hydr.html:194
+#: app/templates/formulaires/_simple.html:180 app/templates/formulaires/_table.html:233
+#: app/templates/formulaires/hydr.html:194 app/templates/formulaires/listsoud.html:96
 msgid "Valider"
 msgstr "Validate"
 
-#: app/templates/formulaires/_simple.html:182
-#: app/templates/formulaires/_table.html:236
-#: app/templates/formulaires/hydr.html:205
+#: app/templates/formulaires/_simple.html:191 app/templates/formulaires/_table.html:244
+#: app/templates/formulaires/hydr.html:205 app/templates/formulaires/listsoud.html:105
 #, python-format
 msgid "Signer le formulaire %(code)s ? La signature est définitive."
 msgstr "Sign form %(code)s? The signature is final."
 
-#: app/templates/formulaires/_simple.html:183
-#: app/templates/formulaires/_table.html:237
-#: app/templates/formulaires/hydr.html:206
+#: app/templates/formulaires/_simple.html:192 app/templates/formulaires/_table.html:245
+#: app/templates/formulaires/hydr.html:206 app/templates/formulaires/listsoud.html:106
 msgid "Signer (SHA-256)"
 msgstr "Sign (SHA-256)"
 
-#: app/templates/formulaires/_simple.html:191
-#: app/templates/formulaires/hydr.html:214
+#: app/templates/formulaires/_simple.html:200 app/templates/formulaires/hydr.html:214
 msgid "Générer et télécharger le PDF"
 msgstr "Generate and download the PDF"
 
-#: app/templates/formulaires/_simple.html:192
-#: app/templates/formulaires/_table.html:245
-#: app/templates/formulaires/hydr.html:215
+#: app/templates/formulaires/_simple.html:201 app/templates/formulaires/_table.html:253
+#: app/templates/formulaires/hydr.html:215 app/templates/formulaires/listsoud.html:113
 msgid "Télécharger PDF"
 msgstr "Download PDF"
 
-#: app/templates/formulaires/_simple.html:200
-#: app/templates/formulaires/_table.html:253
-#: app/templates/formulaires/hydr.html:223
+#: app/templates/formulaires/_simple.html:209 app/templates/formulaires/_table.html:261
+#: app/templates/formulaires/hydr.html:223 app/templates/formulaires/listsoud.html:120
 #, python-format
 msgid "Signé le %(date)s par %(nom)s"
 msgstr "Signed on %(date)s by %(nom)s"
 
-#: app/templates/formulaires/_simple.html:257
-#: app/templates/formulaires/_table.html:372
-#: app/templates/formulaires/hydr.html:301
+#: app/templates/formulaires/_simple.html:266 app/templates/formulaires/_table.html:400
+#: app/templates/formulaires/hydr.html:301 app/templates/formulaires/listsoud.html:373
 msgid "Erreur lors de la sauvegarde."
 msgstr "Error while saving."
 
-#: app/templates/formulaires/_simple.html:263
-#: app/templates/formulaires/_table.html:377
-#: app/templates/formulaires/hydr.html:307
+#: app/templates/formulaires/_simple.html:272 app/templates/formulaires/_table.html:405
+#: app/templates/formulaires/hydr.html:307 app/templates/formulaires/listsoud.html:377
 msgid "Erreur réseau — réessayez."
 msgstr "Network error — try again."
 
-#: app/templates/formulaires/_table.html:140
+#: app/templates/formulaires/_table.html:147
 msgid "Ajouter une ligne"
 msgstr "Add a row"
 
-#: app/templates/formulaires/_table.html:191
-#: app/templates/formulaires/_table.html:286
+#: app/templates/formulaires/_table.html:199 app/templates/formulaires/_table.html:295
 msgid "Supprimer"
 msgstr "Delete"
 
-#: app/templates/formulaires/_table.html:201
+#: app/templates/formulaires/_table.html:209
 msgid "Aucune ligne — cliquez « Ajouter une ligne » pour commencer."
 msgstr "No rows — click \"Add a row\" to start."
 
@@ -1966,3 +1747,212 @@ msgstr "Instrumentation & Result"
 #: app/templates/formulaires/hydr.html:162
 msgid "Épreuve conforme — aucune fuite ni déformation constatée"
 msgstr "Compliant test — no leak or deformation observed"
+
+#: app/templates/formulaires/listsoud.html:60
+msgid "Code de construction"
+msgstr "Construction code"
+
+#: app/templates/formulaires/listsoud.html:68
+msgid "Détermine les positions et groupes de matériaux proposés."
+msgstr "Determines the proposed material positions and groups."
+
+#: app/templates/formulaires/listsoud.html:77
+msgid "Ajouter un soudeur"
+msgstr "Add a welder"
+
+#: app/templates/formulaires/listsoud.html:81
+msgid "Aucun soudeur — cliquez « Ajouter un soudeur » pour commencer."
+msgstr "No welders — click \"Add a welder\" to get started."
+
+#~ msgid "La catégorie PED est requise."
+#~ msgstr "The PED category is required."
+
+#~ msgid "A — Contrôle interne de fabrication"
+#~ msgstr "A — Internal production control"
+
+#~ msgid "A2 — Contrôle interne + surveillance"
+#~ msgstr "A2 — Internal control + supervised checks"
+
+#~ msgid "B + C2 — Examen UE de type + contrôle"
+#~ msgstr "B + C2 — EU type-examination + checks"
+
+#~ msgid "B + D — Examen UE de type + AQ production"
+#~ msgstr "B + D — EU type-examination + production QA"
+
+#~ msgid "B + F — Examen UE de type + vérif. produit"
+#~ msgstr "B + F — EU type-examination + product verification"
+
+#~ msgid "G — Vérification CE à l'unité"
+#~ msgstr "G — CE unit verification"
+
+#~ msgid "H — Assurance qualité complète"
+#~ msgstr "H — Full quality assurance"
+
+#~ msgid "Le module de conformité est requis."
+#~ msgstr "The conformity assessment module is required."
+
+#~ msgid "Groupe 1 — Fluide dangereux"
+#~ msgstr "Group 1 — Hazardous fluid"
+
+#~ msgid "Groupe 2 — Fluide non dangereux"
+#~ msgstr "Group 2 — Non-hazardous fluid"
+
+#~ msgid "Le groupe de fluide est requis."
+#~ msgstr "The fluid group is required."
+
+#~ msgid "Nom du fluide principal"
+#~ msgstr "Main fluid name"
+
+#~ msgid "Eau, huile, vapeur, azote…"
+#~ msgstr "Water, oil, steam, nitrogen…"
+
+#~ msgid "PS est requise."
+#~ msgstr "PS is required."
+
+#~ msgid "Pression de calcul ; la pression d'épreuve PT = PS × 1.43 sera dérivée."
+#~ msgstr "Design pressure; the test pressure PT = PS × 1.43 will be derived."
+
+#~ msgid "Température minimale (°C)"
+#~ msgstr "Minimum temperature (°C)"
+
+#~ msgid "Température maximale (°C)"
+#~ msgstr "Maximum temperature (°C)"
+
+#~ msgid "Procédés de soudage utilisés"
+#~ msgstr "Welding processes used"
+
+#~ msgid "141 — TIG"
+#~ msgstr "141 — TIG"
+
+#~ msgid "111 — Électrode enrobée (manuel)"
+#~ msgstr "111 — Covered electrode (manual)"
+
+#~ msgid "136 — MAG fil fourré"
+#~ msgstr "136 — MAG flux-cored wire"
+
+#~ msgid "121 — Sous-flux"
+#~ msgstr "121 — Submerged arc"
+
+#~ msgid "131 — MIG"
+#~ msgstr "131 — MIG"
+
+#~ msgid "Sélectionnez au moins un procédé."
+#~ msgstr "Select at least one process."
+
+#~ msgid "Maintenez Ctrl/Cmd pour sélections multiples."
+#~ msgstr "Hold Ctrl/Cmd for multiple selections."
+
+#~ msgid "Présence de tubes soudés à la calandre"
+#~ msgstr "Tubes welded to the shell"
+
+#~ msgid "Traitement thermique après soudage (TTH) requis"
+#~ msgstr "Post-weld heat treatment (PWHT) required"
+
+#~ msgid "Détendage / recuit normalisé selon ASME ou EN."
+#~ msgstr "Stress relieving / normalizing per ASME or EN."
+
+#~ msgid "Méthodes de CND requises"
+#~ msgstr "Required NDT methods"
+
+#~ msgid "RT — Radiographie"
+#~ msgstr "RT — Radiographic testing"
+
+#~ msgid "UT — Ultrasons"
+#~ msgstr "UT — Ultrasonic testing"
+
+#~ msgid "PT — Ressuage"
+#~ msgstr "PT — Penetrant testing"
+
+#~ msgid "MT — Magnétoscopie"
+#~ msgstr "MT — Magnetic particle testing"
+
+#~ msgid "VT — Examen visuel"
+#~ msgstr "VT — Visual examination"
+
+#~ msgid "Test de pression à réaliser"
+#~ msgstr "Pressure test to be performed"
+
+#~ msgid "Hydrostatique (HYDR)"
+#~ msgstr "Hydrostatic (HYDR)"
+
+#~ msgid "Pneumatique (AirSav)"
+#~ msgstr "Pneumatic (AirSav)"
+
+#~ msgid "Étanchéité azote (Azote)"
+#~ msgstr "Nitrogen leak test (Azote)"
+
+#~ msgid "Inspection client / TPI prévue"
+#~ msgstr "Client inspection / TPI planned"
+
+#~ msgid "Tierce Partie Indépendante ou inspecteur client présent."
+#~ msgstr "Third Party Inspector or client inspector present."
+
+#~ msgid "Module A"
+#~ msgstr "Module A"
+
+#~ msgid "Module A1"
+#~ msgstr "Module A1"
+
+#~ msgid "Module A2"
+#~ msgstr "Module A2"
+
+#~ msgid "Module B"
+#~ msgstr "Module B"
+
+#~ msgid "Module C2"
+#~ msgstr "Module C2"
+
+#~ msgid "Module D"
+#~ msgstr "Module D"
+
+#~ msgid "Module D1"
+#~ msgstr "Module D1"
+
+#~ msgid "Module E"
+#~ msgstr "Module E"
+
+#~ msgid "Module G"
+#~ msgstr "Module G"
+
+#~ msgid "Module H"
+#~ msgstr "Module H"
+
+#~ msgid "Module H1"
+#~ msgstr "Module H1"
+
+#~ msgid "Soudeurs"
+#~ msgstr "Welders"
+
+#~ msgid "Phase 4 : sélection depuis le référentiel Soudeurs."
+#~ msgstr "Phase 4: selection from the Welders reference data."
+
+#~ msgid "Initiales / Poinçon"
+#~ msgstr "Initials / Stamp"
+
+#~ msgid "Nom complet"
+#~ msgstr "Full name"
+
+#~ msgid "Procédés qualifiés"
+#~ msgstr "Qualified processes"
+
+#~ msgid "Ex : TIG 141, MIG 131"
+#~ msgstr "E.g. TIG 141, MIG 131"
+
+#~ msgid "Matériaux qualifiés"
+#~ msgstr "Qualified materials"
+
+#~ msgid "Ex : Acier carbone P1, Inox P8"
+#~ msgstr "E.g. carbon steel P1, stainless steel P8"
+
+#~ msgid "Positions qualifiées"
+#~ msgstr "Qualified positions"
+
+#~ msgid "Ex : PA, PB, PC, PD, PF"
+#~ msgstr "E.g. PA, PB, PC, PD, PF"
+
+#~ msgid "Référence qualification"
+#~ msgstr "Qualification reference"
+
+#~ msgid "Dernier emploi affaire"
+#~ msgstr "Last project assignment"
+

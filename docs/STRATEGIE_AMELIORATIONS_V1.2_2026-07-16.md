@@ -77,7 +77,7 @@ Chaque `TypeEquipement` porte son **modèle de sommaire par défaut** (liste des
 4. ⚠️ Pratique : le fichier Excel ouvert dans Excel/OneDrive est **verrouillé** (PermissionError constatée ce jour) → l'import copiera le fichier vers un emplacement temporaire avant lecture.
 5. Tests : parsing des 36 libellés distincts observés en colonne R (dont fautes de frappe réelles : `DESP 2014/98/UE`, `DESP 2014/968/EU`, `DESP2014/68/UE` sans espace).
 
-### Lot 1 — Wizard raccourci « Affaire → Item → Réglementation » (effort M)
+### Lot 1 — Wizard raccourci « Affaire → Item → Réglementation » (effort M) — ✅ LIVRÉ le 2026-07-17
 Nouvelle séquence — **4 étapes + récapitulatif** au lieu de 8 :
 
 | Étape | Nom affiché | Contenu | Persistance |
@@ -148,7 +148,7 @@ Lot 0 ✅ (registre R/S/T)  ──►  Lot 1 (wizard raccourci + type équipemen
 - **Lot 6 après Lot 1** (a besoin du type d'équipement) — recommandé après le Lot 2 pour capitaliser sur la page dossier consolidée.
 - Méthode par lot : branche courte → développement + tests (les 549 existants doivent rester verts, plus les nouveaux) → commit → **validation par S. Paumelle sur un cas réel du registre** (une affaire BN récente multi-items) avant d'ouvrir le lot suivant.
 - Toutes les migrations sont **additives et réversibles** (SQLite dev + PostgreSQL cible).
-- Estimations : Lot 0 = S ✅ · Lot 1 = M (1–2 séances, type équipement inclus) · Lot 2 = M/L (2 séances) · Lot 3 = M (1–2 séances) · Lot 4 = S (½ séance) · Lot 5 = S/M (1 séance) · Lot 6 = M/L (2 séances).
+- Estimations : Lot 0 = S ✅ · Lot 1 = M ✅ (livré 2026-07-17, type équipement inclus) · Lot 2 = M/L (2 séances) · Lot 3 = M (1–2 séances) · Lot 4 = S (½ séance) · Lot 5 = S/M (1 séance) · Lot 6 = M/L (2 séances).
 
 ---
 

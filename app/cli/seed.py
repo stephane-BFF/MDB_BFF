@@ -39,7 +39,7 @@ from app.enums import Chapitre, Role
 from app.extensions import db
 from app.models.audit import AuditTrail
 from app.models.formulaire import FormulaireTemplate
-from app.models.referentiel import MetalApport, OrganismeNotifie, Soudeur
+from app.models.referentiel import MetalApport, OrganismeNotifie, Soudeur, TypeEquipement
 from app.models.user import User
 
 
@@ -322,6 +322,7 @@ def seed_command() -> None:
     created_metaux = _seed_metaux_apport()
     created_soudeurs = _seed_soudeurs()
     created_on = _seed_organismes_notifies()
+    created_types = _seed_types_equipement()
     db.session.commit()
 
     click.echo(f"[OK] {created_users} utilisateur(s) cree(s) (deja presents ignores).")
@@ -329,6 +330,7 @@ def seed_command() -> None:
     click.echo(f"[OK] {created_metaux} metal(aux) d'apport cree(s) (referentiel BIMSOUD).")
     click.echo(f"[OK] {created_soudeurs} soudeur(s) cree(s) (referentiel LISTSOUD).")
     click.echo(f"[OK] {created_on} organisme(s) notifie(s) cree(s) (referentiel ATTDECR).")
+    click.echo(f"[OK] {created_types} type(s) d'equipement cree(s) (wizard Item).")
     click.echo(f"     Mot de passe initial : {_SEED_PASSWORD!r} (a changer au 1er login).")
     current_app.logger.info(
         "seed completed",
@@ -400,6 +402,34 @@ def _seed_metaux_apport() -> int:
                 actif=True,
             )
         )
+        created += 1
+    return created
+
+
+def _seed_types_equipement() -> int:
+    """Crée le référentiel des types d'équipement (V1.2, D7). Idempotent.
+
+    Le libellé est la clé naturelle ; une entrée déjà présente est ignorée
+    (corrections manuelles préservées, y compris la désactivation).
+    """
+    types = [
+        "Réfrigérant",
+        "HPIN",
+        "BHM",
+        "RM",
+        "SHELL&TUBE",
+        "FAISCEAU de rechange",
+        "CALANDRE de rechange",
+        "BEU",
+    ]
+    created = 0
+    for ordre, libelle in enumerate(types):
+        existing = (
+            db.session.query(TypeEquipement).filter_by(libelle=libelle).first()
+        )
+        if existing is not None:
+            continue
+        db.session.add(TypeEquipement(libelle=libelle, ordre=ordre, actif=True))
         created += 1
     return created
 
