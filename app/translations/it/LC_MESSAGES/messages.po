@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MDB BFF 1.0\n"
 "Report-Msgid-Bugs-To: stephane.paumelle@ait-stein.com\n"
-"POT-Creation-Date: 2026-07-17 09:11+0200\n"
+"POT-Creation-Date: 2026-07-17 13:55+0200\n"
 "PO-Revision-Date: 2026-07-15 00:00+0200\n"
 "Last-Translator: MDB BFF\n"
 "Language: it\n"
@@ -162,6 +162,168 @@ msgstr "Il codice deve contenere 6 cifre."
 msgid "Activer la double authentification"
 msgstr "Attivare l'autenticazione a due fattori"
 
+#: app/forms/fiche_technique.py:48
+msgid "État du fluide"
+msgstr "Stato del fluido"
+
+#: app/forms/fiche_technique.py:50 app/forms/fiche_technique.py:62 app/forms/formulaires/hydr.py:32
+#: app/forms/wizard.py:267 app/forms/wizard.py:278 app/services/formulaires/airsav.py:43
+#: app/services/formulaires/attdecr.py:49 app/services/formulaires/azote.py:44
+#: app/services/formulaires/durete.py:41 app/services/formulaires/etatdesc.py:27
+#: app/services/formulaires/ped.py:48 app/services/formulaires/ped.py:62
+#: app/services/formulaires/ped.py:76 app/services/formulaires/proprete.py:25
+#: app/services/formulaires/proprete.py:42 app/services/formulaires/sechage.py:25
+#: app/services/formulaires/sechage.py:46 app/services/formulaires/tth.py:27
+#: app/services/formulaires/tth.py:58 app/services/formulaires/visufinal.py:13
+#: app/services/formulaires/visufinal.py:18 app/templates/formulaires/hydr.html:111
+msgid "— Sélectionner —"
+msgstr "— Selezionare —"
+
+#: app/forms/fiche_technique.py:51
+msgid "Gaz"
+msgstr "Gas"
+
+#: app/forms/fiche_technique.py:52
+msgid "Liquide"
+msgstr "Liquido"
+
+#: app/forms/fiche_technique.py:56
+msgid "État physique du fluide contenu — conditionne la catégorie PED."
+msgstr "Stato fisico del fluido contenuto — determina la categoria PED."
+
+#: app/forms/fiche_technique.py:60
+msgid "Dangerosité du fluide"
+msgstr "Pericolosità del fluido"
+
+#: app/forms/fiche_technique.py:63
+msgid "Groupe 1 — Fluide dangereux"
+msgstr "Gruppo 1 — Fluido pericoloso"
+
+#: app/forms/fiche_technique.py:64
+msgid "Groupe 2 — Fluide non dangereux"
+msgstr "Gruppo 2 — Fluido non pericoloso"
+
+#: app/forms/fiche_technique.py:69
+msgid "Nom du fluide principal"
+msgstr "Nome del fluido principale"
+
+#: app/forms/fiche_technique.py:71
+msgid "Eau, huile, vapeur, azote…"
+msgstr "Acqua, olio, vapore, azoto…"
+
+#: app/forms/fiche_technique.py:76 app/forms/formulaires/hydr.py:23
+#: app/templates/formulaires/hydr.html:68
+msgid "Pression de service PS (bar)"
+msgstr "Pressione di esercizio PS (bar)"
+
+#: app/forms/fiche_technique.py:80
+msgid "Pression de calcul ; la pression d'épreuve PT = PS × 1.43 sera dérivée."
+msgstr "Pressione di calcolo; la pressione di prova PT = PS × 1,43 sarà derivata."
+
+#: app/forms/fiche_technique.py:84
+msgid "Température minimale (°C)"
+msgstr "Temperatura minima (°C)"
+
+#: app/forms/fiche_technique.py:89
+msgid "Température maximale (°C)"
+msgstr "Temperatura massima (°C)"
+
+#: app/forms/fiche_technique.py:94 app/services/formulaires/ped.py:154
+msgid "Volume (litres)"
+msgstr "Volume (litri)"
+
+#: app/forms/fiche_technique.py:97
+msgid "Requis pour vérifier la catégorie de risque (PS·V)."
+msgstr "Necessario per verificare la categoria di rischio (PS·V)."
+
+#: app/forms/fiche_technique.py:102
+msgid "Procédés de soudage utilisés"
+msgstr "Processi di saldatura utilizzati"
+
+#: app/forms/fiche_technique.py:104
+msgid "141 — TIG"
+msgstr "141 — TIG"
+
+#: app/forms/fiche_technique.py:105
+msgid "111 — Électrode enrobée (manuel)"
+msgstr "111 — Elettrodo rivestito (manuale)"
+
+#: app/forms/fiche_technique.py:106
+msgid "136 — MAG fil fourré"
+msgstr "136 — MAG filo animato"
+
+#: app/forms/fiche_technique.py:107
+msgid "121 — Sous-flux"
+msgstr "121 — Arco sommerso"
+
+#: app/forms/fiche_technique.py:108
+msgid "131 — MIG"
+msgstr "131 — MIG"
+
+#: app/forms/fiche_technique.py:113
+msgid "Présence de tubes soudés à la calandre"
+msgstr "Tubi saldati al mantello"
+
+#: app/forms/fiche_technique.py:116
+msgid "Traitement thermique après soudage (TTH) requis"
+msgstr "Trattamento termico post-saldatura (PWHT) richiesto"
+
+#: app/forms/fiche_technique.py:117
+msgid "Détendage / recuit normalisé selon ASME ou EN."
+msgstr "Distensione / ricottura secondo ASME o EN."
+
+#: app/forms/fiche_technique.py:122
+msgid "Méthodes de CND requises"
+msgstr "Metodi CND richiesti"
+
+#: app/forms/fiche_technique.py:124
+msgid "RT — Radiographie"
+msgstr "RT — Radiografia"
+
+#: app/forms/fiche_technique.py:125
+msgid "UT — Ultrasons"
+msgstr "UT — Ultrasuoni"
+
+#: app/forms/fiche_technique.py:126
+msgid "PT — Ressuage"
+msgstr "PT — Liquidi penetranti"
+
+#: app/forms/fiche_technique.py:127
+msgid "MT — Magnétoscopie"
+msgstr "MT — Magnetoscopia"
+
+#: app/forms/fiche_technique.py:128
+msgid "VT — Examen visuel"
+msgstr "VT — Esame visivo"
+
+#: app/forms/fiche_technique.py:133
+msgid "Tests de pression à réaliser"
+msgstr "Prove di pressione da eseguire"
+
+#: app/forms/fiche_technique.py:135
+msgid "Hydrostatique (HYDR)"
+msgstr "Idrostatica (HYDR)"
+
+#: app/forms/fiche_technique.py:136
+msgid "Pneumatique (AirSav)"
+msgstr "Pneumatica (AirSav)"
+
+#: app/forms/fiche_technique.py:137
+msgid "Étanchéité azote (Azote)"
+msgstr "Tenuta azoto (Azote)"
+
+#: app/forms/fiche_technique.py:140
+msgid "Plusieurs tests possibles sur un même item."
+msgstr "Più prove possibili sullo stesso item."
+
+#: app/forms/fiche_technique.py:143
+msgid "Inspection client / TPI prévue"
+msgstr "Ispezione cliente / TPI prevista"
+
+#: app/forms/fiche_technique.py:144
+msgid "Tierce Partie Indépendante ou inspecteur client présent."
+msgstr "Terza parte indipendente o ispettore del cliente presente."
+
 #: app/forms/wizard.py:135
 msgid "Année de l'affaire"
 msgstr "Anno della commessa"
@@ -294,19 +456,6 @@ msgstr "Codice ASME Sezione VIII — mercato nordamericano."
 msgid "Catégorie de risque"
 msgstr "Categoria di rischio"
 
-#: app/forms/formulaires/hydr.py:32 app/forms/wizard.py:267 app/forms/wizard.py:278
-#: app/services/formulaires/airsav.py:43 app/services/formulaires/attdecr.py:49
-#: app/services/formulaires/azote.py:44 app/services/formulaires/durete.py:41
-#: app/services/formulaires/etatdesc.py:27 app/services/formulaires/ped.py:48
-#: app/services/formulaires/ped.py:62 app/services/formulaires/ped.py:76
-#: app/services/formulaires/proprete.py:25 app/services/formulaires/proprete.py:42
-#: app/services/formulaires/sechage.py:25 app/services/formulaires/sechage.py:46
-#: app/services/formulaires/tth.py:27 app/services/formulaires/tth.py:58
-#: app/services/formulaires/visufinal.py:13 app/services/formulaires/visufinal.py:18
-#: app/templates/formulaires/hydr.html:111
-msgid "— Sélectionner —"
-msgstr "— Selezionare —"
-
 #: app/forms/wizard.py:268
 msgid "I — Risque faible"
 msgstr "I — Rischio basso"
@@ -350,10 +499,6 @@ msgstr "È necessario confermare per finalizzare."
 #: app/forms/wizard.py:323
 msgid "Commentaire (optionnel)"
 msgstr "Commento (facoltativo)"
-
-#: app/forms/formulaires/hydr.py:23 app/templates/formulaires/hydr.html:68
-msgid "Pression de service PS (bar)"
-msgstr "Pressione di esercizio PS (bar)"
 
 #: app/forms/formulaires/hydr.py:25
 msgid "La pression de service PS est requise."
@@ -627,7 +772,7 @@ msgstr "Materiali di base"
 msgid "Repère composant"
 msgstr "Sigla componente"
 
-#: app/services/formulaires/bim.py:27 app/services/formulaires/bimsoud.py:36
+#: app/services/formulaires/bim.py:27 app/services/formulaires/bimsoud.py:47
 msgid "Désignation"
 msgstr "Denominazione"
 
@@ -639,15 +784,15 @@ msgstr "Norma materiale"
 msgid "N° coulée"
 msgstr "N. colata"
 
-#: app/services/formulaires/bim.py:33 app/services/formulaires/bimsoud.py:45
+#: app/services/formulaires/bim.py:33 app/services/formulaires/bimsoud.py:42
 msgid "N° lot"
 msgstr "N. lotto"
 
-#: app/services/formulaires/bim.py:35 app/services/formulaires/bimsoud.py:47
+#: app/services/formulaires/bim.py:35 app/services/formulaires/bimsoud.py:56
 msgid "Fournisseur"
 msgstr "Fornitore"
 
-#: app/services/formulaires/bim.py:37 app/services/formulaires/bimsoud.py:52
+#: app/services/formulaires/bim.py:37 app/services/formulaires/bimsoud.py:61
 msgid "Réf. CCPU"
 msgstr "Rif. CCPU"
 
@@ -655,27 +800,31 @@ msgstr "Rif. CCPU"
 msgid "Référence dans le cahier des contrôles et procédures d'usinage."
 msgstr "Riferimento nel registro dei controlli e delle procedure di lavorazione."
 
-#: app/services/formulaires/bimsoud.py:34
+#: app/services/formulaires/bimsoud.py:40
 msgid "Matériaux de soudage"
 msgstr "Materiali di saldatura"
 
-#: app/services/formulaires/bimsoud.py:39
+#: app/services/formulaires/bimsoud.py:45
+msgid "Saisir un lot déjà connu remplit toute la ligne automatiquement."
+msgstr "L'inserimento di un lotto già noto compila automaticamente l'intera riga."
+
+#: app/services/formulaires/bimsoud.py:50
 msgid "Choisir dans la liste : norme et fournisseur seront renseignés automatiquement."
 msgstr "Scegliere dall'elenco: norma e fornitore saranno inseriti automaticamente."
 
-#: app/services/formulaires/bimsoud.py:41
+#: app/services/formulaires/bimsoud.py:52
 msgid "Norme"
 msgstr "Norma"
 
-#: app/services/formulaires/bimsoud.py:43
+#: app/services/formulaires/bimsoud.py:54
 msgid "Diamètre (mm)"
 msgstr "Diametro (mm)"
 
-#: app/services/formulaires/bimsoud.py:49
+#: app/services/formulaires/bimsoud.py:58
 msgid "Utilisation"
 msgstr "Utilizzo"
 
-#: app/services/formulaires/bimsoud.py:51
+#: app/services/formulaires/bimsoud.py:60
 msgid "Ex : assemblage, rechargement, reprise…"
 msgstr "Es.: assemblaggio, riporto, ripresa…"
 
@@ -1141,10 +1290,6 @@ msgstr "TS max (°C)"
 #: app/services/formulaires/ped.py:147
 msgid "TS min (°C)"
 msgstr "TS min (°C)"
-
-#: app/services/formulaires/ped.py:154
-msgid "Volume (litres)"
-msgstr "Volume (litri)"
 
 #: app/services/formulaires/ped.py:162
 msgid "DN"

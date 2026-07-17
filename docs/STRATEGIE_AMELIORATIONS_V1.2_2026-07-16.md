@@ -95,7 +95,7 @@ Nouvelle séquence — **4 étapes + récapitulatif** au lieu de 8 :
 - Vérifier par tests que les formulaires consommant `q5_*`–`q7_*` (ETATDESC, HYDR, PED) **dégradent proprement** tant que la fiche technique n'est pas remplie (message « à compléter dans la fiche technique », pas de crash ni de PDF silencieusement vide).
 - **Type d'équipement (D7, ajout 2026-07-17)** : référentiel `TypeEquipement` (table + seed des 8 valeurs + CRUD admin sur le modèle des référentiels existants), colonne `type_equipement_id` sur `Affaire` (migration additive), liste déroulante à l'étape « Item » ; affiché dans la liste des affaires et la page dossier.
 
-### Lot 2 — Fiche technique de l'item (effort M/L)
+### Lot 2 — Fiche technique de l'item (effort M/L) — ✅ LIVRÉ le 2026-07-17
 - Nouvelle page `/affaires/<id>/fiche-technique` (GET/POST), accessible depuis la page affaire (`show.html`) et depuis le récapitulatif du wizard.
 - Sections : Réglementation (reprise éditable de l'étape Q3) · Caractéristiques fluide (ex-Q4 : état, groupe, nom) · Conditions de service (ex-Q5 : PS, T° min/max, volume) · Procédés de fabrication (ex-Q6) · Contrôles & essais (ex-Q7).
 - **Cases à cocher** : `SelectMultipleField` rendus avec `ListWidget(prefix_label=False)` + `CheckboxInput` (form-check Bootstrap) pour procédés de soudage, méthodes CND **et tests de pression** (passage multi, D3).
@@ -103,25 +103,25 @@ Nouvelle séquence — **4 étapes + récapitulatif** au lieu de 8 :
 - Éditabilité : `affaire.is_editable` + rôle Rédacteur minimum ; chaque enregistrement passe par `AuditTrail`.
 - i18n : toutes les nouvelles chaînes en `_l()` / `_()` + cycle extract → update → traduire (EN/DE/IT) → compile.
 
-### Lot 3 — Regroupement par affaire (effort M)
+### Lot 3 — Regroupement par affaire (effort M) — ✅ LIVRÉ le 2026-07-17
 - **Liste des affaires** : bascule « vue à plat / vue groupée par n° d'affaire » (compteur d'items, statuts agrégés).
 - **Page « Affaire BNxxxx »** : infos génériques + tableau des items/dossiers (statut, jalons, liens) ; bouton **« Ajouter un item »** → wizard avec l'étape Affaire pré-remplie et verrouillée, items du registre non encore utilisés proposés en premier.
 - **Édition des infos génériques** depuis cette page avec propagation contrôlée aux autres items (D1).
 - Fil d'Ariane : Dossier ↔ Affaire ↔ liste, dans `show.html` et la fiche technique.
 
-### Lot 4 — BIMSOUD « lot d'abord » (effort S)
+### Lot 4 — BIMSOUD « lot d'abord » (effort S) — ✅ LIVRÉ le 2026-07-17
 - `TABLE_SPEC` réordonné : `num_lot` en 1re colonne, avec `datalist="lots"` (`bimsoud.py`).
 - `get_reference_options()` : dictionnaire `lot → {designation, norme, diametre, fournisseur, ref_ccpu}` construit depuis l'historique des lignes BIMSOUD (option D4-1).
 - **Aucune modification JS** (`_table.html:337-346` gère déjà l'autofill de la ligne) et **aucune migration** : les lignes sont stockées par clés de colonnes, l'ordre est purement visuel.
 
-### Lot 5 — Suppression admin d'un dossier / d'une affaire complète (effort S/M) *(ajout 2026-07-17)*
+### Lot 5 — Suppression admin d'un dossier / d'une affaire complète (effort S/M) — ✅ LIVRÉ le 2026-07-17
 - Route `POST /affaires/<id>/supprimer` (rôle Admin uniquement) + bouton sur la page dossier ; sur la page « Affaire » (Lot 3), bouton « Supprimer l'affaire complète » supprimant tous ses items en une opération.
 - **Double confirmation** : modale exigeant la saisie de la référence exacte (`BN0811-8975`, ou le n° d'affaire pour une suppression complète).
 - **Export préalable obligatoire (D6)** : assemblage synchrone du PDF complet (`assemble_dossier()` est une fonction pure appelable sans Celery — important sur le PC pilote où Redis est absent) archivé dans un répertoire d'export horodaté ; échec d'export ⇒ suppression refusée.
 - Suppression : cascade ORM (parametrage, formulaires, jalons, fichiers, signatures) + **fichiers importés effacés du disque** + entrée d'audit détaillée (l'audit trail, insert-only, survit à l'affaire).
 - Tests : rôle non-admin refusé, référence erronée refusée, échec d'export bloque, cascade complète vérifiée, fichiers disque nettoyés.
 
-### Lot 6 — Architecture type du dossier + bibliothèque d'éléments (effort M/L) *(ajout 2026-07-17)*
+### Lot 6 — Architecture type du dossier + bibliothèque d'éléments (effort M/L) — ✅ LIVRÉ le 2026-07-17
 - **Modèle** : `TypeEquipement.formulaires_defaut` (liste JSON des codes formulaires du sommaire type, éditable dans l'écran admin du référentiel) ; colonne `composition_dossier` (JSON) sur `Affaire` — liste des codes inclus, initialisée depuis le modèle du type d'équipement à la création (fin du wizard), migration additive (`NULL` = comportement actuel : tout inclus, rétrocompatible pour les dossiers existants).
 - **Page « Sommaire »** `/affaires/<id>/sommaire` : vue chapitres A–G avec, pour chaque formulaire, son état (non créé / brouillon / signé) et un interrupteur inclure/exclure alimenté par la **bibliothèque des 27 formulaires** (périmètre arbitré D8). Exclusion = masquage sans perte de données ; formulaire signé ⇒ avertissement explicite avant exclusion.
 - **Consommateurs adaptés** : `show.html` (accordéon filtré sur la composition), `assemblage.py` + `pdf/sommaire.html` (le PDF ne reprend que les éléments inclus), activation conditionnelle existante conservée (la composition s'ajoute comme filtre, elle ne remplace pas la logique d'activation).
@@ -148,7 +148,7 @@ Lot 0 ✅ (registre R/S/T)  ──►  Lot 1 (wizard raccourci + type équipemen
 - **Lot 6 après Lot 1** (a besoin du type d'équipement) — recommandé après le Lot 2 pour capitaliser sur la page dossier consolidée.
 - Méthode par lot : branche courte → développement + tests (les 549 existants doivent rester verts, plus les nouveaux) → commit → **validation par S. Paumelle sur un cas réel du registre** (une affaire BN récente multi-items) avant d'ouvrir le lot suivant.
 - Toutes les migrations sont **additives et réversibles** (SQLite dev + PostgreSQL cible).
-- Estimations : Lot 0 = S ✅ · Lot 1 = M ✅ (livré 2026-07-17, type équipement inclus) · Lot 2 = M/L (2 séances) · Lot 3 = M (1–2 séances) · Lot 4 = S (½ séance) · Lot 5 = S/M (1 séance) · Lot 6 = M/L (2 séances).
+- Estimations : **tous les lots livrés le 2026-07-17** (Lot 0 ✅ · Lot 1 ✅ · Lot 2 ✅ · Lot 3 ✅ · Lot 4 ✅ · Lot 5 ✅ · Lot 6 ✅) — 646 tests verts. Seuils annexe II du calcul de catégorie croisés sur 3 sources (cours DESP Joulin, note PED Blacoh, DREAL) ; architectures types par type d'équipement à configurer par le QC dans Référentiels → Types d'équipement → Architecture.
 
 ---
 
