@@ -412,6 +412,92 @@ def par_affaire_infos_generiques(numero_affaire: str) -> Response:
 
 
 # ────────────────────────────────────────────────────────────────────────
+# Suppression admin (V1.2 Lot 5 — décision D6)
+# ────────────────────────────────────────────────────────────────────────
+
+
+@bp.route("/<int:affaire_id>/supprimer", methods=["POST"])
+@login_required  # type: ignore[untyped-decorator]
+@role_required(Role.ADMIN)
+def supprimer(affaire_id: int) -> Response:
+    """Supprime un dossier (Admin) après export PDF obligatoire.
+
+    Double confirmation : le champ ``confirmation`` doit reprendre la
+    référence exacte du dossier (``BN0811-8975``) — ou ``SUPPRIMER`` pour un
+    dossier encore en wizard (sans référence).
+    """
+    from app.services import suppression as suppression_svc  # noqa: PLC0415
+
+    affaire = db.session.get(Affaire, affaire_id)
+    if affaire is None:
+        abort(404)
+
+    attendu = affaire.references_internes or "SUPPRIMER"
+    saisie = (request.form.get("confirmation") or "").strip().upper()
+    if saisie != attendu.upper():
+        flash(
+            f"Confirmation incorrecte — tapez exactement « {attendu} » pour supprimer.",
+            "danger",
+        )
+        return redirect(url_for("affaires.show", affaire_id=affaire.id))
+
+    numero = affaire.numero_affaire
+    reference = affaire.references_internes or f"dossier {affaire.id}"
+    try:
+        export_path = suppression_svc.supprimer_dossier(affaire, user=_current_user())
+    except suppression_svc.ExportPrealableError as exc:
+        flash(str(exc), "danger")
+        return redirect(url_for("affaires.show", affaire_id=affaire_id))
+
+    message = f"Dossier {reference} supprimé."
+    if export_path is not None:
+        message += f" Export archivé : {export_path.name}."
+    flash(message, "success")
+    if numero and db.session.query(
+        db.session.query(Affaire).filter(Affaire.numero_affaire == numero).exists()
+    ).scalar():
+        return redirect(url_for("affaires.par_affaire", numero_affaire=numero))
+    return redirect(url_for("affaires.index"))
+
+
+@bp.route("/par-affaire/<numero_affaire>/supprimer", methods=["POST"])
+@login_required  # type: ignore[untyped-decorator]
+@role_required(Role.ADMIN)
+def par_affaire_supprimer(numero_affaire: str) -> Response:
+    """Supprime une affaire complète (tous ses items) — Admin.
+
+    Confirmation par saisie du n° d'affaire. Tous les exports PDF sont
+    réalisés avant la moindre suppression (tout ou rien, décision D6).
+    """
+    from app.services import suppression as suppression_svc  # noqa: PLC0415
+
+    numero_affaire = numero_affaire.strip().upper()
+    saisie = (request.form.get("confirmation") or "").strip().upper()
+    if saisie != numero_affaire:
+        flash(
+            f"Confirmation incorrecte — tapez exactement « {numero_affaire} » "
+            "pour supprimer l'affaire complète.",
+            "danger",
+        )
+        return redirect(url_for("affaires.par_affaire", numero_affaire=numero_affaire))
+
+    try:
+        nb, exports = suppression_svc.supprimer_affaire_complete(
+            numero_affaire, user=_current_user()
+        )
+    except suppression_svc.ExportPrealableError as exc:
+        flash(str(exc), "danger")
+        return redirect(url_for("affaires.par_affaire", numero_affaire=numero_affaire))
+
+    flash(
+        f"Affaire {numero_affaire} supprimée ({nb} dossier(s), "
+        f"{len(exports)} export(s) PDF archivé(s)).",
+        "success",
+    )
+    return redirect(url_for("affaires.index"))
+
+
+# ────────────────────────────────────────────────────────────────────────
 # Fiche technique de l'item (V1.2 Lot 2)
 # ────────────────────────────────────────────────────────────────────────
 

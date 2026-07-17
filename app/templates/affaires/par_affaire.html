@@ -22,14 +22,50 @@
         </p>
     </div>
     {% if peut_editer %}
-    <div class="col-auto d-flex align-items-start mt-2 mt-md-0">
+    <div class="col-auto d-flex gap-2 align-items-start mt-2 mt-md-0">
         <form method="post" action="{{ url_for('affaires.par_affaire_nouvel_item', numero_affaire=numero_affaire) }}" class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-primary">+ Ajouter un item</button>
         </form>
+        {% if current_user.role.value == 'admin' %}
+        <button type="button" class="btn btn-outline-danger"
+                data-bs-toggle="modal" data-bs-target="#modalSupprimerAffaire">Supprimer l'affaire</button>
+        {% endif %}
     </div>
     {% endif %}
 </div>
+
+{% if current_user.role.value == 'admin' %}
+<div class="modal fade" id="modalSupprimerAffaire" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" method="post"
+          action="{{ url_for('affaires.par_affaire_supprimer', numero_affaire=numero_affaire) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="modal-header">
+        <h5 class="modal-title h6 text-danger">Supprimer l'affaire complète</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small mb-2">
+          Les <strong>{{ dossiers|length }} dossier{{ 's' if dossiers|length > 1 }}</strong>
+          de l'affaire seront supprimés. Un export PDF de chaque dossier est archivé
+          <strong>avant</strong> toute suppression — si un export échoue, rien n'est
+          supprimé. L'historique d'audit est conservé.
+        </p>
+        <label class="form-label small" for="confirm-suppr-affaire">
+          Tapez <code>{{ numero_affaire }}</code> pour confirmer :
+        </label>
+        <input type="text" class="form-control" id="confirm-suppr-affaire" name="confirmation"
+               autocomplete="off" placeholder="{{ numero_affaire }}">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-danger btn-sm">Supprimer définitivement</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
 
 <!-- Dossiers/items de l'affaire -->
 <div class="card shadow-sm mb-4">

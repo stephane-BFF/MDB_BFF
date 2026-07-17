@@ -33,8 +33,44 @@
            class="btn btn-sm btn-outline-secondary">Fichiers</a>
         <a href="{{ url_for('affaires.historique', affaire_id=affaire.id) }}"
            class="btn btn-sm btn-outline-secondary">Historique</a>
+        {% if current_user.role.value == 'admin' %}
+        <button type="button" class="btn btn-sm btn-outline-danger"
+                data-bs-toggle="modal" data-bs-target="#modalSupprimerDossier">Supprimer</button>
+        {% endif %}
     </div>
 </div>
+
+{% if current_user.role.value == 'admin' %}
+<div class="modal fade" id="modalSupprimerDossier" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" method="post"
+          action="{{ url_for('affaires.supprimer', affaire_id=affaire.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="modal-header">
+        <h5 class="modal-title h6 text-danger">Supprimer ce dossier</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small mb-2">
+          Un export PDF complet du dossier sera archivé <strong>avant</strong> la
+          suppression (obligatoire — l'échec de l'export bloque la suppression).
+          Les formulaires, jalons, fichiers importés et signatures seront supprimés.
+          L'historique d'audit est conservé.
+        </p>
+        <label class="form-label small" for="confirm-suppr">
+          Tapez <code>{{ affaire.references_internes or 'SUPPRIMER' }}</code> pour confirmer :
+        </label>
+        <input type="text" class="form-control" id="confirm-suppr" name="confirmation"
+               autocomplete="off" placeholder="{{ affaire.references_internes or 'SUPPRIMER' }}">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-danger btn-sm">Supprimer définitivement</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
 
 <!-- Identité technique -->
 <div class="card shadow-sm mb-4">
