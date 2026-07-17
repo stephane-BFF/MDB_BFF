@@ -4,9 +4,11 @@ Référence CDC v2 : §10 « Bordereau d'identification des matériaux de soudag
 Tableau dynamique JS — chaque ligne décrit un consommable de soudage
 (électrode, fil, flux) avec son diamètre, numéro de lot et utilisation.
 
-La colonne « Désignation » est adossée au référentiel ``MetalApport`` : la
-sélection d'une désignation renseigne automatiquement la norme (classification
-AWS) et le fournisseur.
+V1.2 Lot 4 (demande n°9, arbitrage D4) : le **n° de lot est en première
+colonne** — saisir un lot déjà rencontré remplit toute la ligne d'un coup,
+depuis l'historique des BIMSOUD saisies (toutes affaires confondues, la
+saisie la plus récente gagne). La colonne « Désignation » reste adossée au
+référentiel ``MetalApport`` (norme + fournisseur auto).
 """
 from __future__ import annotations
 
@@ -19,8 +21,12 @@ from app.extensions import db
 from app.models.referentiel import MetalApport
 from app.services.formulaires.base import ColSpec, TableFormulaireService, TableSpec
 
-# Clé partagée entre la colonne ``datalist`` et ``get_reference_options``.
+# Clés partagées entre les colonnes ``datalist`` et ``get_reference_options``.
 _DATALIST_METAUX = "metaux_apport"
+_DATALIST_LOTS = "lots_soudage"
+
+# Colonnes remplies automatiquement à la sélection d'un n° de lot connu.
+_LOT_AUTOFILL_COLS = ("designation", "norme", "diametre", "fournisseur", "ref_ccpu")
 
 
 class BimSoudService(TableFormulaireService):
@@ -33,6 +39,11 @@ class BimSoudService(TableFormulaireService):
     TABLE_SPEC = TableSpec(
         title=_l("Matériaux de soudage"),
         cols=[
+            ColSpec("num_lot", _l("N° lot"), "text",
+                    required=True, maxlength=50, width="w-10",
+                    datalist=_DATALIST_LOTS,
+                    help_text=_l("Saisir un lot déjà connu remplit toute la "
+                                 "ligne automatiquement.")),
             ColSpec("designation", _l("Désignation"), "text",
                     required=True, maxlength=150, width="w-20",
                     datalist=_DATALIST_METAUX,
@@ -42,8 +53,6 @@ class BimSoudService(TableFormulaireService):
                     required=True, maxlength=100, width="w-15"),
             ColSpec("diametre", _l("Diamètre (mm)"), "float",
                     required=True, step="0.1", min_val="0", width="w-10"),
-            ColSpec("num_lot", _l("N° lot"), "text",
-                    required=True, maxlength=50, width="w-10"),
             ColSpec("fournisseur", _l("Fournisseur"), "text",
                     maxlength=100, width="w-15"),
             ColSpec("utilisation", _l("Utilisation"), "text",
@@ -56,10 +65,13 @@ class BimSoudService(TableFormulaireService):
 
     @classmethod
     def get_reference_options(cls) -> dict[str, Any]:
-        """Alimente la liste déroulante « Désignation » depuis ``MetalApport``.
+        """Alimente les listes « N° lot » (historique) et « Désignation ».
 
-        Sélectionner une désignation renseigne automatiquement les colonnes
-        ``norme`` (classification AWS) et ``fournisseur``.
+        - ``lots_soudage`` : lots déjà saisis dans des BIMSOUD (toutes
+          affaires) ; sélectionner un lot remplit désignation, norme,
+          diamètre, fournisseur et réf. CCPU de la ligne.
+        - ``metaux_apport`` : référentiel ``MetalApport`` ; sélectionner une
+          désignation renseigne norme (classification AWS) et fournisseur.
         """
         metaux = (
             db.session.query(MetalApport)
@@ -67,13 +79,47 @@ class BimSoudService(TableFormulaireService):
             .order_by(MetalApport.designation)
             .all()
         )
-        autofill = {
+        autofill_metaux = {
             m.designation: {"norme": m.classification, "fournisseur": m.fournisseur or ""}
             for m in metaux
         }
+        lots = cls._lots_connus()
         return {
+            _DATALIST_LOTS: {
+                "options": sorted(lots),
+                "autofill": lots,
+            },
             _DATALIST_METAUX: {
                 "options": [m.designation for m in metaux],
-                "autofill": autofill,
-            }
+                "autofill": autofill_metaux,
+            },
         }
+
+    @classmethod
+    def _lots_connus(cls) -> dict[str, dict[str, Any]]:
+        """Historique ``{n° lot: colonnes à remplir}`` des BIMSOUD saisies.
+
+        Parcourt les formulaires BIMSOUD de toutes les affaires, du plus
+        ancien au plus récent (la saisie la plus récente d'un même lot
+        gagne). Arbitrage D4 : historique d'abord ; un référentiel de lots
+        administrable pourra s'y ajouter plus tard si le besoin se confirme.
+        """
+        from app.models.formulaire import Formulaire  # noqa: PLC0415
+
+        lots: dict[str, dict[str, Any]] = {}
+        formulaires = (
+            db.session.query(Formulaire)
+            .filter_by(code=cls.CODE)
+            .order_by(Formulaire.updated_at)
+            .all()
+        )
+        for formulaire in formulaires:
+            for ligne in (formulaire.data or {}).get("lignes", []):
+                lot = str(ligne.get("num_lot") or "").strip()
+                if not lot:
+                    continue
+                lots[lot] = {
+                    col: ligne.get(col) if ligne.get(col) is not None else ""
+                    for col in _LOT_AUTOFILL_COLS
+                }
+        return lots

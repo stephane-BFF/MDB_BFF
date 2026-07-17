@@ -19,7 +19,6 @@ from app.extensions import db
 from app.models.affaire import Affaire
 from app.models.formulaire import Formulaire
 
-
 # ── Cas de tests ───────────────────────────────────────────────────────────
 
 _TABLE_CASES: list[tuple[str, dict]] = [
@@ -284,3 +283,89 @@ class TestBimNoHeaderInData:
         f = _get_formulaire(affaire.id, "BIM")
         assert f is not None
         assert "header" not in f.data
+
+
+# ── BIMSOUD : n° de lot en 1re colonne + autofill historique (V1.2 Lot 4) ──
+
+
+class TestBimsoudLots:
+    def test_num_lot_est_la_premiere_colonne(self) -> None:
+        from app.services.formulaires.bimsoud import BimSoudService
+
+        cols = [c.name for c in BimSoudService.TABLE_SPEC.cols]
+        assert cols[0] == "num_lot"
+
+    def test_historique_des_lots_alimente_l_autofill(
+        self, client_redacteur: FlaskClient, affaire: Affaire
+    ) -> None:
+        from app.services.formulaires.bimsoud import BimSoudService
+
+        _save(
+            client_redacteur,
+            affaire.id,
+            "BIMSOUD",
+            {
+                "lignes": [
+                    {
+                        "num_lot": "LOT-77",
+                        "designation": "FOX EV 50",
+                        "norme": "A5.1: E7018-1H4R",
+                        "diametre": 3.2,
+                        "fournisseur": "VOESTALPINE",
+                        "ref_ccpu": "CCPU-01",
+                    }
+                ]
+            },
+        )
+        with client_redacteur.application.app_context():
+            options = BimSoudService.get_reference_options()
+        lots = options["lots_soudage"]
+        assert "LOT-77" in lots["options"]
+        fill = lots["autofill"]["LOT-77"]
+        assert fill["designation"] == "FOX EV 50"
+        assert fill["norme"] == "A5.1: E7018-1H4R"
+        assert fill["diametre"] == 3.2
+        assert fill["fournisseur"] == "VOESTALPINE"
+        assert fill["ref_ccpu"] == "CCPU-01"
+
+    def test_la_saisie_la_plus_recente_gagne(
+        self, client_redacteur: FlaskClient, affaire: Affaire, user_redacteur
+    ) -> None:
+        import datetime as _dt
+
+        from app.enums import Chapitre
+        from app.services.formulaires.bimsoud import BimSoudService
+
+        ancienne = Affaire(
+            numero_affaire="BN0700",
+            item="0001",
+            annee=2025,
+            statut=Statut.BROUILLON,
+            cree_par_id=user_redacteur.id,
+        )
+        db.session.add(ancienne)
+        db.session.flush()
+        vieux = Formulaire(
+            affaire_id=ancienne.id,
+            code="BIMSOUD",
+            chapitre=Chapitre.B,
+            statut=Statut.BROUILLON,
+            data={"lignes": [{"num_lot": "LOT-77", "designation": "ANCIENNE",
+                              "norme": "N1", "diametre": 2.5}]},
+        )
+        db.session.add(vieux)
+        db.session.commit()
+        # Antidate l'ancienne saisie pour fiabiliser l'ordre updated_at.
+        vieux.updated_at = _dt.datetime(2020, 1, 1, tzinfo=_dt.UTC)
+        db.session.commit()
+
+        _save(
+            client_redacteur,
+            affaire.id,
+            "BIMSOUD",
+            {"lignes": [{"num_lot": "LOT-77", "designation": "RECENTE",
+                         "norme": "N2", "diametre": 3.2}]},
+        )
+        with client_redacteur.application.app_context():
+            options = BimSoudService.get_reference_options()
+        assert options["lots_soudage"]["autofill"]["LOT-77"]["designation"] == "RECENTE"
