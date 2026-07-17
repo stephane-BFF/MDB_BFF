@@ -21,7 +21,8 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from sqlalchemy import Boolean, Date, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, Date, Integer, String, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.extensions import db
@@ -271,6 +272,13 @@ class TypeEquipement(db.Model, TimestampMixin):  # type: ignore[name-defined,mis
         nullable=False,
         default=0,
         doc="Ordre d'affichage dans les listes déroulantes (0 = premier).",
+    )
+    formulaires_defaut: Mapped[list[str] | None] = mapped_column(
+        JSONB().with_variant(JSON(), "sqlite"),
+        nullable=True,
+        doc="Architecture type du dossier (V1.2 Lot 6, D8) : liste des codes "
+        "formulaires inclus par défaut pour ce type d'équipement. NULL = "
+        "dossier complet (tous les formulaires actifs).",
     )
     actif: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     commentaire: Mapped[str | None] = mapped_column(Text, nullable=True)

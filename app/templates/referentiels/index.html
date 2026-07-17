@@ -179,7 +179,12 @@
                         <td class="small">{{ t.ordre }}</td>
                         <td class="small text-muted">{{ t.commentaire or '—' }}</td>
                         <td><span class="badge {% if t.actif %}bg-success{% else %}bg-secondary{% endif %}">{{ 'Actif' if t.actif else 'Inactif' }}</span></td>
-                        <td class="text-end">
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-outline-primary btn-sm py-0 px-2"
+                               href="{{ url_for('referentiels.type_equipement_architecture', tid=t.id) }}"
+                               title="Architecture type du dossier">
+                                Architecture{% if t.formulaires_defaut is not none %} ({{ t.formulaires_defaut|length }}){% endif %}
+                            </a>
                             <button class="btn btn-xs btn-outline-danger btn-sm py-0 px-2 btn-del"
                                     data-url="{{ url_for('referentiels.type_equipement_delete', tid=t.id) }}"
                                     title="Désactiver">✕</button>

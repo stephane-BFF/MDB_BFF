@@ -172,10 +172,12 @@ def show(affaire_id: int) -> str:
             )
         )
 
-    # Charge tous les templates actifs groupés par chapitre.
+    # Charge les templates actifs groupés par chapitre, filtrés par la
+    # composition du dossier (V1.2 Lot 6 — NULL = tout inclus).
     templates_by_chap: dict[Chapitre, list[FormulaireTemplate]] = {c: [] for c in Chapitre}
     for tmpl in db.session.query(FormulaireTemplate).filter_by(actif=True).all():
-        templates_by_chap[tmpl.chapitre].append(tmpl)
+        if affaire_svc.formulaire_inclus(affaire, tmpl.code):
+            templates_by_chap[tmpl.chapitre].append(tmpl)
 
     # Charge les formulaires existants pour cette affaire, indexés par code.
     formulaires_by_code: dict[str, Formulaire] = {
@@ -409,6 +411,63 @@ def par_affaire_infos_generiques(numero_affaire: str) -> Response:
         message += f" {ignores} dossier(s) non modifiable(s) ignoré(s)."
     flash(message, "success" if not ignores else "warning")
     return redirect(url_for("affaires.par_affaire", numero_affaire=numero_affaire))
+
+
+# ────────────────────────────────────────────────────────────────────────
+# Sommaire du dossier — composition via la bibliothèque (V1.2 Lot 6, D8)
+# ────────────────────────────────────────────────────────────────────────
+
+
+@bp.route("/<int:affaire_id>/sommaire", methods=["GET", "POST"])
+@login_required  # type: ignore[untyped-decorator]
+def sommaire(affaire_id: int) -> str | Response:
+    """Sommaire du dossier : architecture consultable et personnalisable.
+
+    La bibliothèque liste les formulaires actifs (chapitres A–G) ; chacun
+    peut être inclus/exclu du dossier (périmètre arbitré D8 — les fichiers
+    importés gardent leur mécanisme par chapitre). Exclure ne supprime
+    aucune donnée ; un formulaire signé exclu déclenche un avertissement.
+    """
+    from app.enums import Chapitre  # noqa: PLC0415
+    from app.models.formulaire import Formulaire, FormulaireTemplate  # noqa: PLC0415
+    from app.services.formulaires import registered_codes  # noqa: PLC0415
+
+    affaire = db.session.get(Affaire, affaire_id)
+    if affaire is None:
+        abort(404)
+    if affaire.statut is Statut.WIZARD_BROUILLON:
+        return redirect(url_for("affaires.show", affaire_id=affaire.id))
+
+    peut_editer = (
+        current_user.role in _WIZARD_ROLES and affaire.is_editable  # type: ignore[attr-defined]
+    )
+
+    if request.method == "POST":
+        if not peut_editer:
+            abort(403)
+        codes = [c.strip() for c in request.form.getlist("codes") if c.strip()]
+        affaire_svc.set_composition_dossier(affaire, codes, user=_current_user())
+        flash("Sommaire du dossier enregistré.", "success")
+        return redirect(url_for("affaires.sommaire", affaire_id=affaire.id))
+
+    templates_by_chap: dict[Chapitre, list[FormulaireTemplate]] = {c: [] for c in Chapitre}
+    for tmpl in db.session.query(FormulaireTemplate).filter_by(actif=True).all():
+        templates_by_chap[tmpl.chapitre].append(tmpl)
+    formulaires_by_code: dict[str, Formulaire] = {
+        f.code: f
+        for f in db.session.query(Formulaire).filter_by(affaire_id=affaire.id).all()
+    }
+
+    return render_template(
+        "affaires/sommaire.html",
+        affaire=affaire,
+        chapitres=list(Chapitre),
+        templates_by_chap=templates_by_chap,
+        formulaires_by_code=formulaires_by_code,
+        implemented_codes=registered_codes(),
+        inclus=lambda code: affaire_svc.formulaire_inclus(affaire, code),
+        peut_editer=peut_editer,
+    )
 
 
 # ────────────────────────────────────────────────────────────────────────

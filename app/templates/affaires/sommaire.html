@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Sommaire — {{ affaire.references_internes }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">Affaires</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">{{ affaire.references_internes }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Sommaire</li>
+            </ol>
+        </nav>
+        <h1 class="h4 mb-1">Sommaire du dossier constructeur</h1>
+        <p class="text-muted small mb-0">
+            <code>{{ affaire.references_internes }}</code>
+            · {{ affaire.type_equipement.libelle if affaire.type_equipement else 'Type d\'équipement non renseigné' }}
+            {% if affaire.composition_dossier is none %}
+            · <span class="badge bg-secondary">Architecture complète (par défaut)</span>
+            {% else %}
+            · <span class="badge bg-info">Architecture personnalisée</span>
+            {% endif %}
+            {% if not peut_editer %}<span class="badge bg-secondary ms-2">Lecture seule</span>{% endif %}
+        </p>
+    </div>
+</div>
+
+<p class="text-muted small">
+    La bibliothèque liste les formulaires du dossier par chapitre. Décocher un
+    formulaire le retire du sommaire, de la page dossier et du PDF assemblé —
+    <strong>sans supprimer aucune donnée</strong> (le recocher restaure tout).
+    Les fichiers importés restent gérés par chapitre dans « Fichiers ».
+</p>
+
+<form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {% for chapitre in chapitres %}
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-white py-2">
+            <h2 class="h6 mb-0">Chapitre {{ chapitre.value }} — {{ chapitre.label }}</h2>
+        </div>
+        <div class="card-body py-2">
+            {% set tmpls = templates_by_chap[chapitre] %}
+            {% if tmpls %}
+            {% for tmpl in tmpls %}
+            {% set formulaire = formulaires_by_code.get(tmpl.code) %}
+            {% set est_signe = formulaire and formulaire.statut.value == 'signe' %}
+            <div class="form-check d-flex align-items-center gap-2 py-1">
+                <input class="form-check-input {{ 'chk-signe' if est_signe }}" type="checkbox"
+                       name="codes" value="{{ tmpl.code }}" id="som-{{ tmpl.code }}"
+                       {{ 'checked' if inclus(tmpl.code) }}
+                       {{ 'disabled' if not peut_editer }}>
+                <label class="form-check-label flex-grow-1" for="som-{{ tmpl.code }}">
+                    <code>{{ tmpl.code }}</code> — {{ tmpl.libelle }}
+                </label>
+                {% if formulaire %}
+                <span class="badge statut-badge bg-secondary">{{ formulaire.statut.label }}</span>
+                {% elif tmpl.code in implemented_codes %}
+                <span class="badge bg-light text-muted border">Non créé</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small mb-0">Aucun formulaire applicatif — chapitre alimenté par fichiers importés.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between mb-4">
+        <a class="btn btn-outline-secondary" href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">← Retour au dossier</a>
+        {% if peut_editer %}
+        <button type="submit" class="btn btn-primary">Enregistrer le sommaire</button>
+        {% endif %}
+    </div>
+</form>
+
+<script>
+(function () {
+    "use strict";
+    // Avertissement explicite avant d'exclure un formulaire déjà signé (D8).
+    document.querySelectorAll(".chk-signe").forEach(function (chk) {
+        chk.addEventListener("change", function () {
+            if (!chk.checked && !confirm(
+                "Ce formulaire est SIGNÉ. L'exclure le retire du sommaire et du " +
+                "PDF assemblé (aucune donnée supprimée). Confirmer l'exclusion ?"
+            )) {
+                chk.checked = true;
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

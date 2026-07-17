@@ -232,6 +232,15 @@ def finish_wizard(affaire: Affaire, user: User, commentaire: str | None = None) 
     affaire.statut = Statut.BROUILLON
     affaire.statut_wizard = None
 
+    # Architecture type du dossier (V1.2 Lot 6, D8) : la composition est
+    # initialisée depuis le type d'équipement (NULL = dossier complet).
+    if (
+        affaire.composition_dossier is None
+        and affaire.type_equipement is not None
+        and affaire.type_equipement.formulaires_defaut is not None
+    ):
+        affaire.composition_dossier = list(affaire.type_equipement.formulaires_defaut)
+
     AuditTrail.log(
         "affaire.wizard_finished",
         user=user,
@@ -360,6 +369,41 @@ def propager_infos_generiques(
         modifies += 1
     db.session.commit()
     return modifies, ignores
+
+
+# ── Composition du dossier / sommaire (V1.2 Lot 6) ───────────────────────
+
+
+def formulaire_inclus(affaire: Affaire, code: str) -> bool:
+    """True si le formulaire ``code`` fait partie du dossier (sommaire).
+
+    ``composition_dossier`` à ``NULL`` = tout inclus (rétrocompatible, D8).
+    """
+    if affaire.composition_dossier is None:
+        return True
+    return code in affaire.composition_dossier
+
+
+def set_composition_dossier(
+    affaire: Affaire, codes: list[str], user: User
+) -> None:
+    """Enregistre la composition du dossier (codes inclus au sommaire).
+
+    Exclure un formulaire le masque du sommaire, de la page dossier et du
+    PDF assemblé, mais **ne supprime aucune donnée** (D8). La modification
+    est auditée.
+    """
+    ancienne = affaire.composition_dossier
+    affaire.composition_dossier = sorted(set(codes))
+    AuditTrail.log(
+        "affaire.composition_modifiee",
+        user=user,
+        entity_type="affaire",
+        entity_id=affaire.id,
+        old_value=str(ancienne),
+        new_value=str(affaire.composition_dossier),
+    )
+    db.session.commit()
 
 
 # ── Fiche technique de l'item (V1.2 Lot 2) ───────────────────────────────

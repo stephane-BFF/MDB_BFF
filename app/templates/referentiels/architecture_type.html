@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Architecture type — {{ type_equipement.libelle }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('referentiels.index') }}">Référentiels</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Architecture type — {{ type_equipement.libelle }}</li>
+            </ol>
+        </nav>
+        <h1 class="h4 mb-1">Architecture type du dossier</h1>
+        <p class="text-muted small mb-0">
+            Type d'équipement : <strong>{{ type_equipement.libelle }}</strong>
+            {% if type_equipement.formulaires_defaut is none %}
+            · <span class="badge bg-secondary">Dossier complet (par défaut)</span>
+            {% else %}
+            · <span class="badge bg-info">{{ type_equipement.formulaires_defaut|length }} formulaire(s) par défaut</span>
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<p class="text-muted small">
+    Définit le sommaire par défaut des dossiers créés avec ce type d'équipement
+    (ex. « FAISCEAU de rechange » = dossier allégé). Chaque dossier reste ensuite
+    personnalisable individuellement via sa page « Sommaire ».
+</p>
+
+<form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body py-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="arch-complet"
+                       name="dossier_complet" value="1"
+                       {{ 'checked' if type_equipement.formulaires_defaut is none }}>
+                <label class="form-check-label" for="arch-complet">
+                    <strong>Dossier complet</strong> — tous les formulaires actifs sont inclus par défaut
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div id="arch-details" class="{{ 'd-none' if type_equipement.formulaires_defaut is none }}">
+        {% for chapitre in chapitres %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-white py-2">
+                <h2 class="h6 mb-0">Chapitre {{ chapitre.value }} — {{ chapitre.label }}</h2>
+            </div>
+            <div class="card-body py-2">
+                {% set tmpls = templates_by_chap[chapitre] %}
+                {% if tmpls %}
+                {% for tmpl in tmpls %}
+                <div class="form-check py-1">
+                    <input class="form-check-input" type="checkbox" name="codes"
+                           value="{{ tmpl.code }}" id="arch-{{ tmpl.code }}"
+                           {{ 'checked' if type_equipement.formulaires_defaut is none
+                              or tmpl.code in type_equipement.formulaires_defaut }}>
+                    <label class="form-check-label" for="arch-{{ tmpl.code }}">
+                        <code>{{ tmpl.code }}</code> — {{ tmpl.libelle }}
+                    </label>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted small mb-0">Aucun formulaire applicatif dans ce chapitre.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex justify-content-between mb-4">
+        <a class="btn btn-outline-secondary" href="{{ url_for('referentiels.index') }}">← Retour aux référentiels</a>
+        <button type="submit" class="btn btn-primary">Enregistrer l'architecture type</button>
+    </div>
+</form>
+
+<script>
+(function () {
+    "use strict";
+    var complet = document.getElementById("arch-complet");
+    var details = document.getElementById("arch-details");
+    complet.addEventListener("change", function () {
+        details.classList.toggle("d-none", complet.checked);
+    });
+})();
+</script>
+{% endblock %}

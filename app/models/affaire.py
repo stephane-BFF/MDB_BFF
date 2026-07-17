@@ -111,6 +111,15 @@ class Affaire(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
         doc="Nombre d'appareils livrés sous ce dossier.",
     )
     annee_construction: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    composition_dossier: Mapped[list[str] | None] = mapped_column(
+        JSONB().with_variant(JSON(), "sqlite"),
+        nullable=True,
+        doc="Composition du dossier (V1.2 Lot 6, D8) : codes des formulaires "
+        "inclus au sommaire. NULL = tout inclus (rétrocompatible). "
+        "Initialisée depuis l'architecture type du type d'équipement, puis "
+        "personnalisable via la page Sommaire. Exclure ne supprime aucune "
+        "donnée.",
+    )
 
     # ── Workflow ─────────────────────────────────────────────────────────
     statut: Mapped[Statut] = mapped_column(

@@ -300,9 +300,16 @@ def _add_formulaires(
         if f.statut in (Statut.VALIDE, Statut.SIGNE)
     }
 
+    from app.services.affaire import formulaire_inclus  # noqa: PLC0415
+
     for code in _FORMULAIRE_ORDER:
         formulaire = formulaires_by_code.get(code)
         if formulaire is None:
+            continue
+
+        # Composition du dossier (V1.2 Lot 6) : un formulaire exclu du
+        # sommaire n'apparaît pas dans le PDF assemblé (données conservées).
+        if not formulaire_inclus(affaire, code):
             continue
 
         svc = get_service(code)

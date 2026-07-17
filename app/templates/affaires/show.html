@@ -27,6 +27,8 @@
     <div class="col-auto d-flex gap-2 align-items-start mt-2 mt-md-0">
         <a href="{{ url_for('affaires.fiche_technique', affaire_id=affaire.id) }}"
            class="btn btn-sm btn-primary">Fiche technique</a>
+        <a href="{{ url_for('affaires.sommaire', affaire_id=affaire.id) }}"
+           class="btn btn-sm btn-outline-primary">Sommaire</a>
         <a href="{{ url_for('jalons.index', affaire_id=affaire.id) }}"
            class="btn btn-sm btn-outline-primary">Jalons JP0-JP6</a>
         <a href="{{ url_for('fichiers.manage', affaire_id=affaire.id) }}"

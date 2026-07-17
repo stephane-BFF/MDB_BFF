@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from flask import abort, jsonify, render_template, request
+from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import login_required
 from werkzeug.wrappers.response import Response
 
@@ -297,6 +297,51 @@ def type_equipement_update(tid: int) -> Response:
         t.commentaire = str(p["commentaire"])[:500] or None
     db.session.commit()
     return jsonify({"ok": True})  # type: ignore[return-value]
+
+
+@bp.route("/types-equipement/<int:tid>/architecture", methods=["GET", "POST"])
+@login_required  # type: ignore[untyped-decorator]
+@role_required(*_EDIT_ROLES)
+def type_equipement_architecture(tid: int) -> str | Response:
+    """Architecture type du dossier pour un type d'équipement (V1.2 Lot 6, D8).
+
+    Définit les formulaires inclus par défaut dans les dossiers de ce type
+    (ex. « FAISCEAU de rechange » = dossier allégé). ``NULL`` = dossier
+    complet. Appliquée à la création du dossier, puis personnalisable
+    dossier par dossier via la page Sommaire.
+    """
+    from app.enums import Chapitre  # noqa: PLC0415
+    from app.models.formulaire import FormulaireTemplate  # noqa: PLC0415
+
+    type_equipement = db.session.get(TypeEquipement, tid)
+    if type_equipement is None:
+        abort(404)
+
+    if request.method == "POST":
+        if request.form.get("dossier_complet"):
+            type_equipement.formulaires_defaut = None
+        else:
+            codes = [c.strip() for c in request.form.getlist("codes") if c.strip()]
+            type_equipement.formulaires_defaut = sorted(set(codes))
+        db.session.commit()
+        flash(
+            f"Architecture type de « {type_equipement.libelle} » enregistrée.",
+            "success",
+        )
+        return redirect(  # type: ignore[return-value]
+            url_for("referentiels.type_equipement_architecture", tid=tid)
+        )
+
+    templates_by_chap: dict[Chapitre, list[FormulaireTemplate]] = {c: [] for c in Chapitre}
+    for tmpl in db.session.query(FormulaireTemplate).filter_by(actif=True).all():
+        templates_by_chap[tmpl.chapitre].append(tmpl)
+
+    return render_template(  # type: ignore[return-value]
+        "referentiels/architecture_type.html",
+        type_equipement=type_equipement,
+        chapitres=list(Chapitre),
+        templates_by_chap=templates_by_chap,
+    )
 
 
 @bp.route("/types-equipement/<int:tid>", methods=["DELETE"])
