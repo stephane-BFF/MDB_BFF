@@ -21,12 +21,11 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from sqlalchemy import Boolean, Date, Integer, String, Text
+from sqlalchemy import Boolean, Date, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.extensions import db
 from app.models.base import TimestampMixin
-
 
 # ── Seuil d'alerte expiration ─────────────────────────────────────────────
 
@@ -56,16 +55,28 @@ class Soudeur(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
+    matricule: Mapped[str | None] = mapped_column(
+        String(20),
+        nullable=True,
+        index=True,
+        doc="Matricule / identifiant BFF du soudeur (ex: 96).",
+    )
+    initiales: Mapped[str | None] = mapped_column(
+        String(10),
+        nullable=True,
+        doc="Initiales / poinçon du soudeur (ex: SG).",
+    )
     nom: Mapped[str] = mapped_column(
         String(200),
         nullable=False,
         index=True,
         doc="Nom complet du soudeur.",
     )
-    qualification: Mapped[str] = mapped_column(
+    qualification: Mapped[str | None] = mapped_column(
         String(100),
-        nullable=False,
-        doc="Référence qualification (ex: DMOS 001, WPQR 135-FW-BW).",
+        nullable=True,
+        doc="Référence qualification globale (ex: DMOS 001, WPQR 135-FW-BW). "
+        "Facultatif : le détail par QS est saisi dans le formulaire LISTSOUD.",
     )
     indice: Mapped[str | None] = mapped_column(
         String(20),
@@ -156,6 +167,74 @@ class Materiau(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
         String(100),
         nullable=True,
         doc="Numéro de certificat ou type attendu (ex: 3.1 EN 10204).",
+    )
+    actif: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    commentaire: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class MetalApport(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
+    """Métal d'apport (consommable de soudage) — référentiel BFF.
+
+    Alimente la liste déroulante du formulaire BIMSOUD : sélectionner une
+    désignation renseigne automatiquement la classification (norme AWS) et le
+    fournisseur. Peuplé par ``flask seed`` depuis le fichier source
+    ``LISTE_AQ_EF_16`` (voir ``app/cli/data_metaux_apport.py``).
+    """
+
+    __tablename__ = "metaux_apport"
+    __table_args__ = (
+        UniqueConstraint("designation", name="uq_metaux_apport_designation"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    designation: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+        index=True,
+        doc="Désignation commerciale du consommable (ex: FOX EV 50).",
+    )
+    classification: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+        doc="Classification / norme AWS (ex: A5.1: E7018-1H4R).",
+    )
+    fournisseur: Mapped[str | None] = mapped_column(
+        String(150),
+        nullable=True,
+        doc="Fabricant / fournisseur (ex: VOESTALPINE BOHLER WELDING).",
+    )
+    actif: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    commentaire: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class OrganismeNotifie(db.Model, TimestampMixin):  # type: ignore[name-defined,misc]
+    """Organisme notifié (ON) au titre de la directive PED 2014/68/UE.
+
+    Un ON est identifié par son numéro NANDO à 4 chiffres (ex: ``0062`` pour
+    Bureau Veritas). Alimente la liste déroulante « Organisme notifié » du
+    formulaire ATTDECR : sélectionner un ON renseigne son numéro. Peuplé par
+    ``flask seed`` depuis le fichier source ``NANDO_2014_68_EU.pdf`` (voir
+    ``app/cli/data_organismes_notifies.py``).
+    """
+
+    __tablename__ = "organismes_notifies"
+    __table_args__ = (
+        UniqueConstraint("numero", name="uq_organismes_notifies_numero"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    numero: Mapped[str] = mapped_column(
+        String(4),
+        nullable=False,
+        index=True,
+        doc="Numéro d'identification NANDO à 4 chiffres (ex: 0062).",
+    )
+    nom: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        doc="Nom de l'organisme notifié (ex: BUREAU VERITAS SERVICES).",
     )
     actif: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     commentaire: Mapped[str | None] = mapped_column(Text, nullable=True)

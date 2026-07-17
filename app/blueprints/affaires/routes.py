@@ -17,6 +17,8 @@ from app.enums import Role, Statut, StatutWizard
 from app.extensions import db
 from app.forms.affaire import AffaireFilterForm
 from app.forms.wizard import (
+    MODULES_PAR_CATEGORIE,
+    MODULES_PED,
     NUMERO_AFFAIRE_MANUEL,
     WizardQ1Form,
     WizardQ2Form,
@@ -124,6 +126,7 @@ def show(affaire_id: int) -> str:
     """
     from app.enums import Chapitre
     from app.models.formulaire import Formulaire, FormulaireTemplate
+    from app.services.formulaires import registered_codes
 
     affaire = db.session.get(Affaire, affaire_id)
     if affaire is None:
@@ -155,6 +158,7 @@ def show(affaire_id: int) -> str:
         chapitres=list(Chapitre),
         templates_by_chap=templates_by_chap,
         formulaires_by_code=formulaires_by_code,
+        implemented_codes=registered_codes(),
     )
 
 
@@ -412,6 +416,8 @@ def wizard_step(affaire_id: int, step: str) -> str | Response | tuple[str, int]:
         form=form,
         step=current_step,
         steps=list(StatutWizard),
+        ped_modules=MODULES_PED,
+        ped_modules_par_cat=MODULES_PAR_CATEGORIE,
     )
 
 

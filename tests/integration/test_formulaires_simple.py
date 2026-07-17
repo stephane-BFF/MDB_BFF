@@ -19,7 +19,6 @@ from app.extensions import db
 from app.models.affaire import Affaire
 from app.models.formulaire import Formulaire
 
-
 # ── Cas de tests : (code, payload minimal valide) ─────────────────────────
 
 _SIMPLE_CASES: list[tuple[str, dict]] = [
@@ -304,3 +303,42 @@ class TestPesageEcartCalcule:
         )
         assert resp.status_code == 200
         assert "danger" in resp.data.decode("utf-8")
+
+
+class TestAttDecrImposedModule:
+    """ATTDECR — module d'évaluation imposé depuis la catégorie PED (Q4)."""
+
+    @staticmethod
+    def _set_q4_module(affaire: Affaire, module: str) -> None:
+        reponses = dict(affaire.parametrage.reponses or {})
+        reponses["q4_module_ped"] = module
+        affaire.parametrage.reponses = reponses
+        db.session.commit()
+
+    def test_module_forced_from_q4(
+        self, client_redacteur: FlaskClient, affaire: Affaire
+    ) -> None:
+        self._set_q4_module(affaire, "H")
+        # On poste 'A' mais Q4 impose 'H' → le serveur réapplique 'H'.
+        _save(client_redacteur, affaire.id, "ATTDECR", {
+            "date_emission": "2026-07-16",
+            "module_evaluation": "A",
+            "conformite_ped": True,
+        })
+        f = _get_formulaire(affaire.id, "ATTDECR")
+        assert f is not None
+        assert f.data["module_evaluation"] == "H"
+
+    def test_reference_options_lists_notified_bodies(self, affaire: Affaire) -> None:
+        from app.models.referentiel import OrganismeNotifie
+        from app.services.formulaires.attdecr import AttDecrService
+
+        db.session.add(
+            OrganismeNotifie(numero="0062", nom="BUREAU VERITAS SERVICES", actif=True)
+        )
+        db.session.commit()
+        ref = AttDecrService.get_reference_options()
+        on = ref["organismes_notifies"]
+        key = "0062 — BUREAU VERITAS SERVICES"
+        assert key in on["options"]
+        assert on["autofill"][key]["numero_on"] == "0062"

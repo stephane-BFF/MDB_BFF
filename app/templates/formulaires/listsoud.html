@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}{{ svc.CODE }} — {{ affaire.numero_affaire }}{% endblock %}
+
+{% block head_extra %}
+<style>
+.save-indicator { transition: opacity 0.5s; opacity: 0; }
+.save-indicator.visible { opacity: 1; }
+.qual-block { border-left: 3px solid #0d6efd; }
+.chk-grid { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
+.chk-grid .form-check { margin-bottom: 0; }
+.soudeur-card .card-header { gap: .5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('affaires.index') }}">{{ _('Affaires') }}</a></li>
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}">{{ affaire.numero_affaire }}</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">{{ svc.CODE }}</li>
+    </ol>
+</nav>
+
+<div class="d-flex align-items-start justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">
+            {{ svc.TITLE }}
+            <span class="badge bg-light text-dark border fw-normal ms-2 small align-middle">
+                {{ svc.CODE }} v{{ tmpl.version if tmpl else 1 }}
+            </span>
+        </h1>
+        <p class="text-muted small mb-0">
+            {{ _('Affaire') }} {{ affaire.numero_affaire }} — {{ affaire.client_nom or '—' }}
+            {% if formulaire %}
+            · <span class="badge statut-badge bg-secondary">{{ formulaire.statut.label }}</span>
+            {% if hash_valid is not none %}
+                {% if hash_valid %}
+                <span class="badge bg-success ms-1">&#10003; {{ _('Hash OK') }}</span>
+                {% else %}
+                <span class="badge bg-danger ms-1">&#9888; {{ _('Hash invalide') }}</span>
+                {% endif %}
+            {% endif %}
+            {% else %}
+            · <span class="badge bg-light text-muted border">{{ _('Nouveau') }}</span>
+            {% endif %}
+        </p>
+    </div>
+    <a href="{{ url_for('affaires.show', affaire_id=affaire.id) }}"
+       class="btn btn-sm btn-outline-secondary">&#8592; {{ _('Retour affaire') }}</a>
+</div>
+
+<div id="saveError" class="alert alert-danger d-none" role="alert"></div>
+
+{# ── Code de construction ─────────────────────────────────────────────── #}
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2 d-flex align-items-center gap-3">
+        <span class="fw-semibold small">{{ _('Code de construction') }} :</span>
+        <div class="btn-group btn-group-sm" role="group" id="codeConstructionGroup">
+            <input type="radio" class="btn-check" name="codeConstruction" id="cc_ASME" value="ASME" autocomplete="off">
+            <label class="btn btn-outline-primary" for="cc_ASME">ASME (P-No / QW-461)</label>
+            <input type="radio" class="btn-check" name="codeConstruction" id="cc_EN" value="EN" autocomplete="off">
+            <label class="btn btn-outline-primary" for="cc_EN">EN / ISO (15608 / 6947)</label>
+        </div>
+        <span class="form-text text-muted mb-0">
+            {{ _('Détermine les positions et groupes de matériaux proposés.') }}
+        </span>
+    </div>
+</div>
+
+<div id="soudeursContainer"></div>
+
+{% if can_edit %}
+<button type="button" id="addSoudeurBtn" class="btn btn-outline-primary mb-4">
+    + {{ _('Ajouter un soudeur') }}
+</button>
+{% endif %}
+<p id="emptyMsg" class="text-muted small">
+    {{ _('Aucun soudeur — cliquez « Ajouter un soudeur » pour commencer.') }}
+</p>
+
+{# ── Barre d'actions ──────────────────────────────────────────────────── #}
+<div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+    {% if can_edit %}
+    <button type="button" id="saveBtn" class="btn btn-primary">{{ _('Enregistrer le brouillon') }}</button>
+    <span id="saveIndicator" class="save-indicator text-success small">&#10003; {{ _('Enregistré') }}</span>
+    {% endif %}
+
+    {% if can_validate %}
+    <form method="post" action="{{ url_for('formulaires.valider', affaire_id=affaire.id, code=code) }}" class="m-0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-success"
+                onclick='return confirm({{ _('Valider le formulaire %(code)s ? Cette action est irréversible.', code=svc.CODE)|tojson }})'>
+            {{ _('Valider') }}
+        </button>
+    </form>
+    {% endif %}
+
+    {% if can_sign %}
+    <form method="post" action="{{ url_for('formulaires.signer', affaire_id=affaire.id, code=code) }}" class="m-0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger"
+                onclick='return confirm({{ _('Signer le formulaire %(code)s ? La signature est définitive.', code=svc.CODE)|tojson }})'>
+            {{ _('Signer (SHA-256)') }}
+        </button>
+    </form>
+    {% endif %}
+
+    {% if formulaire and formulaire.statut.value in ('valide', 'signe') %}
+    <a href="{{ url_for('formulaires.pdf', affaire_id=affaire.id, code=code) }}"
+       class="btn btn-outline-dark ms-auto" target="_blank">&#128196; {{ _('Télécharger PDF') }}</a>
+    {% endif %}
+</div>
+
+{% if formulaire and formulaire.signatures %}
+{% set derniere_signature = formulaire.signatures[-1] %}
+<div class="text-muted small mt-1">
+    {{ _('Signé le %(date)s par %(nom)s',
+         date=derniere_signature.created_at.strftime('%d/%m/%Y %H:%M'),
+         nom=derniere_signature.user.full_name if derniere_signature.user else '—') }}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    'use strict';
+
+    const FORM_DATA = {{ form_data|tojson }};
+    const REF = {{ (reference_options or {})|tojson }};
+    const CAN_EDIT = {{ can_edit|tojson }};
+    const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+
+    const container   = document.getElementById('soudeursContainer');
+    const addBtn      = document.getElementById('addSoudeurBtn');
+    const saveBtn     = document.getElementById('saveBtn');
+    const saveInd     = document.getElementById('saveIndicator');
+    const saveError   = document.getElementById('saveError');
+    const emptyMsg    = document.getElementById('emptyMsg');
+
+    let code = (FORM_DATA && FORM_DATA.code_construction) || (REF.codes_construction || ['ASME'])[0];
+
+    function el(tag, cls, txt) {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (txt != null) e.textContent = txt;
+        return e;
+    }
+
+    // ── Rendu d'une qualification ────────────────────────────────────────
+    function renderQual(q) {
+        q = q || { procede: '', positions: [], groupes: [], reference_qs: '', date_validite: '' };
+        const block = el('div', 'qual-block ps-3 py-2 mb-2 bg-light rounded');
+        block.dataset.role = 'qual';
+
+        // Procédé
+        const rowP = el('div', 'row g-2 align-items-end mb-2');
+        const colProc = el('div', 'col-md-8');
+        colProc.appendChild(el('label', 'form-label small mb-1', 'Procédé de soudage *'));
+        const sel = el('select', 'form-select form-select-sm');
+        sel.dataset.field = 'procede';
+        sel.appendChild(new Option('— Sélectionner —', ''));
+        (REF.procedes || []).forEach(([c, lbl]) => {
+            const o = new Option(lbl, c); if (c === q.procede) o.selected = true;
+            sel.appendChild(o);
+        });
+        sel.disabled = !CAN_EDIT;
+        colProc.appendChild(sel);
+        rowP.appendChild(colProc);
+
+        const colRef = el('div', 'col-md-4');
+        colRef.appendChild(el('label', 'form-label small mb-1', 'Référence QS'));
+        const inpRef = el('input', 'form-control form-control-sm');
+        inpRef.type = 'text'; inpRef.maxLength = 100; inpRef.dataset.field = 'reference_qs';
+        inpRef.value = q.reference_qs || ''; inpRef.readOnly = !CAN_EDIT;
+        colRef.appendChild(inpRef);
+        rowP.appendChild(colRef);
+        block.appendChild(rowP);
+
+        // Positions (cases à cocher)
+        block.appendChild(el('div', 'small fw-semibold text-muted', 'Positions qualifiées'));
+        const posGrid = el('div', 'chk-grid mb-2');
+        posGrid.dataset.group = 'positions';
+        (REF.positions[code] || []).forEach((p) => {
+            posGrid.appendChild(checkbox('positions', p, (q.positions || []).includes(p)));
+        });
+        block.appendChild(posGrid);
+
+        // Groupes de matériaux (cases à cocher)
+        block.appendChild(el('div', 'small fw-semibold text-muted', 'Groupes de matériaux qualifiés'));
+        const grpGrid = el('div', 'chk-grid mb-2');
+        grpGrid.dataset.group = 'groupes';
+        (REF.groupes[code] || []).forEach((g) => {
+            grpGrid.appendChild(checkbox('groupes', g, (q.groupes || []).includes(g)));
+        });
+        block.appendChild(grpGrid);
+
+        // Date de validité + suppression
+        const rowD = el('div', 'row g-2 align-items-end');
+        const colDate = el('div', 'col-auto');
+        colDate.appendChild(el('label', 'form-label small mb-1', 'Date de validité *'));
+        const inpDate = el('input', 'form-control form-control-sm');
+        inpDate.type = 'date'; inpDate.dataset.field = 'date_validite';
+        inpDate.value = q.date_validite || ''; inpDate.readOnly = !CAN_EDIT;
+        colDate.appendChild(inpDate);
+        rowD.appendChild(colDate);
+        if (CAN_EDIT) {
+            const colDel = el('div', 'col-auto ms-auto');
+            const del = el('button', 'btn btn-sm btn-outline-danger', 'Supprimer la qualification');
+            del.type = 'button';
+            del.addEventListener('click', () => { block.remove(); });
+            colDel.appendChild(del);
+            rowD.appendChild(colDel);
+        }
+        block.appendChild(rowD);
+        return block;
+    }
+
+    function checkbox(group, value, checked) {
+        const wrap = el('div', 'form-check form-check-inline');
+        const inp = el('input', 'form-check-input');
+        inp.type = 'checkbox'; inp.value = value; inp.checked = !!checked;
+        inp.disabled = !CAN_EDIT; inp.dataset.chk = group;
+        const id = `${group}_${value}_${Math.round(performance.now() * 1000)}_${Math.floor(performance.now())}`;
+        inp.id = id;
+        const lbl = el('label', 'form-check-label small', value);
+        lbl.setAttribute('for', id);
+        wrap.appendChild(inp); wrap.appendChild(lbl);
+        return wrap;
+    }
+
+    // ── Rendu d'un soudeur ───────────────────────────────────────────────
+    function renderSoudeur(s) {
+        s = s || { matricule: '', initiales: '', nom: '', qualifications: [] };
+        const card = el('div', 'card shadow-sm mb-3 soudeur-card');
+        card.dataset.role = 'soudeur';
+        card.dataset.matricule = s.matricule || '';
+        card.dataset.initiales = s.initiales || '';
+        card.dataset.nom = s.nom || '';
+
+        const head = el('div', 'card-header bg-white d-flex align-items-center flex-wrap');
+        head.appendChild(el('span', 'fw-semibold small', 'Soudeur :'));
+        const sel = el('select', 'form-select form-select-sm');
+        sel.style.maxWidth = '320px'; sel.dataset.field = 'soudeur';
+        sel.appendChild(new Option('— Sélectionner un soudeur —', ''));
+        (REF.soudeurs || []).forEach((w, i) => {
+            const label = w.nom + (w.matricule ? ` (${w.matricule})` : '');
+            const o = new Option(label, String(i));
+            if (w.nom === s.nom && (w.matricule || '') === (s.matricule || '')) o.selected = true;
+            sel.appendChild(o);
+        });
+        sel.disabled = !CAN_EDIT;
+        const badge = el('span', 'badge bg-secondary', s.initiales || '—');
+        badge.dataset.role = 'initiales';
+        sel.addEventListener('change', () => {
+            const w = (REF.soudeurs || [])[parseInt(sel.value, 10)];
+            if (w) {
+                card.dataset.matricule = w.matricule || '';
+                card.dataset.initiales = w.initiales || '';
+                card.dataset.nom = w.nom || '';
+                badge.textContent = w.initiales || '—';
+            }
+        });
+        head.appendChild(sel);
+        head.appendChild(el('span', 'small text-muted', 'Poinçon :'));
+        head.appendChild(badge);
+        if (CAN_EDIT) {
+            const del = el('button', 'btn btn-sm btn-outline-danger ms-auto', 'Retirer le soudeur');
+            del.type = 'button';
+            del.addEventListener('click', () => { card.remove(); toggleEmpty(); });
+            head.appendChild(del);
+        }
+        card.appendChild(head);
+
+        const body = el('div', 'card-body');
+        const qualsWrap = el('div', '');
+        qualsWrap.dataset.role = 'quals';
+        (s.qualifications && s.qualifications.length ? s.qualifications : []).forEach((q) => {
+            qualsWrap.appendChild(renderQual(q));
+        });
+        body.appendChild(qualsWrap);
+        if (CAN_EDIT) {
+            const addQ = el('button', 'btn btn-sm btn-outline-primary', '+ Ajouter une qualification');
+            addQ.type = 'button';
+            addQ.addEventListener('click', () => { qualsWrap.appendChild(renderQual(null)); });
+            body.appendChild(addQ);
+        }
+        card.appendChild(body);
+        return card;
+    }
+
+    // ── Collecte DOM → structure ─────────────────────────────────────────
+    function collect() {
+        const soudeurs = [];
+        container.querySelectorAll('[data-role="soudeur"]').forEach((card) => {
+            const quals = [];
+            card.querySelectorAll('[data-role="qual"]').forEach((qb) => {
+                const positions = [...qb.querySelectorAll('[data-chk="positions"]:checked')].map((c) => c.value);
+                const groupes = [...qb.querySelectorAll('[data-chk="groupes"]:checked')].map((c) => c.value);
+                quals.push({
+                    procede: qb.querySelector('[data-field="procede"]').value,
+                    positions: positions,
+                    groupes: groupes,
+                    reference_qs: qb.querySelector('[data-field="reference_qs"]').value,
+                    date_validite: qb.querySelector('[data-field="date_validite"]').value,
+                });
+            });
+            soudeurs.push({
+                matricule: card.dataset.matricule || '',
+                initiales: card.dataset.initiales || '',
+                nom: card.dataset.nom || '',
+                qualifications: quals,
+            });
+        });
+        return { code_construction: code, soudeurs: soudeurs };
+    }
+
+    function render(state) {
+        container.innerHTML = '';
+        (state.soudeurs || []).forEach((s) => container.appendChild(renderSoudeur(s)));
+        toggleEmpty();
+    }
+
+    function toggleEmpty() {
+        if (emptyMsg) emptyMsg.style.display = container.querySelector('[data-role="soudeur"]') ? 'none' : 'block';
+    }
+
+    // ── Bascule code de construction (re-filtre positions/groupes) ───────
+    document.querySelectorAll('input[name="codeConstruction"]').forEach((r) => {
+        r.checked = (r.value === code);
+        r.disabled = !CAN_EDIT;
+        r.addEventListener('change', () => {
+            if (!r.checked) return;
+            const state = collect();
+            code = r.value;
+            // Purge les positions/groupes désormais invalides pour ce code.
+            const validPos = new Set(REF.positions[code] || []);
+            const validGrp = new Set(REF.groupes[code] || []);
+            state.soudeurs.forEach((s) => (s.qualifications || []).forEach((q) => {
+                q.positions = (q.positions || []).filter((p) => validPos.has(p));
+                q.groupes = (q.groupes || []).filter((g) => validGrp.has(g));
+            }));
+            render(state);
+        });
+    });
+
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            const state = collect();
+            state.soudeurs.push({ matricule: '', initiales: '', nom: '', qualifications: [] });
+            render(state);
+        });
+    }
+
+    // ── Enregistrement AJAX ──────────────────────────────────────────────
+    async function save() {
+        if (!saveBtn) return;
+        saveBtn.disabled = true;
+        if (saveError) saveError.classList.add('d-none');
+        try {
+            const resp = await fetch(window.location.pathname, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+                body: JSON.stringify(collect()),
+            });
+            const json = await resp.json();
+            if (json.ok) {
+                if (saveInd) { saveInd.classList.add('visible'); setTimeout(() => saveInd.classList.remove('visible'), 2500); }
+            } else if (saveError) {
+                saveError.textContent = json.error || {{ _('Erreur lors de la sauvegarde.')|tojson }};
+                saveError.classList.remove('d-none');
+            }
+        } catch (_) {
+            if (saveError) { saveError.textContent = {{ _('Erreur réseau — réessayez.')|tojson }}; saveError.classList.remove('d-none'); }
+        } finally {
+            saveBtn.disabled = false;
+        }
+    }
+    if (saveBtn) saveBtn.addEventListener('click', save);
+
+    // Rendu initial
+    render({ code_construction: code, soudeurs: (FORM_DATA && FORM_DATA.soudeurs) || [] });
+})();
+</script>
+{% endblock %}

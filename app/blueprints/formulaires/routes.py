@@ -92,6 +92,9 @@ def show(affaire_id: int, code: str) -> str:
     )
 
     template_name = svc.get_web_template()
+    reference_options = (
+        svc.get_reference_options() if hasattr(svc, "get_reference_options") else {}
+    )
     return render_template(
         template_name,
         affaire=affaire,
@@ -105,6 +108,7 @@ def show(affaire_id: int, code: str) -> str:
         can_sign=can_sign,
         hash_valid=hash_valid,
         code=code.upper(),
+        reference_options=reference_options,
     )
 
 

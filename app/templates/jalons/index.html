@@ -94,7 +94,13 @@
                     {% set ok = code not in ctx.manquants %}
                     <li class="mb-1">
                         <span class="me-1">{% if ok %}✅{% else %}❌{% endif %}</span>
+                        {% if code in implemented_codes %}
+                        <a href="{{ url_for('formulaires.show', affaire_id=affaire.id, code=code) }}"
+                           class="text-decoration-none"
+                           title="Ouvrir le formulaire {{ code }}"><code>{{ code }}</code></a>
+                        {% else %}
                         <code>{{ code }}</code>
+                        {% endif %}
                         {% if not ok %}<span class="text-danger small">— non validé</span>{% endif %}
                     </li>
                     {% endfor %}

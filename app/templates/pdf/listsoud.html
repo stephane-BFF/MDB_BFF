@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+@page {
+    size: A4 landscape;
+    margin: 15mm 15mm 20mm 15mm;
+    @bottom-left {
+        content: "BFF · Dossier Constructeur Qualité · PED 2014/68/UE";
+        font-family: Arial, sans-serif; font-size: 7pt; color: #666;
+    }
+    @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-family: Arial, sans-serif; font-size: 7pt; color: #666;
+    }
+}
+body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #1a1a1a; line-height: 1.4; margin: 0; padding: 0; }
+h2 { font-size: 9.5pt; margin: 4mm 0 2mm; border-bottom: 1pt solid #003087; padding-bottom: 1mm; color: #003087; }
+.page-header { display: table; width: 100%; border-bottom: 2pt solid #003087; margin-bottom: 5mm; padding-bottom: 3mm; }
+.page-header-logo  { display: table-cell; width: 55mm; vertical-align: middle; }
+.page-header-title { display: table-cell; vertical-align: middle; text-align: center; }
+.page-header-meta  { display: table-cell; width: 52mm; vertical-align: middle; text-align: right; font-size: 8pt; color: #555; }
+.logo-img { height: 14mm; }
+.logo-placeholder { display: inline-block; background-color: #003087; color: white; font-size: 18pt; font-weight: bold; padding: 2mm 5mm; letter-spacing: 2pt; }
+.doc-title { font-size: 11pt; font-weight: bold; color: #003087; text-transform: uppercase; }
+.doc-subtitle { font-size: 8.5pt; color: #555; margin-top: 1mm; }
+table.header-data { width: 100%; border-collapse: collapse; margin-bottom: 4mm; font-size: 8.5pt; }
+table.header-data td { padding: 2mm 3mm; border: 0.5pt solid #ccc; vertical-align: top; }
+.label { color: #555; font-size: 8pt; }
+.value { font-weight: bold; }
+.soudeur-title { font-weight: bold; font-size: 9pt; color: #003087; margin: 4mm 0 1mm; page-break-after: avoid; }
+table.quals { width: 100%; border-collapse: collapse; margin-bottom: 3mm; font-size: 8pt; page-break-inside: auto; }
+table.quals th { background-color: #003087; color: white; padding: 1.5mm 2.5mm; text-align: left; font-size: 7.5pt; border: 0.5pt solid #003087; }
+table.quals td { padding: 1.5mm 2.5mm; border: 0.5pt solid #ccc; vertical-align: middle; }
+table.quals tr:nth-child(even) td { background-color: #f7f9fc; }
+.signature-block { margin-top: 6mm; border: 1pt solid #003087; padding: 4mm; background-color: #f0f4fc; page-break-inside: avoid; }
+.signature-title { font-weight: bold; font-size: 9.5pt; color: #003087; margin-bottom: 2mm; }
+.hash-value { font-family: "Courier New", monospace; font-size: 7pt; word-break: break-all; background-color: #fff; border: 0.5pt solid #ccc; padding: 1mm 2mm; margin-top: 1mm; display: block; }
+.doc-footer { margin-top: 8mm; border-top: 1pt solid #ccc; padding-top: 3mm; font-size: 7.5pt; color: #888; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="page-header-logo">
+        {% if logo_uri %}<img src="{{ logo_uri }}" class="logo-img" alt="Logo BFF">
+        {% else %}<span class="logo-placeholder">BFF</span>{% endif %}
+    </div>
+    <div class="page-header-title">
+        <div class="doc-title">{{ svc.TITLE }}</div>
+        <div class="doc-subtitle">Homologation soudage — Chapitre {{ svc.CHAPITRE.value }}</div>
+    </div>
+    <div class="page-header-meta">
+        <strong>N° Affaire :</strong> {{ affaire.numero_affaire }}<br>
+        <strong>Formulaire :</strong> {{ svc.CODE }} v{{ formulaire.template_version }}<br>
+        <strong>Statut :</strong> {{ formulaire.statut.label }}
+    </div>
+</div>
+
+<h2>1. Identification de l'affaire</h2>
+<table class="header-data">
+    <tr>
+        <td class="label" style="width:20%">Client</td>
+        <td class="value" style="width:30%">{{ affaire.client_nom or '—' }}</td>
+        <td class="label" style="width:20%">Code de construction</td>
+        <td class="value" style="width:30%">{{ form_data.get('code_construction', 'ASME') }}</td>
+    </tr>
+    <tr>
+        <td class="label">N° affaire BFF</td>
+        <td class="value">{{ affaire.numero_affaire }}</td>
+        <td class="label">Réf. interne</td>
+        <td class="value">{{ affaire.references_internes or '—' }}</td>
+    </tr>
+</table>
+
+<h2>2. Soudeurs qualifiés</h2>
+{% set soudeurs = form_data.get('soudeurs', []) %}
+{% if soudeurs %}
+    {% for s in soudeurs %}
+    <div class="soudeur-title">
+        {{ s.get('nom') or '—' }}
+        {% if s.get('matricule') %}· Matricule {{ s.get('matricule') }}{% endif %}
+        {% if s.get('initiales') %}· Poinçon {{ s.get('initiales') }}{% endif %}
+    </div>
+    <table class="quals">
+        <thead>
+            <tr>
+                <th style="width:14%">Procédé</th>
+                <th style="width:26%">Positions</th>
+                <th style="width:26%">Groupes matériaux</th>
+                <th style="width:20%">Référence QS</th>
+                <th style="width:14%">Validité</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in s.get('qualifications', []) %}
+            <tr>
+                <td>{{ q.get('procede') or '—' }}</td>
+                <td>{{ q.get('positions', [])|join(', ') or '—' }}</td>
+                <td>{{ q.get('groupes', [])|join(', ') or '—' }}</td>
+                <td>{{ q.get('reference_qs') or '—' }}</td>
+                <td>
+                    {%- set d = q.get('date_validite') -%}
+                    {%- if d -%}{{ d[8:10] }}/{{ d[5:7] }}/{{ d[:4] }}{%- else -%}—{%- endif -%}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="color:#888; font-style:italic;">(Aucune qualification)</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+{% else %}
+<p style="color:#888; font-style:italic;">(Aucun soudeur enregistré)</p>
+{% endif %}
+
+{% if signatures %}
+<div class="signature-block">
+    <div class="signature-title">&#9654; Signature électronique</div>
+    {% for sig in signatures %}
+    <p>Signé le <strong>{{ sig.created_at.strftime('%d/%m/%Y à %H:%M UTC') }}</strong> par
+        {% if sig.user %}<strong>{{ sig.user.full_name }}</strong> ({{ sig.user.role.label }}){% else %}<strong>—</strong>{% endif %}
+    </p>
+    <p>Empreinte SHA-256 :</p>
+    <span class="hash-value">{{ sig.hash_sha256 }}</span>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="doc-footer">
+    Brown Fintube France Energy · PED 2014/68/UE · MDB {{ affaire.numero_affaire }} · {{ svc.CODE }} v{{ formulaire.template_version }}
+</div>
+
+</body>
+</html>

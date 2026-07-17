@@ -59,6 +59,13 @@
 <form id="tableForm" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+    {# ── Listes de référence (auto-complétion des colonnes datalist) ──── #}
+    {% for dl_key, dl_data in (reference_options or {}).items() %}
+    <datalist id="dl_{{ dl_key }}">
+        {% for opt in dl_data.options %}<option value="{{ opt }}"></option>{% endfor %}
+    </datalist>
+    {% endfor %}
+
     {# ── En-tête fixe (HEADER_SECTIONS) ───────────────────────────────── #}
     {% if svc.HEADER_SECTIONS %}
     {% set header_data = form_data.get('header', {}) %}
@@ -177,6 +184,7 @@
                                 {% else %}
                                 <input type="{% if col.col_type in ('float', 'integer') %}number{% elif col.col_type == 'date' %}date{% else %}text{% endif %}"
                                        class="form-control form-control-sm{% if col.server_computed %} bg-light{% endif %}" data-col="{{ col.name }}"
+                                       {% if col.datalist %}list="dl_{{ col.datalist }}" data-datalist="{{ col.datalist }}" autocomplete="off"{% endif %}
                                        {% if col.step %}step="{{ col.step }}"{% endif %}
                                        {% if col.min_val is not none and col.min_val != '' %}min="{{ col.min_val }}"{% endif %}
                                        {% if col.maxlength %}maxlength="{{ col.maxlength }}"{% endif %}
@@ -274,6 +282,7 @@
             {% else %}
             <input type="{% if col.col_type in ('float', 'integer') %}number{% elif col.col_type == 'date' %}date{% else %}text{% endif %}"
                    class="form-control form-control-sm" data-col="{{ col.name }}"
+                   {% if col.datalist %}list="dl_{{ col.datalist }}" data-datalist="{{ col.datalist }}" autocomplete="off"{% endif %}
                    {% if col.step %}step="{{ col.step }}"{% endif %}
                    {% if col.min_val is not none and col.min_val != '' %}min="{{ col.min_val }}"{% endif %}
                    {% if col.maxlength %}maxlength="{{ col.maxlength }}"{% endif %}
@@ -320,6 +329,25 @@
         tbody.addEventListener('click', (e) => {
             const btn = e.target.closest('.remove-row');
             if (btn) { btn.closest('tr').remove(); toggleEmptyMsg(); }
+        });
+    }
+
+    // ── Auto-remplissage depuis les listes de référence (datalist) ──────
+    // Sélectionner une désignation renseigne les colonnes liées (norme,
+    // fournisseur…) de la même ligne à partir de REF_MAP[datalist].autofill.
+    const REF_MAP = {{ (reference_options or {})|tojson }};
+    if (tbody) {
+        tbody.addEventListener('change', (e) => {
+            const el = e.target;
+            const key = el.dataset ? el.dataset.datalist : null;
+            if (!key || !REF_MAP[key]) return;
+            const fill = REF_MAP[key].autofill[el.value];
+            if (!fill) return;
+            const row = el.closest('tr');
+            Object.entries(fill).forEach(([col, value]) => {
+                const cell = row.querySelector(`[data-col="${col}"]`);
+                if (cell) cell.value = value;
+            });
         });
     }
 

@@ -57,6 +57,13 @@
 <form id="simpleForm" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+    {# Listes de référence (auto-complétion des champs datalist) #}
+    {% for dl_key, dl_data in (reference_options or {}).items() %}
+    <datalist id="dl_{{ dl_key }}">
+        {% for opt in dl_data.options %}<option value="{{ opt }}"></option>{% endfor %}
+    </datalist>
+    {% endfor %}
+
     {% for section in svc.SECTIONS %}
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white py-2">
@@ -67,7 +74,8 @@
                 {% for fspec in section.fields %}
                 {% set is_readonly = (not can_edit) or fspec.server_computed %}
                 {% set val = form_data.get(fspec.name, '') %}
-                <div class="{{ fspec.col_class }}">
+                <div class="{{ fspec.col_class }}" data-field-wrap="{{ fspec.name }}"
+                     {% if fspec.visible_when %}data-visible-when='{{ fspec.visible_when|tojson }}'{% endif %}>
 
                     {# ── Checkbox ─────────────────────────────────────── #}
                     {% if fspec.field_type == 'checkbox' %}
@@ -131,6 +139,7 @@
                         {% set input_type = 'text' %}
                     {% endif %}
                     <input type="{{ input_type }}" id="{{ fspec.name }}" name="{{ fspec.name }}"
+                           {% if fspec.datalist %}list="dl_{{ fspec.datalist }}" data-datalist="{{ fspec.datalist }}" autocomplete="off"{% endif %}
                            {% if fspec.step %}step="{{ fspec.step }}"{% endif %}
                            {% if fspec.min_val is not none and fspec.min_val != '' %}min="{{ fspec.min_val }}"{% endif %}
                            {% if fspec.max_val is not none and fspec.max_val != '' %}max="{{ fspec.max_val }}"{% endif %}
@@ -270,6 +279,45 @@
 
     if (saveBtn) {
         saveBtn.addEventListener('click', saveBrouillon);
+    }
+
+    // ── Auto-remplissage depuis les listes de référence (datalist) ──────
+    const REF_MAP = {{ (reference_options or {})|tojson }};
+    document.querySelectorAll('[data-datalist]').forEach((el) => {
+        el.addEventListener('change', () => {
+            const key = el.dataset.datalist;
+            if (!key || !REF_MAP[key]) return;
+            const fill = REF_MAP[key].autofill[el.value];
+            if (!fill) return;
+            Object.entries(fill).forEach(([name, value]) => {
+                const target = document.getElementById(name);
+                if (target) target.value = value;
+            });
+        });
+    });
+
+    // ── Affichage conditionnel des champs (data-visible-when) ───────────
+    const condWraps = [...document.querySelectorAll('[data-visible-when]')];
+    function applyConditional() {
+        condWraps.forEach((wrap) => {
+            let cond;
+            try { cond = JSON.parse(wrap.dataset.visibleWhen); } catch (_) { return; }
+            const src = document.getElementById(cond.field);
+            const val = src ? src.value : '';
+            const hidden = (cond.not_in || []).includes(val);
+            wrap.style.display = hidden ? 'none' : '';
+        });
+    }
+    if (condWraps.length) {
+        const fields = new Set();
+        condWraps.forEach((w) => {
+            try { fields.add(JSON.parse(w.dataset.visibleWhen).field); } catch (_) { /* ignore */ }
+        });
+        fields.forEach((name) => {
+            const src = document.getElementById(name);
+            if (src) src.addEventListener('change', applyConditional);
+        });
+        applyConditional();
     }
 })();
 </script>

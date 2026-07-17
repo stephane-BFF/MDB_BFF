@@ -240,4 +240,60 @@
 })();
 </script>
 {% endif %}
+
+{% if step.value == 'Q4' %}
+<script>
+(function () {
+    "use strict";
+    var MODULES = {{ ped_modules|tojson }};            // {code: libellé}
+    var PAR_CAT = {{ ped_modules_par_cat|tojson }};    // {catégorie: [codes autorisés]}
+
+    var catSel = document.getElementById("categorie_ped");
+    var modSel = document.getElementById("module_ped");
+    var fluidEtat = document.getElementById("fluide_etat");
+    var fluidGroupe = document.getElementById("fluide_groupe");
+    if (!catSel || !modSel) { return; }
+
+    var modWrap = modSel.closest(".mb-3");
+    var etatWrap = fluidEtat ? fluidEtat.closest(".mb-3") : null;
+    var groupeWrap = fluidGroupe ? fluidGroupe.closest(".mb-3") : null;
+
+    function rebuildModules(cat) {
+        var allowed = PAR_CAT[cat] || [];
+        var current = modSel.value;
+        modSel.innerHTML = "";
+        var ph = document.createElement("option");
+        ph.value = "";
+        ph.textContent = "— Sélectionner —";
+        modSel.appendChild(ph);
+        allowed.forEach(function (code) {
+            var opt = document.createElement("option");
+            opt.value = code;
+            opt.textContent = MODULES[code] || code;
+            if (code === current) { opt.selected = true; }
+            modSel.appendChild(opt);
+        });
+    }
+
+    function refresh() {
+        var cat = catSel.value;
+        var hasModule = Object.prototype.hasOwnProperty.call(PAR_CAT, cat);
+        if (hasModule) {
+            rebuildModules(cat);
+            if (modWrap) { modWrap.classList.remove("d-none"); }
+        } else {
+            // Art. 4.3 / N/A / non renseigné : module de conformité sans objet.
+            modSel.value = "";
+            if (modWrap) { modWrap.classList.add("d-none"); }
+        }
+        var isNA = cat === "N/A";
+        if (etatWrap) { etatWrap.classList.toggle("d-none", isNA); }
+        if (groupeWrap) { groupeWrap.classList.toggle("d-none", isNA); }
+    }
+
+    catSel.addEventListener("change", refresh);
+    refresh();
+})();
+</script>
+{% endif %}
 {% endblock %}

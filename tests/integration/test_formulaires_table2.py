@@ -1,8 +1,11 @@
 """Tests d'intégration — formulaires tableau batch 2.
 
 Couvre le workflow complet pour :
-  - LISTSOUD, ROLLING, DIM  (Chapitre C)
+  - ROLLING, DIM  (Chapitre C)
   - LISTCND, NDEMAP, DURETE, FERRITE, UT0FAIS, UT0SHELL, UT0RET, UT0UBEND  (Chapitre D)
+
+LISTSOUD (formulaire structuré soudeur → qualifications) a son propre bloc
+de tests (``TestListSoudWorkflow``) car il n'utilise plus le gabarit tableau.
 
 Tests paramétrés standard (8 tests × 11 codes) + tests de calcul automatique
 pour ROLLING, DIM, DURETE, FERRITE et UT0FAIS.
@@ -22,15 +25,24 @@ from app.models.formulaire import Formulaire
 
 # ── Payloads minimaux valides ──────────────────────────────────────────────
 
-_WELDER_ROW = {
-    "id_soudeur": "120",
-    "initiales": "AB",
-    "nom": "BROU Allaly",
-    "procedes": "TIG 141",
-    "materiaux": "Acier carbone P1",
-    "positions": "PA, PB",
-    "ref_qualification": "WPQ-BFF-001",
-    "date_validite": "2027-01-01",
+_LISTSOUD_PAYLOAD = {
+    "code_construction": "ASME",
+    "soudeurs": [
+        {
+            "matricule": "120",
+            "initiales": "AB",
+            "nom": "BROU Allaly",
+            "qualifications": [
+                {
+                    "procede": "141",
+                    "positions": ["6G"],
+                    "groupes": ["P1"],
+                    "reference_qs": "WPQ-BFF-001",
+                    "date_validite": "2027-01-01",
+                },
+            ],
+        },
+    ],
 }
 
 _CND_ROW = {
@@ -84,7 +96,6 @@ _UT0_HEADER = {
 }
 
 _TABLE2_CASES: list[tuple[str, dict]] = [
-    ("LISTSOUD", {"lignes": [_WELDER_ROW]}),
     (
         "ROLLING",
         {
@@ -354,6 +365,76 @@ class TestDureteConformite:
         f = _get_formulaire(affaire.id, "DURETE")
         assert f is not None
         assert f.data["lignes"][0]["conformite"] is False  # 280 > 250
+
+
+class TestListSoudWorkflow:
+    """LISTSOUD — formulaire structuré (soudeur → qualifications, bascule ASME/EN)."""
+
+    def test_show_returns_200(
+        self, client_redacteur: FlaskClient, affaire: Affaire
+    ) -> None:
+        resp = client_redacteur.get(f"/affaires/{affaire.id}/formulaires/LISTSOUD")
+        assert resp.status_code == 200
+        assert "Code de construction" in resp.data.decode("utf-8")
+
+    def test_save_stores_nested_structure(
+        self, client_redacteur: FlaskClient, affaire: Affaire
+    ) -> None:
+        _save(client_redacteur, affaire.id, "LISTSOUD", _LISTSOUD_PAYLOAD)
+        f = _get_formulaire(affaire.id, "LISTSOUD")
+        assert f is not None
+        assert f.data["code_construction"] == "ASME"
+        soudeur = f.data["soudeurs"][0]
+        assert soudeur["nom"] == "BROU Allaly"
+        assert soudeur["qualifications"][0]["procede"] == "141"
+
+    def test_invalid_position_filtered_by_code(
+        self, client_redacteur: FlaskClient, affaire: Affaire
+    ) -> None:
+        # 'PA' est une position EN : invalide en ASME → filtrée côté serveur.
+        payload = {
+            "code_construction": "ASME",
+            "soudeurs": [{"nom": "X", "qualifications": [
+                {"procede": "141", "positions": ["6G", "PA"], "groupes": [],
+                 "reference_qs": "", "date_validite": "2027-01-01"}]}],
+        }
+        _save(client_redacteur, affaire.id, "LISTSOUD", payload)
+        f = _get_formulaire(affaire.id, "LISTSOUD")
+        assert f is not None
+        assert f.data["soudeurs"][0]["qualifications"][0]["positions"] == ["6G"]
+
+    def test_validate_ok(
+        self, client_verificateur: FlaskClient, affaire: Affaire
+    ) -> None:
+        _save(client_verificateur, affaire.id, "LISTSOUD", _LISTSOUD_PAYLOAD)
+        _valider(client_verificateur, affaire.id, "LISTSOUD")
+        f = _get_formulaire(affaire.id, "LISTSOUD")
+        assert f is not None
+        assert f.statut is Statut.VALIDE
+
+    def test_validate_rejects_soudeur_without_qualification(
+        self, client_verificateur: FlaskClient, affaire: Affaire
+    ) -> None:
+        _save(client_verificateur, affaire.id, "LISTSOUD",
+              {"code_construction": "ASME", "soudeurs": [{"nom": "X", "qualifications": []}]})
+        _valider(client_verificateur, affaire.id, "LISTSOUD")
+        f = _get_formulaire(affaire.id, "LISTSOUD")
+        assert f is not None
+        assert f.statut is Statut.BROUILLON  # validation refusée
+
+    def test_sign_and_hash(
+        self, client_approbateur: FlaskClient, affaire: Affaire
+    ) -> None:
+        _save(client_approbateur, affaire.id, "LISTSOUD", _LISTSOUD_PAYLOAD)
+        _valider(client_approbateur, affaire.id, "LISTSOUD")
+        client_approbateur.post(
+            f"/affaires/{affaire.id}/formulaires/LISTSOUD/signer",
+            follow_redirects=True,
+        )
+        f = _get_formulaire(affaire.id, "LISTSOUD")
+        assert f is not None
+        assert f.statut is Statut.SIGNE
+        assert f.signatures[-1].verify(f) is True
 
 
 class TestUT0MesureMoy:

@@ -162,11 +162,58 @@ class WizardQ3Form(FlaskForm):  # type: ignore[misc]
     )
 
 
+# ── Référentiel PED 2014/68/UE — catégories et modules de conformité ──────
+#
+# Catégories de risque : I à IV sont soumises à évaluation de conformité ;
+# ``Art.4.3`` couvre les équipements conçus selon les règles de l'art (article
+# 4 §3 — sous les seuils, sans marquage CE ni module) ; ``N/A`` désigne les
+# équipements non destinés au marché européen (PED hors sujet).
+CATEGORIE_ART_43 = "Art.4.3"
+CATEGORIE_NA = "N/A"
+
+# Catégories pour lesquelles un module de conformité s'applique réellement.
+CATEGORIES_AVEC_MODULE: frozenset[str] = frozenset({"I", "II", "III", "IV"})
+
+# Libellés des modules de conformité (Annexe III PED 2014/68/UE).
+MODULES_PED: dict[str, str] = {
+    "A": "A — Contrôle interne de la fabrication",
+    "A2": "A2 — Contrôle interne + contrôles supervisés à intervalles aléatoires",
+    "B+C2": "B + C2 — Examen UE de type + conformité au type (essais supervisés)",
+    "B+D": "B + D — Examen UE de type + assurance qualité de la production",
+    "B+E": "B + E — Examen UE de type + assurance qualité du produit",
+    "B+F": "B + F — Examen UE de type + vérification sur produit",
+    "D1": "D1 — Assurance qualité de la production",
+    "E1": "E1 — Assurance qualité du contrôle et de l'essai finals",
+    "G": "G — Vérification à l'unité",
+    "H": "H — Assurance complète de la qualité",
+    "H1": "H1 — Assurance complète de la qualité + examen de la conception",
+}
+
+# Modules autorisés par catégorie de risque (tableaux d'évaluation de la
+# conformité, Annexe II PED 2014/68/UE). Un module choisi hors de cette liste
+# est refusé côté serveur.
+MODULES_PAR_CATEGORIE: dict[str, list[str]] = {
+    "I": ["A"],
+    "II": ["A2", "D1", "E1"],
+    "III": ["B+C2", "B+D", "B+E", "B+F", "H"],
+    "IV": ["B+D", "B+F", "G", "H1"],
+}
+
+
 class WizardQ4Form(FlaskForm):  # type: ignore[misc]
     """Q4 — Caractéristiques PED 2014/68/UE.
 
-    Détermine la catégorie et le module de conformité applicables.
-    Stocké en JSONB sous les clés ``q4_*``.
+    Détermine la catégorie de risque, l'état et la dangerosité du fluide, et le
+    module de conformité applicable. Stocké en JSONB sous les clés ``q4_*``.
+
+    Logique conditionnelle (PED) :
+        - La catégorie ne prend que ``I``/``II``/``III``/``IV`` (soumis),
+          ``Art.4.3`` (non soumis, règles de l'art) ou ``N/A`` (hors UE).
+        - Le module de conformité n'a de sens que pour les catégories I–IV ;
+          il est *sans objet* pour ``Art.4.3`` et ``N/A``.
+        - Selon la catégorie, seuls certains modules s'appliquent
+          (``MODULES_PAR_CATEGORIE``) — vérifié côté serveur.
+        - L'état et la dangerosité du fluide sont requis sauf pour ``N/A``.
     """
 
     categorie_ped = SelectField(
@@ -177,37 +224,76 @@ class WizardQ4Form(FlaskForm):  # type: ignore[misc]
             ("II", _l("II — Risque modéré")),
             ("III", _l("III — Risque élevé")),
             ("IV", _l("IV — Risque très élevé")),
+            (CATEGORIE_ART_43, _l("Art. 4.3 — Non soumis (règles de l'art)")),
+            (CATEGORIE_NA, _l("N/A — Non destiné au marché européen")),
         ],
         validators=[DataRequired(message=_l("La catégorie PED est requise."))],
+        description=_l(
+            "I à IV = soumis à la directive ; Art. 4.3 = règles de l'art "
+            "(sans module) ; N/A = hors marché européen."
+        ),
     )
-    module_ped = SelectField(
-        _l("Module de conformité"),
+    # NB : ces trois champs n'ont PAS de validateur ``Optional()`` — il lèverait
+    # un ``StopValidation`` sur champ vide et court-circuiterait les validateurs
+    # conditionnels ``validate_*`` ci-dessous (obligation dépendant de la
+    # catégorie). Leur caractère facultatif est donc géré à la main.
+    fluide_etat = SelectField(
+        _l("État du fluide"),
         choices=[
             ("", _l("— Sélectionner —")),
-            ("A", _l("A — Contrôle interne de fabrication")),
-            ("A2", _l("A2 — Contrôle interne + surveillance")),
-            ("B+C2", _l("B + C2 — Examen UE de type + contrôle")),
-            ("B+D", _l("B + D — Examen UE de type + AQ production")),
-            ("B+F", _l("B + F — Examen UE de type + vérif. produit")),
-            ("G", _l("G — Vérification CE à l'unité")),
-            ("H", _l("H — Assurance qualité complète")),
+            ("gaz", _l("Gaz")),
+            ("liquide", _l("Liquide")),
         ],
-        validators=[DataRequired(message=_l("Le module de conformité est requis."))],
+        description=_l(
+            "État physique du fluide contenu — conditionne la catégorie PED."
+        ),
     )
     fluide_groupe = SelectField(
-        _l("Groupe de fluide"),
+        _l("Dangerosité du fluide"),
         choices=[
             ("", _l("— Sélectionner —")),
             ("1", _l("Groupe 1 — Fluide dangereux")),
             ("2", _l("Groupe 2 — Fluide non dangereux")),
         ],
-        validators=[DataRequired(message=_l("Le groupe de fluide est requis."))],
     )
     fluide_nom = StringField(
         _l("Nom du fluide principal"),
         validators=[Optional(), Length(max=100)],
         render_kw={"placeholder": _l("Eau, huile, vapeur, azote…")},
     )
+    module_ped = SelectField(
+        _l("Module de conformité"),
+        choices=[("", _l("— Sélectionner —"))]
+        + [(code, label) for code, label in MODULES_PED.items()],
+        description=_l(
+            "Modules applicables selon la catégorie de risque (Annexe II PED). "
+            "Sans objet pour Art. 4.3 et N/A."
+        ),
+    )
+
+    def validate_fluide_etat(self, field: SelectField) -> None:  # noqa: D102
+        if self.categorie_ped.data != CATEGORIE_NA and not field.data:
+            raise ValidationError("L'état du fluide est requis.")
+
+    def validate_fluide_groupe(self, field: SelectField) -> None:  # noqa: D102
+        if self.categorie_ped.data != CATEGORIE_NA and not field.data:
+            raise ValidationError("La dangerosité du fluide est requise.")
+
+    def validate_module_ped(self, field: SelectField) -> None:  # noqa: D102
+        categorie = self.categorie_ped.data
+        if categorie not in CATEGORIES_AVEC_MODULE:
+            # Art.4.3 / N/A : le module est sans objet, toute valeur est ignorée.
+            return
+        if not field.data:
+            raise ValidationError(
+                "Le module de conformité est requis pour cette catégorie."
+            )
+        autorises = MODULES_PAR_CATEGORIE.get(categorie, [])
+        if field.data not in autorises:
+            raise ValidationError(
+                f"Module non applicable à la catégorie {categorie} — "
+                f"choix possibles : {', '.join(autorises)}."
+            )
 
 
 class WizardQ5Form(FlaskForm):  # type: ignore[misc]

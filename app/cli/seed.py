@@ -32,10 +32,14 @@ import click
 from flask import current_app
 from flask.cli import with_appcontext
 
+from app.cli.data_metaux_apport import METAUX_APPORT
+from app.cli.data_organismes_notifies import ORGANISMES_NOTIFIES
+from app.cli.data_soudeurs import SOUDEURS
 from app.enums import Chapitre, Role
 from app.extensions import db
 from app.models.audit import AuditTrail
 from app.models.formulaire import FormulaireTemplate
+from app.models.referentiel import MetalApport, OrganismeNotifie, Soudeur
 from app.models.user import User
 
 
@@ -315,14 +319,26 @@ def seed_command() -> None:
     """Initialise les utilisateurs et templates de base."""
     created_users = _seed_users()
     created_templates = _seed_templates()
+    created_metaux = _seed_metaux_apport()
+    created_soudeurs = _seed_soudeurs()
+    created_on = _seed_organismes_notifies()
     db.session.commit()
 
     click.echo(f"[OK] {created_users} utilisateur(s) cree(s) (deja presents ignores).")
     click.echo(f"[OK] {created_templates} templates de formulaire crees.")
+    click.echo(f"[OK] {created_metaux} metal(aux) d'apport cree(s) (referentiel BIMSOUD).")
+    click.echo(f"[OK] {created_soudeurs} soudeur(s) cree(s) (referentiel LISTSOUD).")
+    click.echo(f"[OK] {created_on} organisme(s) notifie(s) cree(s) (referentiel ATTDECR).")
     click.echo(f"     Mot de passe initial : {_SEED_PASSWORD!r} (a changer au 1er login).")
     current_app.logger.info(
         "seed completed",
-        extra={"users": created_users, "templates": created_templates},
+        extra={
+            "users": created_users,
+            "templates": created_templates,
+            "metaux_apport": created_metaux,
+            "soudeurs": created_soudeurs,
+            "organismes_notifies": created_on,
+        },
     )
 
 
@@ -356,6 +372,74 @@ def _seed_users() -> int:
             new_value=role,
             contexte={"email": email},
         )
+        created += 1
+    return created
+
+
+def _seed_metaux_apport() -> int:
+    """Crée le référentiel des métaux d'apport (BIMSOUD). Retourne le nombre de créations.
+
+    Idempotent : la désignation est la clé naturelle ; une entrée déjà
+    présente est ignorée (ses éventuelles corrections manuelles sont
+    préservées).
+    """
+    created = 0
+    for designation, classification, fournisseur in METAUX_APPORT:
+        existing = (
+            db.session.query(MetalApport)
+            .filter_by(designation=designation)
+            .first()
+        )
+        if existing is not None:
+            continue
+        db.session.add(
+            MetalApport(
+                designation=designation,
+                classification=classification,
+                fournisseur=fournisseur,
+                actif=True,
+            )
+        )
+        created += 1
+    return created
+
+
+def _seed_soudeurs() -> int:
+    """Crée le référentiel des soudeurs (identité) pour LISTSOUD. Idempotent.
+
+    La clé naturelle est le matricule s'il est renseigné, sinon le nom. Les
+    corrections manuelles d'un soudeur déjà présent sont préservées.
+    """
+    created = 0
+    for matricule, initiales, nom in SOUDEURS:
+        existing = (
+            db.session.query(Soudeur).filter_by(matricule=matricule).first()
+            if matricule
+            else db.session.query(Soudeur).filter_by(nom=nom).first()
+        )
+        if existing is not None:
+            continue
+        db.session.add(
+            Soudeur(matricule=matricule or None, initiales=initiales or None, nom=nom, actif=True)
+        )
+        created += 1
+    return created
+
+
+def _seed_organismes_notifies() -> int:
+    """Crée le référentiel des organismes notifiés (ATTDECR). Idempotent.
+
+    La clé naturelle est le numéro NANDO. Les corrections manuelles d'un ON
+    déjà présent sont préservées.
+    """
+    created = 0
+    for numero, nom in ORGANISMES_NOTIFIES:
+        existing = (
+            db.session.query(OrganismeNotifie).filter_by(numero=numero).first()
+        )
+        if existing is not None:
+            continue
+        db.session.add(OrganismeNotifie(numero=numero, nom=nom, actif=True))
         created += 1
     return created
 

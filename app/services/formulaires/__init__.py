@@ -26,6 +26,7 @@ from app.services.formulaires.hydr import HydrService
 from app.services.formulaires.listcnd import ListCndService
 from app.services.formulaires.listsoud import ListSoudService
 from app.services.formulaires.nde_map import NdeMapService
+from app.services.formulaires.ped import PedModService
 from app.services.formulaires.pesage import PesageService
 from app.services.formulaires.pmi import PmiService
 from app.services.formulaires.proprete import PropreteService
@@ -39,7 +40,6 @@ from app.services.formulaires.ut0 import (
     UT0ShellService,
     UT0UbendService,
 )
-from app.services.formulaires.ped import PedModService
 from app.services.formulaires.visufinal import VisuFinalService
 
 # HydrService est un wrapper duck-typé (non-sous-classe de SimpleFormulaireService).
@@ -79,3 +79,13 @@ _REGISTRY: dict[str, type[Any]] = {
 def get_service(code: str) -> type[SimpleFormulaireService] | type[Any] | None:
     """Retourne la classe service pour un code de formulaire, ou None si inconnu."""
     return _REGISTRY.get(code.upper())
+
+
+def registered_codes() -> frozenset[str]:
+    """Ensemble des codes de formulaire disposant d'un service implémenté.
+
+    Utilisé par la page affaire pour n'activer le bouton « + Créer / Ouvrir »
+    que sur les formulaires réellement pris en charge (dispatch générique via
+    ``get_service``).
+    """
+    return frozenset(_REGISTRY)

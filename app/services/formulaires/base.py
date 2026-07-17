@@ -63,6 +63,13 @@ class FieldSpec:
         server_computed: Si True, le champ est readonly même en édition
             (valeur calculée côté serveur, ex : masse nette).
         help_text: Texte d'aide affiché sous le champ.
+        datalist: Si renseigné, le champ (texte) devient auto-complété via un
+            ``<datalist>`` alimenté par ``get_reference_options()`` ;
+            sélectionner une valeur peut renseigner d'autres champs.
+        visible_when: Condition d'affichage ``{"field": <nom>, "not_in":
+            [<valeurs>]}`` — le champ n'est visible que si le champ référencé
+            n'a pas l'une de ces valeurs (ex : n° de certificat masqué si le
+            module ne requiert pas d'organisme notifié).
     """
 
     name: str
@@ -78,6 +85,8 @@ class FieldSpec:
     col_class: str = "col-sm-6 col-md-3"
     server_computed: bool = False
     help_text: I18nStr = ""
+    datalist: str | None = None
+    visible_when: dict[str, Any] | None = None
 
 
 @dataclass
@@ -107,6 +116,10 @@ class ColSpec:
         server_computed: Si True, cellule readonly calculée côté serveur.
         width: Classe CSS de largeur de colonne (ex: ``"w-25"``).
         help_text: Tooltip affiché dans l'en-tête de colonne.
+        datalist: Si renseigné, la cellule (texte) devient un champ
+            auto-complété adossé à un ``<datalist>`` alimenté par
+            ``get_reference_options()`` ; sélectionner une valeur peut
+            renseigner automatiquement d'autres colonnes de la même ligne.
     """
 
     name: str
@@ -121,6 +134,7 @@ class ColSpec:
     server_computed: bool = False
     width: str = ""
     help_text: I18nStr = ""
+    datalist: str | None = None
 
 
 @dataclass
@@ -211,6 +225,27 @@ class SimpleFormulaireService:
 
         Retourne un dict vide par défaut ; surcharger pour les formulaires
         dont certains champs sont dérivés du paramétrage (ex : HYDR/PS depuis Q5).
+        """
+        return {}
+
+    @classmethod
+    def get_reference_options(cls) -> dict[str, Any]:
+        """Options de référence pour les colonnes ``datalist`` (listes déroulantes).
+
+        Retourne un dict vide par défaut. Surcharger pour alimenter les
+        auto-complétions depuis un référentiel. Structure attendue par le
+        template ``_table.html`` ::
+
+            {
+                "<datalist_key>": {
+                    "options": ["FOX EV 50", "EML 5", ...],
+                    "autofill": {
+                        "FOX EV 50": {"norme": "A5.1: E7018-1H4R",
+                                       "fournisseur": "VOESTALPINE BOHLER WELDING"},
+                        ...
+                    },
+                },
+            }
         """
         return {}
 

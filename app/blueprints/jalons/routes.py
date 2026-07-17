@@ -18,7 +18,7 @@ from flask_login import login_required
 from werkzeug.wrappers.response import Response
 
 from app.blueprints.jalons import bp
-from app.enums import JalonCode, Role, StatutJalon
+from app.enums import JalonCode, Role
 from app.extensions import db
 from app.models.affaire import Affaire
 from app.models.jalon import Jalon
@@ -50,10 +50,14 @@ def index(affaire_id: int) -> Response:
             "manquants": manquants,
         })
 
+    # Codes de formulaire réellement implémentés → prérequis cliquables.
+    from app.services.formulaires import registered_codes  # noqa: PLC0415
+
     return render_template(  # type: ignore[return-value]
         "jalons/index.html",
         affaire=affaire,
         jalons_ctx=jalons_ctx,
+        implemented_codes=registered_codes(),
     )
 
 

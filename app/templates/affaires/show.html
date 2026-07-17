@@ -114,7 +114,7 @@
                                 {% endif %}
                             </td>
                             <td class="text-end">
-                                {% set implemented = tmpl.code in ('HYDR',) %}
+                                {% set implemented = tmpl.code in implemented_codes %}
                                 {% if form %}
                                     {% if implemented %}
                                     <a href="{{ url_for('formulaires.show', affaire_id=affaire.id, code=tmpl.code) }}"
